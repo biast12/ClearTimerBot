@@ -5,6 +5,8 @@ import pytz
 import discord
 import asyncio
 import logging
+from pathlib import Path
+from dotenv import load_dotenv
 from discord.ext import commands
 from discord import app_commands
 from datetime import datetime, timedelta
@@ -25,10 +27,25 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Scheduler for jobs
 scheduler = AsyncIOScheduler()
 
-# File paths and constants
+# First-time installation check
+env_path = Path('.env')
+if not env_path.is_file():
+    env_path.touch()
+
+load_dotenv(dotenv_path=env_path)
+
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 if TOKEN is None:
+    TOKEN = input("Please enter your Discord bot token: ")
+    with open(env_path, 'a') as f:
+        f.write(f"DISCORD_BOT_TOKEN={TOKEN}\n")
+    load_dotenv(dotenv_path=env_path)
+    TOKEN = os.getenv('DISCORD_BOT_TOKEN')
+
+if TOKEN is None:
     raise ValueError("DISCORD_BOT_TOKEN environment variable not set")
+
+# File paths and constants
 DATA_FILE = 'data.json'
 TIMEZONE_FILE = 'timezone_abbreviations.json'
 
