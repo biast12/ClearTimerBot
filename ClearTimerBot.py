@@ -7,6 +7,7 @@ import asyncio
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
+from pypresence import Presence
 from discord.ext import commands
 from discord import app_commands
 from datetime import datetime, timedelta
@@ -107,9 +108,27 @@ def parse_timer(timer):
             raise ValueError("Invalid timer format. Use '1d2h3m' or 'HH:MM <timezone>' format for durations.")
     return trigger, next_run_time
 
+# Your Discord application's Client ID
+client_id = os.getenv('CLIENT_ID')
+rpc = Presence(client_id)
+rpc.connect()
+
+def update_presence():
+    rpc.update(
+        details="Competitive Cleaning",
+        start=int(datetime.now().timestamp()),
+        large_image="image_2024-10-04_003404879",
+        party_id="ae488379-351d-4a4f-ad32-2b9b01c91657",
+        join="MTI4NzM0OjFpMmhuZToxMjMxMjM=",
+    )
+
 @bot.event
 async def on_ready():
     logger.info(f'Logged in as {bot.user}')
+
+    if client_id:
+        # Update Rich Presence
+        update_presence()
 
     # Set funny Rich Presence
     activity = discord.Game(name="Cleaning up the mess! 🧹")
