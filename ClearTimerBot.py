@@ -307,7 +307,7 @@ async def clear_channel_messages(channel):
         return
 
     try:
-        async for message in channel.history(limit=1000):
+        async for message in channel.history():
             await message.delete()
             await asyncio.sleep(1)  # Add delay to avoid rate limits
         logger.info(f'Cleared messages in channel {channel.id}')
