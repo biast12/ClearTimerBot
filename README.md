@@ -31,16 +31,12 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
     pip install -r requirements.txt
     ```
 
-4. **Set up your environment variables:**
-    - Create a `.env` file in the root directory of the project.
-    - Add your Discord bot token to the `.env` file:
-      ```env
-      DISCORD_BOT_TOKEN=your_discord_bot_token
-      ```
-
-5. **Ensure `data.json` and `timezone_abbreviations.json` exist:**
+4. **Ensure `data.json` and `timezone_abbreviations.json` exist:**
     - `data.json` should be an empty JSON object `{}` initially.
     - `timezone_abbreviations.json` should contain valid timezone abbreviations and their corresponding full names.
+
+5. **Run `cleartimer.py` and set DISCORD_BOT_TOKEN:**
+    - When running the script for the first time will it ask you to enter your Discord bot token for the `.env` file.
 
 ## Running the Bot
 

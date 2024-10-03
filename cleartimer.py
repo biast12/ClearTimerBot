@@ -42,9 +42,6 @@ if TOKEN is None:
     load_dotenv(dotenv_path=env_path)
     TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 
-if TOKEN is None:
-    raise ValueError("DISCORD_BOT_TOKEN environment variable not set")
-
 # File paths and constants
 DATA_FILE = 'data.json'
 TIMEZONE_FILE = 'timezone_abbreviations.json'
