@@ -2,6 +2,10 @@
 
 ClearTimer is a Discord bot designed to automatically clear messages in specified channels at regular intervals. This bot uses the Discord API and the APScheduler library to schedule and manage message deletion tasks.
 
+## Adding the Bot to Your Server
+
+You can add the bot to your server using [this link](https://discord.com/oauth2/authorize?client_id=1290353946308775987&permissions=76800&integration_type=0&scope=bot). Alternatively, you can self-host the bot using the guide provided below.
+
 ## Requirements
 
 - Python 3.8+
