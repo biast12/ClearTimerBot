@@ -159,6 +159,36 @@ def parse_timer(timer):
             raise ValueError("Invalid timer format. Use '1d2h3m' or 'HH:MM <timezone>' format for durations.")
     return trigger, next_run_time
 
+# Function: Clear messages in the channel and update next_run_time
+async def clear_channel_messages(channel):
+    logger.info(f'Attempting to clear messages in channel {channel.id}')
+
+    permissions = channel.permissions_for(channel.guild.me)
+    if not permissions.manage_messages or not permissions.read_message_history:
+        logger.error(f'Missing necessary permissions in channel {channel.id}')
+        return
+
+    try:
+        async for message in channel.history():
+            await message.delete()
+            await asyncio.sleep(1)  # Add delay to avoid rate limits
+        logger.info(f'Cleared messages in channel {channel.id}')
+
+        # Update next_run_time after clearing messages
+        server_id = str(channel.guild.id)
+        channel_id = str(channel.id)
+
+        if server_id in servers and channel_id in servers[server_id]['channels']:
+            job_id = f"{server_id}_{channel_id}"
+            job = scheduler.get_job(job_id)
+
+            if job:
+                next_run_time = job.next_run_time.astimezone(pytz.UTC)  # Convert next_run_time to UTC
+                servers[server_id]['channels'][channel_id]['next_run_time'] = next_run_time.isoformat()
+                save_servers(servers)
+    except Exception as e:
+        logger.error(f'Failed to clear messages in channel {channel.id}: {e}')
+
 # Decorator to check if the user is the owner
 def is_owner():
     async def predicate(interaction: discord.Interaction):
@@ -167,10 +197,20 @@ def is_owner():
         return True
     return app_commands.check(predicate)
 
-async def sync_global_commands(bot):
+async def handle_error(ctx, error, command_name: str, owner_only=False):
+    if isinstance(error, app_commands.CheckFailure):
+        if owner_only:
+            await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
+        else:
+            await ctx.response.send_message("You do not have the necessary permission to use this command.", ephemeral=True)
+    else:
+        await ctx.response.send_message(f"An error occurred while processing the {command_name} command.", ephemeral=True)
+        logger.error(f'Error processing {command_name} command: {error}')
+
+async def sync_commands(bot):
     try:
         bot.tree.clear_commands(guild=None)
-        global_commands = [sub, unsub, next, help_command]
+        global_commands = [sub, unsub, next, help]
         for command in global_commands:
             bot.tree.add_command(command)
         synced = await bot.tree.sync()
@@ -227,7 +267,7 @@ async def on_ready():
 
     try:
         scheduler.start()
-        await sync_global_commands(bot)
+        await sync_commands(bot)
         if OWNER_ID and GUILD_ID:
             await sync_owner_commands(bot)
     except Exception as e:
@@ -316,12 +356,7 @@ async def sub(ctx, timer: str = None, target_channel: discord.TextChannel = None
 # Error handler for MissingPermissions
 @sub.error
 async def sub_error(ctx, error):
-    if isinstance(error, MissingPermissions):
-        # Send an ephemeral message if the user lacks the required permission
-        await ctx.response.send_message("You do not have the necessary permission to manage messages.", ephemeral=True)
-    else:
-        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
-        logger.error(f'Error processing list command: {error}')
+    await handle_error(ctx, error, 'sub')
 
 # Command: Unsubscribe from message deletion
 @bot.tree.command(name="unsub", description="Unsubscribe from message deletion")
@@ -351,11 +386,7 @@ async def unsub(ctx, target_channel: discord.TextChannel = None):
 # Error handler for unsub
 @unsub.error
 async def unsub_error(ctx, error):
-    if isinstance(error, MissingPermissions):
-        await ctx.response.send_message("You do not have the necessary permission to manage messages.", ephemeral=True)
-    else:
-        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
-        logger.error(f'Error processing list command: {error}')
+    await handle_error(ctx, error, 'unsub')
 
 # Command: Print next run time for a channel
 @bot.tree.command(name="next", description="Check when the next message clear is scheduled")
@@ -387,9 +418,14 @@ async def next(ctx, target_channel: discord.TextChannel = None):
     else:
         await ctx.response.send_message(f"No timer is set for {channel_mention}. Use `/sub` to set a timer.", ephemeral=True)
 
+# Error handler for next
+@next.error
+async def next_error(ctx, error):
+    await handle_error(ctx, error, 'next')
+
 # Command: Help command
 @bot.tree.command(name="help", description="Display available commands and help server link")
-async def help_command(ctx):
+async def help(ctx):
     server_id = str(ctx.guild.id)
 
     if server_id in blacklist:
@@ -405,6 +441,11 @@ async def help_command(ctx):
         "For more help, join our help server: [Help Server](https://discord.com/invite/ERFffj9Qs7)"
     )
     await ctx.response.send_message(help_message)
+
+# Error handler for next
+@help.error
+async def help_error(ctx, error):
+    await handle_error(ctx, error, 'help')
 
 # Command: List all servers and channels subscribed to message deletion (Bot owner only)
 @bot.tree.command(name="list", description="List all servers and channels subscribed to message deletion (Bot owner only)")
@@ -429,11 +470,7 @@ async def list(ctx):
 # Error handler for list command
 @list.error
 async def list_error(ctx, error):
-    if isinstance(error, app_commands.CheckFailure):
-        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
-    else:
-        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
-        logger.error(f'Error processing list command: {error}')
+    await handle_error(ctx, error, 'list', True)
 
 # Command: Force unsubscribe a channel from message deletion (Bot owner only)
 @bot.tree.command(name="force_unsub", description="Force unsubscribe a server or channel from message deletion (Bot owner only)")
@@ -444,11 +481,10 @@ async def force_unsub(ctx, target_id: str):
     if target_id.isdigit() and target_id in servers:
         # target_id is a server ID
         responses = []
-        for channel_id in list(servers[target_id]['channels'].keys()):
+        for channel_id in servers[target_id]['channels'].keys():
             job_id = f"{target_id}_{channel_id}"
             if scheduler.get_job(job_id):
                 scheduler.remove_job(job_id)
-                del servers[target_id]['channels'][channel_id]
                 # Send notification message in the channel
                 channel = bot.get_channel(int(channel_id))
                 if channel:
@@ -458,8 +494,7 @@ async def force_unsub(ctx, target_id: str):
                     except Exception as e:
                         logger.error(f"Failed to send message in channel {channel_id}: {e}")
                         responses.append(f"Failed to send message in <#{channel_id}>: {e}")
-        if not servers[target_id]['channels']:
-            del servers[target_id]  # Remove server if no channels left
+        del servers[target_id]
         save_servers(servers)
         await ctx.response.send_message("\n".join(responses), ephemeral=True)
         logger.info(f'Forcefully unsubscribed all channels in server {target_id}')
@@ -495,11 +530,7 @@ async def force_unsub(ctx, target_id: str):
 # Error handler for force_unsub command
 @force_unsub.error
 async def force_unsub_error(ctx, error):
-    if isinstance(error, app_commands.CheckFailure):
-        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
-    else:
-        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
-        logger.error(f'Error processing force_unsub command: {error}')
+    await handle_error(ctx, error, 'force_unsub', True)
 
 # Command: Blacklist a server (Bot owner only)
 @bot.tree.command(name="blacklist_add", description="Blacklist a server from subscribing to message deletion (Bot owner only)")
@@ -544,11 +575,7 @@ async def blacklist_add(ctx, server_id: str):
 # Error handler for blacklist_add command
 @blacklist_add.error
 async def blacklist_add_error(ctx, error):
-    if isinstance(error, app_commands.CheckFailure):
-        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
-    else:
-        await ctx.response.send_message(f"An error occurred while processing the command.", ephemeral=True)
-        logger.error(f'Error processing blacklist_add command: {error}')
+    await handle_error(ctx, error, 'blacklist_add', True)
 
 # Command: Remove a server from the blacklist (Bot owner only)
 @bot.tree.command(name="blacklist_remove", description="Remove a server from the blacklist (Bot owner only)")
@@ -568,11 +595,7 @@ async def blacklist_remove(ctx, server_id: str):
 # Error handler for blacklist_remove command
 @blacklist_remove.error
 async def blacklist_remove_error(ctx, error):
-    if isinstance(error, app_commands.CheckFailure):
-        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
-    else:
-        await ctx.response.send_message(f"An error occurred while processing the command.", ephemeral=True)
-        logger.error(f'Error processing blacklist_remove command: {error}')
+    await handle_error(ctx, error, 'blacklist_remove', True)
 
 # Command: List all blacklisted servers (Bot owner only)
 @bot.tree.command(name="blacklist_list", description="List all blacklisted servers (Bot owner only)")
@@ -598,43 +621,6 @@ async def blacklist_list(ctx):
 # Error handler for blacklist_list command
 @blacklist_list.error
 async def blacklist_list_error(ctx, error):
-    if isinstance(error, app_commands.CheckFailure):
-        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
-    else:
-        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
-        logger.error(f'Error processing blacklist_list command: {error}')
-
-# Function: Clear messages in the channel and update next_run_time
-async def clear_channel_messages(channel):
-    logger.info(f'Attempting to clear messages in channel {channel.id}')
-
-    permissions = channel.permissions_for(channel.guild.me)
-    if not permissions.manage_messages or not permissions.read_message_history:
-        logger.error(f'Missing necessary permissions in channel {channel.id}')
-        return
-
-    try:
-        async for message in channel.history():
-            await message.delete()
-            await asyncio.sleep(1)  # Add delay to avoid rate limits
-        logger.info(f'Cleared messages in channel {channel.id}')
-
-        # Update next_run_time after clearing messages
-        server_id = str(channel.guild.id)
-        channel_id = str(channel.id)
-
-        if server_id in servers and channel_id in servers[server_id]['channels']:
-            # Get the scheduled job for this channel
-            job_id = f"{server_id}_{channel_id}"
-            job = scheduler.get_job(job_id)
-
-            if job:
-                next_run_time = job.next_run_time.astimezone(pytz.UTC)  # Convert next_run_time to UTC
-                servers[server_id]['channels'][channel_id]['next_run_time'] = next_run_time.isoformat()
-
-                # Save the updated next_run_time
-                save_servers(servers)
-    except Exception as e:
-        logger.error(f'Failed to clear messages in channel {channel.id}: {e}')
+    await handle_error(ctx, error, 'blacklist_list', True)
 
 bot.run(TOKEN)
