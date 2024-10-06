@@ -46,13 +46,36 @@ if not env_path.is_file():
 
 load_dotenv(dotenv_path=env_path)
 
-TOKEN = os.getenv('DISCORD_BOT_TOKEN')
-if TOKEN is None:
-    TOKEN = input("Please enter your Discord bot token: ")
-    with open(env_path, 'a') as f:
-        f.write(f"DISCORD_BOT_TOKEN={TOKEN}\n")
-    load_dotenv(dotenv_path=env_path)
-    TOKEN = os.getenv('DISCORD_BOT_TOKEN')
+def get_env_variable(var_name, prompt_message):
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
+    value = os.getenv(var_name)
+    if value is None:
+        value = input(prompt_message)
+        with open(env_path, 'a') as f:
+            f.write(f"{var_name}={value}\n")
+        load_dotenv(dotenv_path=env_path)
+        value = os.getenv(var_name)
+    return value
+
+# Define your Discord bot token
+TOKEN = get_env_variable('DISCORD_BOT_TOKEN', "Please enter your Discord bot token: ")
+
+# Define your user ID
+OWNER_ID = get_env_variable('OWNER_ID', "Please enter your User ID (for owner only commands) (can leave blank): ")
+
+# Convert OWNER_ID to integer if it's set
+if OWNER_ID:
+    OWNER_ID = int(OWNER_ID)
+
+# Define your test server ID
+GUILD_ID = get_env_variable('GUILD_ID', "Please enter your test server ID (for owner only commands) (can leave blank): ")
+
+# Convert GUILD_ID to integer if it's set
+if GUILD_ID:
+    GUILD_ID = int(GUILD_ID)
 
 # File paths and constants
 DATA_FILE = 'data.json'
@@ -119,6 +142,14 @@ def parse_timer(timer):
             raise ValueError("Invalid timer format. Use '1d2h3m' or 'HH:MM <timezone>' format for durations.")
     return trigger, next_run_time
 
+# Decorator to check if the user is the owner
+def is_owner():
+    async def predicate(interaction: discord.Interaction):
+        if interaction.user.id != OWNER_ID:
+            return False
+        return True
+    return app_commands.check(predicate)
+
 @bot.event
 async def on_ready():
     logger.info(f'Logged in as {bot.user}')
@@ -155,8 +186,24 @@ async def on_ready():
 
     try:
         scheduler.start()
+        # Sync commands globally
+        bot.tree.clear_commands(guild=None)
+        bot.tree.add_command(cleartimer_sub)
+        bot.tree.add_command(cleartimer_unsub)
+        bot.tree.add_command(cleartimer_next)
+        bot.tree.add_command(help_command)
         synced = await bot.tree.sync()
-        logger.info(f'Synced {len(synced)} commands')
+        logger.info(f'Synced {len(synced)} commands globally')
+
+        # Sync bot owner commands for the bot owner's guild
+        if OWNER_ID and GUILD_ID:
+            bot_owner_guild = bot.get_guild(GUILD_ID)
+            if bot_owner_guild:
+                bot.tree.clear_commands(guild=bot_owner_guild)
+                bot.tree.add_command(cleartimer_list, guild=bot_owner_guild)
+                synced_owner = await bot.tree.sync(guild=bot_owner_guild)
+                logger.info(f'Synced {len(synced_owner)} commands for bot owner\'s guild')
+
     except Exception as e:
         logger.error(f'Failed to sync commands: {e}')
 
@@ -308,6 +355,34 @@ async def help_command(ctx):
         "For more help, join our help server: [Help Server](https://discord.com/invite/ERFffj9Qs7)"
     )
     await ctx.response.send_message(help_message)
+
+# Command: List all servers and channels subscribed to message deletion (Bot owner only)
+@bot.tree.command(name="cleartimer_list", description="List all servers and channels subscribed to message deletion (Bot owner only)")
+@is_owner()
+async def cleartimer_list(ctx):
+    embed = discord.Embed(title="Subscribed Servers and Channels", color=discord.Color.blue())
+    
+    if not servers:
+        embed.description = "No servers or channels are currently subscribed."
+    else:
+        for server_id, server_data in servers.items():
+            server_name = server_data['server_name']
+            channels_info = ""
+            for channel_id, channel_data in server_data['channels'].items():
+                channel = bot.get_channel(int(channel_id))
+                if channel:
+                    channels_info += f"{channel.mention} (Timer: {channel_data['timer']})\n"
+            embed.add_field(name=f"{server_name} (ID: {server_id})", value=channels_info or "No channels subscribed", inline=False)
+    
+    await ctx.response.send_message(embed=embed, ephemeral=True)
+
+# Error handler for cleartimer_list command
+@cleartimer_list.error
+async def cleartimer_list_error(ctx, error):
+    if isinstance(error, app_commands.CheckFailure):
+        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
+    else:
+        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
 
 # Function: Clear messages in the channel and update next_run_time
 async def clear_channel_messages(channel):
