@@ -201,6 +201,7 @@ async def on_ready():
             if bot_owner_guild:
                 bot.tree.clear_commands(guild=bot_owner_guild)
                 bot.tree.add_command(cleartimer_list, guild=bot_owner_guild)
+                bot.tree.add_command(cleartimer_force_unsub, guild=bot_owner_guild)
                 synced_owner = await bot.tree.sync(guild=bot_owner_guild)
                 logger.info(f'Synced {len(synced_owner)} commands for bot owner\'s guild')
 
@@ -379,6 +380,71 @@ async def cleartimer_list(ctx):
 # Error handler for cleartimer_list command
 @cleartimer_list.error
 async def cleartimer_list_error(ctx, error):
+    if isinstance(error, app_commands.CheckFailure):
+        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
+    else:
+        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
+
+# Command: Force unsubscribe a channel from message deletion (Bot owner only)
+@bot.tree.command(name="cleartimer_force_unsub", description="Force unsubscribe a server or channel from message deletion (Bot owner only)")
+@is_owner()
+async def cleartimer_force_unsub(ctx, target_id: str):
+    target_id = str(target_id)
+
+    if target_id.isdigit() and target_id in servers:
+        # target_id is a server ID
+        responses = []
+        for channel_id in list(servers[target_id]['channels'].keys()):
+            job_id = f"{target_id}_{channel_id}"
+            if scheduler.get_job(job_id):
+                scheduler.remove_job(job_id)
+                del servers[target_id]['channels'][channel_id]
+                # Send notification message in the channel
+                channel = bot.get_channel(int(channel_id))
+                if channel:
+                    try:
+                        await channel.send(f"This channel has been forcefully unsubscribed from message deletion by the bot owner.")
+                        responses.append(f"Successfully unsubscribed <#{channel_id}>.")
+                    except Exception as e:
+                        logger.error(f"Failed to send message in channel {channel_id}: {e}")
+                        responses.append(f"Failed to send message in <#{channel_id}>: {e}")
+        if not servers[target_id]['channels']:
+            del servers[target_id]  # Remove server if no channels left
+        save_servers(servers)
+        await ctx.response.send_message("\n".join(responses), ephemeral=True)
+        logger.info(f'Forcefully unsubscribed all channels in server {target_id}')
+    elif target_id.isdigit():
+        # Check if target_id is a channel ID in any server
+        found = False
+        for server_id, server_data in servers.items():
+            if target_id in server_data['channels']:
+                found = True
+                job_id = f"{server_id}_{target_id}"
+                if scheduler.get_job(job_id):
+                    scheduler.remove_job(job_id)
+                    del server_data['channels'][target_id]
+                    if not server_data['channels']:
+                        del servers[server_id]  # Remove server if no channels left
+                    save_servers(servers)
+                # Send notification message in the channel
+                channel = bot.get_channel(int(target_id))
+                if channel:
+                    try:
+                        await channel.send(f"This channel has been forcefully unsubscribed from message deletion by the bot owner.")
+                        await ctx.response.send_message(f"Forcefully unsubscribed <#{target_id}> from message deletion in server {server_id}.", ephemeral=True)
+                    except Exception as e:
+                        logger.error(f"Failed to send message in channel {target_id}: {e}")
+                        await ctx.response.send_message(f"Forcefully unsubscribed <#{target_id}> from message deletion in server {server_id}, but failed to send notification: {e}", ephemeral=True)
+                logger.info(f'Forcefully unsubscribed channel {target_id} in server {server_id}')
+                break
+        if not found:
+            await ctx.response.send_message("Invalid server ID or channel ID.", ephemeral=True)
+    else:
+        await ctx.response.send_message("Invalid server ID or channel ID.", ephemeral=True)
+
+# Error handler for cleartimer_force_unsub command
+@cleartimer_force_unsub.error
+async def cleartimer_force_unsub_error(ctx, error):
     if isinstance(error, app_commands.CheckFailure):
         await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
     else:
