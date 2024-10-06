@@ -80,11 +80,17 @@ if GUILD_ID:
 # File paths and constants
 DATA_FILE = 'data.json'
 TIMEZONE_FILE = 'timezone_abbreviations.json'
+BLACKLIST_FILE = 'blacklist.json'
 
 # Ensure data.json exists
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w') as f:
         json.dump({}, f)
+
+# Ensure blacklist.json exists
+if not os.path.exists(BLACKLIST_FILE):
+    with open(BLACKLIST_FILE, 'w') as f:
+        json.dump([], f)
 
 # Load or initialize server data
 def load_servers():
@@ -97,14 +103,25 @@ def load_servers():
 def load_timezones():
     with open(TIMEZONE_FILE, 'r') as f:
         return json.load(f)
+    
+# Load the blacklist
+def load_blacklist():
+    with open(BLACKLIST_FILE, 'r') as f:
+        return json.load(f)
 
 # Save server data
 def save_servers(servers):
     with open(DATA_FILE, 'w') as f:
         json.dump(servers, f, indent=4)
 
+# Save the blacklist
+def save_blacklist(blacklist):
+    with open(BLACKLIST_FILE, 'w') as f:
+        json.dump(blacklist, f, indent=4)
+
 servers = load_servers()
 TIMEZONE_ABBREVIATIONS = load_timezones()
+blacklist = load_blacklist()
 
 # Get the full timezone name from the abbreviation.
 def get_timezone(timezone_abbr):
@@ -150,6 +167,30 @@ def is_owner():
         return True
     return app_commands.check(predicate)
 
+async def sync_global_commands(bot):
+    try:
+        bot.tree.clear_commands(guild=None)
+        global_commands = [sub, unsub, next, help_command]
+        for command in global_commands:
+            bot.tree.add_command(command)
+        synced = await bot.tree.sync()
+        logger.info(f'Synced {len(synced)} commands globally')
+    except Exception as e:
+        logger.error(f'Failed to sync global commands: {e}')
+
+async def sync_owner_commands(bot):
+    try:
+        bot_owner_guild = bot.get_guild(GUILD_ID)
+        if bot_owner_guild:
+            bot.tree.clear_commands(guild=bot_owner_guild)
+            owner_commands = [list, force_unsub, blacklist_add, blacklist_remove, blacklist_list]
+            for command in owner_commands:
+                bot.tree.add_command(command, guild=bot_owner_guild)
+            synced_owner = await bot.tree.sync(guild=bot_owner_guild)
+            logger.info(f'Synced {len(synced_owner)} commands for bot owner\'s guild')
+    except Exception as e:
+        logger.error(f'Failed to sync owner commands: {e}')
+
 @bot.event
 async def on_ready():
     logger.info(f'Logged in as {bot.user}')
@@ -186,27 +227,11 @@ async def on_ready():
 
     try:
         scheduler.start()
-        # Sync commands globally
-        bot.tree.clear_commands(guild=None)
-        bot.tree.add_command(cleartimer_sub)
-        bot.tree.add_command(cleartimer_unsub)
-        bot.tree.add_command(cleartimer_next)
-        bot.tree.add_command(help_command)
-        synced = await bot.tree.sync()
-        logger.info(f'Synced {len(synced)} commands globally')
-
-        # Sync bot owner commands for the bot owner's guild
+        await sync_global_commands(bot)
         if OWNER_ID and GUILD_ID:
-            bot_owner_guild = bot.get_guild(GUILD_ID)
-            if bot_owner_guild:
-                bot.tree.clear_commands(guild=bot_owner_guild)
-                bot.tree.add_command(cleartimer_list, guild=bot_owner_guild)
-                bot.tree.add_command(cleartimer_force_unsub, guild=bot_owner_guild)
-                synced_owner = await bot.tree.sync(guild=bot_owner_guild)
-                logger.info(f'Synced {len(synced_owner)} commands for bot owner\'s guild')
-
+            await sync_owner_commands(bot)
     except Exception as e:
-        logger.error(f'Failed to sync commands: {e}')
+        logger.error(f'Failed to start bot: {e}')
 
 async def notify_missed_clear(channel, job_id):
     class ClearChannelView(discord.ui.View):
@@ -240,16 +265,20 @@ async def notify_missed_clear(channel, job_id):
     )
 
 # Command: Subscribe to message deletion
-@bot.tree.command(name="cleartimer_sub", description="Subscribe a channel to message deletion")
+@bot.tree.command(name="sub", description="Subscribe a channel to message deletion")
 @app_commands.checks.has_permissions(manage_messages=True)
-async def cleartimer_sub(ctx, timer: str = None, target_channel: discord.TextChannel = None):
+async def sub(ctx, timer: str = None, target_channel: discord.TextChannel = None):
     server_id = str(ctx.guild.id)
     channel_id = str((target_channel or ctx.channel).id)
     channel_mention = str((target_channel or ctx.channel).mention)
     job_id = f"{server_id}_{channel_id}"
 
+    if server_id in blacklist:
+        await ctx.response.send_message(f"Server {server_id} is blacklisted and cannot use commands from this bot", ephemeral=True)
+        return
+
     if scheduler.get_job(job_id):
-        await ctx.response.send_message(f"{channel_mention} already has a timer set. Use `/cleartimer_unsub` to remove it first.", ephemeral=True)
+        await ctx.response.send_message(f"{channel_mention} already has a timer set. Use `/unsub` to remove it first.", ephemeral=True)
         return
 
     try:
@@ -285,20 +314,27 @@ async def cleartimer_sub(ctx, timer: str = None, target_channel: discord.TextCha
         logger.error(f'Error processing timer: {e}')
 
 # Error handler for MissingPermissions
-@cleartimer_sub.error
-async def cleartimer_sub_error(ctx, error):
+@sub.error
+async def sub_error(ctx, error):
     if isinstance(error, MissingPermissions):
         # Send an ephemeral message if the user lacks the required permission
         await ctx.response.send_message("You do not have the necessary permission to manage messages.", ephemeral=True)
+    else:
+        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
+        logger.error(f'Error processing list command: {error}')
 
 # Command: Unsubscribe from message deletion
-@bot.tree.command(name="cleartimer_unsub", description="Unsubscribe from message deletion")
+@bot.tree.command(name="unsub", description="Unsubscribe from message deletion")
 @app_commands.checks.has_permissions(manage_messages=True)
-async def cleartimer_unsub(ctx, target_channel: discord.TextChannel = None):
+async def unsub(ctx, target_channel: discord.TextChannel = None):
     server_id = str(ctx.guild.id)
     channel_id = str((target_channel or ctx.channel).id)
     channel_mention = str((target_channel or ctx.channel).mention)
     job_id = f"{server_id}_{channel_id}"
+
+    if server_id in blacklist:
+        await ctx.response.send_message(f"Server {server_id} is blacklisted and cannot use commands from this bot", ephemeral=True)
+        return
 
     if scheduler.get_job(job_id):
         scheduler.remove_job(job_id)
@@ -312,19 +348,26 @@ async def cleartimer_unsub(ctx, target_channel: discord.TextChannel = None):
     else:
         await ctx.response.send_message("This channel is not subscribed.", ephemeral=True)
 
-# Error handler for cleartimer_unsub
-@cleartimer_unsub.error
-async def cleartimer_unsub_error(ctx, error):
+# Error handler for unsub
+@unsub.error
+async def unsub_error(ctx, error):
     if isinstance(error, MissingPermissions):
         await ctx.response.send_message("You do not have the necessary permission to manage messages.", ephemeral=True)
+    else:
+        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
+        logger.error(f'Error processing list command: {error}')
 
 # Command: Print next run time for a channel
-@bot.tree.command(name="cleartimer_next", description="Check when the next message clear is scheduled")
-async def cleartimer_next(ctx, target_channel: discord.TextChannel = None):
+@bot.tree.command(name="next", description="Check when the next message clear is scheduled")
+async def next(ctx, target_channel: discord.TextChannel = None):
     server_id = str(ctx.guild.id)
     channel_id = str((target_channel or ctx.channel).id)
     channel_mention = str((target_channel or ctx.channel).mention)
     job_id = f"{server_id}_{channel_id}"
+
+    if server_id in blacklist:
+        await ctx.response.send_message(f"Server {server_id} is blacklisted and cannot use commands from this bot", ephemeral=True)
+        return
 
     # Check if there's a job scheduled for this channel
     job = scheduler.get_job(job_id)
@@ -342,25 +385,31 @@ async def cleartimer_next(ctx, target_channel: discord.TextChannel = None):
         else:
             await ctx.response.send_message(f"No upcoming runs found for {channel_mention}.", ephemeral=True)
     else:
-        await ctx.response.send_message(f"No timer is set for {channel_mention}. Use `/cleartimer_sub` to set a timer.", ephemeral=True)
+        await ctx.response.send_message(f"No timer is set for {channel_mention}. Use `/sub` to set a timer.", ephemeral=True)
 
 # Command: Help command
 @bot.tree.command(name="help", description="Display available commands and help server link")
 async def help_command(ctx):
+    server_id = str(ctx.guild.id)
+
+    if server_id in blacklist:
+        await ctx.response.send_message(f"Server {server_id} is blacklisted and cannot use commands from this bot", ephemeral=True)
+        return
+    
     help_message = (
         " **Available Commands:**\n"
-        "`/cleartimer_sub [timer] [target_channel]` - Subscribe a channel to message deletion\n"
+        "`/sub [timer] [target_channel]` - Subscribe a channel to message deletion\n"
         "- Timer syntax: `1d2h3m` for days, hours, and minutes or `HH:MM <timezone>` for specific times every day\n\n"
-        "`/cleartimer_unsub [target_channel]` - Unsubscribe from message deletion\n"
-        "`/cleartimer_next [target_channel]` - Check when the next message clear is scheduled\n\n"
+        "`/unsub [target_channel]` - Unsubscribe from message deletion\n"
+        "`/next [target_channel]` - Check when the next message clear is scheduled\n\n"
         "For more help, join our help server: [Help Server](https://discord.com/invite/ERFffj9Qs7)"
     )
     await ctx.response.send_message(help_message)
 
 # Command: List all servers and channels subscribed to message deletion (Bot owner only)
-@bot.tree.command(name="cleartimer_list", description="List all servers and channels subscribed to message deletion (Bot owner only)")
+@bot.tree.command(name="list", description="List all servers and channels subscribed to message deletion (Bot owner only)")
 @is_owner()
-async def cleartimer_list(ctx):
+async def list(ctx):
     embed = discord.Embed(title="Subscribed Servers and Channels", color=discord.Color.blue())
     
     if not servers:
@@ -377,18 +426,19 @@ async def cleartimer_list(ctx):
     
     await ctx.response.send_message(embed=embed, ephemeral=True)
 
-# Error handler for cleartimer_list command
-@cleartimer_list.error
-async def cleartimer_list_error(ctx, error):
+# Error handler for list command
+@list.error
+async def list_error(ctx, error):
     if isinstance(error, app_commands.CheckFailure):
         await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
     else:
         await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
+        logger.error(f'Error processing list command: {error}')
 
 # Command: Force unsubscribe a channel from message deletion (Bot owner only)
-@bot.tree.command(name="cleartimer_force_unsub", description="Force unsubscribe a server or channel from message deletion (Bot owner only)")
+@bot.tree.command(name="force_unsub", description="Force unsubscribe a server or channel from message deletion (Bot owner only)")
 @is_owner()
-async def cleartimer_force_unsub(ctx, target_id: str):
+async def force_unsub(ctx, target_id: str):
     target_id = str(target_id)
 
     if target_id.isdigit() and target_id in servers:
@@ -442,13 +492,117 @@ async def cleartimer_force_unsub(ctx, target_id: str):
     else:
         await ctx.response.send_message("Invalid server ID or channel ID.", ephemeral=True)
 
-# Error handler for cleartimer_force_unsub command
-@cleartimer_force_unsub.error
-async def cleartimer_force_unsub_error(ctx, error):
+# Error handler for force_unsub command
+@force_unsub.error
+async def force_unsub_error(ctx, error):
     if isinstance(error, app_commands.CheckFailure):
         await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
     else:
         await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
+        logger.error(f'Error processing force_unsub command: {error}')
+
+# Command: Blacklist a server (Bot owner only)
+@bot.tree.command(name="blacklist_add", description="Blacklist a server from subscribing to message deletion (Bot owner only)")
+@is_owner()
+async def blacklist_add(ctx, server_id: str):
+    server_id = str(server_id)
+    channels_unsubscribed = False  # Flag to track if any channels have been unsubscribed
+
+    if server_id in blacklist:
+        await ctx.response.send_message(f"Server {server_id} is already blacklisted.", ephemeral=True)
+        return
+
+    if server_id in servers:
+        responses = []
+        for channel_id in servers[server_id]['channels'].keys():
+            job_id = f"{server_id}_{channel_id}"
+            if scheduler.get_job(job_id):
+                scheduler.remove_job(job_id)
+                channels_unsubscribed = True  # Set flag to True if a channel is unsubscribed
+                # Send notification message in the channel
+                channel = bot.get_channel(int(channel_id))
+                if channel:
+                    try:
+                        await channel.send(f"This channel has been forcefully unsubscribed from message deletion by the bot owner.")
+                        responses.append(f"Successfully unsubscribed <#{channel_id}>.")
+                    except Exception as e:
+                        logger.error(f"Failed to send message in channel {channel_id}: {e}")
+                        responses.append(f"Failed to send message in <#{channel_id}>: {e}")
+        del servers[server_id]
+        save_servers(servers)
+
+    blacklist.append(server_id)
+    save_blacklist(blacklist)
+    
+    if channels_unsubscribed:
+        await ctx.response.send_message(f"Server {server_id} has been added to the blacklist and all subscriptions removed.", ephemeral=True)
+    else:
+        await ctx.response.send_message(f"Server {server_id} has been added to the blacklist.", ephemeral=True)
+    
+    logger.info(f'Added server {server_id} to blacklist')
+
+# Error handler for blacklist_add command
+@blacklist_add.error
+async def blacklist_add_error(ctx, error):
+    if isinstance(error, app_commands.CheckFailure):
+        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
+    else:
+        await ctx.response.send_message(f"An error occurred while processing the command.", ephemeral=True)
+        logger.error(f'Error processing blacklist_add command: {error}')
+
+# Command: Remove a server from the blacklist (Bot owner only)
+@bot.tree.command(name="blacklist_remove", description="Remove a server from the blacklist (Bot owner only)")
+@is_owner()
+async def blacklist_remove(ctx, server_id: str):
+    server_id = str(server_id)
+
+    if server_id not in blacklist:
+        await ctx.response.send_message(f"Server {server_id} is not in the blacklist.", ephemeral=True)
+        return
+
+    blacklist.remove(server_id)
+    save_blacklist(blacklist)
+    await ctx.response.send_message(f"Server {server_id} has been removed from the blacklist.", ephemeral=True)
+    logger.info(f'Removed server {server_id} from blacklist')
+
+# Error handler for blacklist_remove command
+@blacklist_remove.error
+async def blacklist_remove_error(ctx, error):
+    if isinstance(error, app_commands.CheckFailure):
+        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
+    else:
+        await ctx.response.send_message(f"An error occurred while processing the command.", ephemeral=True)
+        logger.error(f'Error processing blacklist_remove command: {error}')
+
+# Command: List all blacklisted servers (Bot owner only)
+@bot.tree.command(name="blacklist_list", description="List all blacklisted servers (Bot owner only)")
+@is_owner()
+async def blacklist_list(ctx):
+    embed = discord.Embed(
+        title="Blacklisted Servers",
+        color=0xFF0000,  # Red color in hexadecimal
+    )
+
+    if not blacklist:
+        embed.description = "No servers are currently blacklisted."
+    else:
+        for server_id in blacklist:
+            server = bot.get_guild(int(server_id))
+            server_name = server.name if server else "Unknown Server"
+            embed.add_field(name=f"{server_name} (ID: {server_id})", value="\u200b", inline=False)
+
+    embed.timestamp = discord.utils.utcnow()
+
+    await ctx.response.send_message(embed=embed, ephemeral=True)
+
+# Error handler for blacklist_list command
+@blacklist_list.error
+async def blacklist_list_error(ctx, error):
+    if isinstance(error, app_commands.CheckFailure):
+        await ctx.response.send_message("This is a bot owner-only command.", ephemeral=True)
+    else:
+        await ctx.response.send_message("An error occurred while processing the command.", ephemeral=True)
+        logger.error(f'Error processing blacklist_list command: {error}')
 
 # Function: Clear messages in the channel and update next_run_time
 async def clear_channel_messages(channel):

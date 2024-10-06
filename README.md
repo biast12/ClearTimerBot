@@ -35,41 +35,59 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
     - `data.json` should be an empty JSON object `{}` initially.
     - `timezone_abbreviations.json` should contain valid timezone abbreviations and their corresponding full names.
 
-5. **Run `cleartimer.py` and set DISCORD_BOT_TOKEN:**
-    - When running the script for the first time will it ask you to enter your Discord bot token for the `.env` file.
+5. **Run `ClearTimerBot.py` and set environment variables:**
+    - When running the script for the first time, it will ask you to enter your Discord bot token for the `.env` file.
+    - Additionally, you will be prompted to enter your `OWNER_ID` and `GUILD_ID`. These are optional but recommended if you want to use owner-only commands or test the bot in a specific server.
 
 ## Running the Bot
 
 1. **Run the bot on Linux:**
     ```sh
-    python3 cleartimer.py
+    python3 ClearTimerBot.py
     ```
 
 2. **Run the bot on Windows:**
     ```sh
-    python cleartimer.py
+    python ClearTimerBot.py
     ```
 
 ## Commands
 
-### `/cleartimer_sub [timer] [target_channel]`
+### `/sub [timer] [target_channel]`
 Subscribe a channel to message deletion.
 
 - **Timer syntax:** `1d2h3m` for days, hours, and minutes or `HH:MM <timezone>` for specific times every day.
-- **Example:** `/cleartimer_sub 24h #general` subscribes the `#general` channel to message deletion every 24 hours.
+- **Example:** `/sub 24h #general` subscribes the `#general` channel to message deletion every 24 hours.
 
-### `/cleartimer_unsub [target_channel]`
+### `/unsub [target_channel]`
 Unsubscribe a channel from message deletion.
 
-- **Example:** `/cleartimer_unsub #general` unsubscribes the `#general` channel from message deletion.
+- **Example:** `/unsub #general` unsubscribes the `#general` channel from message deletion.
 
-### `/cleartimer_next [target_channel]`
+### `/next [target_channel]`
 Check when the next message clear is scheduled.
 
-- **Example:** `/cleartimer_next #general` shows the next scheduled message clear time for the `#general` channel.
+- **Example:** `/next #general` shows the next scheduled message clear time for the `#general` channel.
 
 ### `/help`
 Display available commands and help server link.
+
+## Bot Owner Only Commands
+
+### `/list`
+List all servers and channels subscribed to message deletion.
+
+### `/force_unsub [target_id]`
+Force unsubscribe a server or channel from message deletion.
+
+### `/blacklist_add [server_id]`
+Blacklist a server from subscribing to message deletion.
+
+### `/blacklist_remove [server_id]`
+Remove a server from the blacklist.
+
+### `/blacklist_list`
+List all blacklisted servers.
 
 ## Optimal Settings
 

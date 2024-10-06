@@ -154,3 +154,6 @@ cython_debug/
 
 # Data file
 data.json
+
+# Blacklist file
+blacklist.json
