@@ -31,11 +31,11 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
     pip install -r requirements.txt
     ```
 
-4. **Ensure `data.json` and `timezone_abbreviations.json` exist:**
-    - `data.json` should be an empty JSON object `{}` initially.
-    - `timezone_abbreviations.json` should contain valid timezone abbreviations and their corresponding full names.
+4. **Ensure `servers.json` and `timezones.json` exist:**
+    - `servers.json` should be an empty JSON object `{}` initially.
+    - `timezones.json` should contain valid timezone abbreviations and their corresponding full names.
 
-5. **Run `ClearTimerBot.py` and set environment variables:**
+5. **Run `main.py` and set environment variables:**
     - When running the script for the first time, it will ask you to enter your Discord bot token for the `.env` file.
     - Additionally, you will be prompted to enter your `OWNER_ID` and `GUILD_ID`. These are optional but recommended if you want to use owner-only commands or test the bot in a specific server.
 
@@ -43,12 +43,12 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 
 1. **Run the bot on Linux:**
     ```sh
-    python3 ClearTimerBot.py
+    python3 main.py
     ```
 
 2. **Run the bot on Windows:**
     ```sh
-    python ClearTimerBot.py
+    python main.py
     ```
 
 ## Commands
@@ -69,6 +69,11 @@ Check when the next message clear is scheduled.
 
 - **Example:** `/next #general` shows the next scheduled message clear time for the `#general` channel.
 
+### `/ping`
+Check the bot's latency.
+
+- **Example:** `/ping` returns the bot's current latency.
+
 ### `/help`
 Display available commands and help server link.
 
@@ -88,6 +93,12 @@ Remove a server from the blacklist.
 
 ### `/blacklist_list`
 List all blacklisted servers.
+
+### `/reload_commands`
+Reload all commands without restarting the bot.
+
+### `/owner_help`
+Display owner-specific commands and help.
 
 ## Optimal Settings
 
