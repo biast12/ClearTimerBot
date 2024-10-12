@@ -5,7 +5,7 @@ from utils.handle_error import handle_error
 from utils.is_owner import is_owner
 from utils.logger import logger
 from utils.scheduler import get_scheduler
-from utils.utils import load_servers, load_blacklist, save_servers, save_blacklist
+from utils.data_manager import load_servers, load_blacklist, save_servers, save_blacklist
 
 class BlacklistAddCommand(commands.Cog):
     def __init__(self, bot):

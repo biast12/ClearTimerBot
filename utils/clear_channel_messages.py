@@ -2,9 +2,8 @@ import asyncio
 import pytz
 from utils.logger import logger
 from utils.scheduler import get_scheduler
-from utils.utils import load_servers, save_servers
+from utils.data_manager import load_servers, save_servers
 
-# Function: Clear messages in the channel and update next_run_time
 async def clear_channel_messages(channel):
     servers = load_servers()
     scheduler = get_scheduler()

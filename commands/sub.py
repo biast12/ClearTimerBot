@@ -7,7 +7,7 @@ from utils.is_owner import is_owner
 from utils.logger import logger
 from utils.parse_timer import parse_timer
 from utils.scheduler import get_scheduler
-from utils.utils import save_servers, load_servers, load_blacklist
+from utils.data_manager import save_servers, load_servers, load_blacklist
 
 class SubCommand(commands.Cog):
     def __init__(self, bot):

@@ -1,7 +1,8 @@
 import discord
-from utils import clear_channel_messages
 
 async def notify_missed_clear(channel, job_id):
+    from utils.clear_channel_messages import clear_channel_messages
+
     class ClearChannelView(discord.ui.View):
         def __init__(self, job_id):
             super().__init__(timeout=60)  # Timeout after 60 seconds

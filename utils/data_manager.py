@@ -3,7 +3,6 @@ import json
 import pytz
 from pathlib import Path
 from dotenv import load_dotenv
-from utils.logger import logger
 
 # First-time installation check
 env_path = Path('.env')
@@ -63,6 +62,16 @@ def get_env_variable(var_name, prompt_message):
         with open('.env', 'a') as f:
             f.write(f'{var_name}={value}\n')
     return value
+    
+def load_env_variables():
+    TOKEN = get_env_variable('DISCORD_BOT_TOKEN', "Please enter your Discord bot token: ")
+    OWNER_ID = get_env_variable('OWNER_ID', "Please enter your User ID (for owner only commands) (can leave blank): ")
+    if OWNER_ID:
+        OWNER_ID = int(OWNER_ID)
+    GUILD_ID = get_env_variable('GUILD_ID', "Please enter your test server ID (for owner only commands) (can leave blank): ")
+    if GUILD_ID:
+        GUILD_ID = int(GUILD_ID)
+    return TOKEN, OWNER_ID, GUILD_ID
 
 def get_timezone(timezone_abbr):
     timezone_str = load_timezones().get(timezone_abbr)

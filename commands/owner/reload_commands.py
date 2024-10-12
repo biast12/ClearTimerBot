@@ -13,7 +13,7 @@ class ReloadCommandsCommand(commands.Cog):
     @is_owner()
     async def reload_commands(self, interaction):
         try:
-            from utils.sync import sync_commands, sync_owner_commands
+            from utils.command_sync import sync_commands, sync_owner_commands
 
             logger.info("Reloading synced commands...")
             await interaction.response.send_message("Reloading synced commands...", ephemeral=True)

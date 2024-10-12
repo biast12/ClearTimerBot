@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from utils.handle_error import handle_error
 from utils.scheduler import get_scheduler
-from utils.utils import load_blacklist
+from utils.data_manager import load_blacklist
 
 class NextCommand(commands.Cog):
     def __init__(self, bot):

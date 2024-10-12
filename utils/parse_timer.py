@@ -3,7 +3,7 @@ import pytz
 from datetime import datetime, timedelta
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
-from utils.utils import get_timezone
+from utils.data_manager import get_timezone
 
 def parse_timer(timer: str):
     timezone_pattern = r'(\d{1,2}:\d{2})\s*([A-Z]*)'

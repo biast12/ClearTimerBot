@@ -16,8 +16,8 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 
 1. **Clone the repository:**
     ```sh
-    git clone https://github.com/biast12/cleartimer.git
-    cd cleartimer
+    git clone https://github.com/biast12/ClearTimerBot.git
+    cd ClearTimerBot
     ```
 
 2. **Create a virtual environment and activate it:**
@@ -99,11 +99,6 @@ Reload all commands without restarting the bot.
 
 ### `/owner_help`
 Display owner-specific commands and help.
-
-## Optimal Settings
-
-- Ensure the bot has the necessary permissions to manage messages and read message history in the target channels.
-- Use appropriate timer intervals to avoid hitting rate limits.
 
 ## Terms of Service
 

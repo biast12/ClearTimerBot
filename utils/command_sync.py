@@ -3,6 +3,23 @@ import glob
 import importlib.util
 from utils.logger import logger
 
+async def load_commands(bot):
+    command_files = glob.glob(os.path.join('commands', '*.py'))
+    owner_command_files = glob.glob(os.path.join('commands', 'owner', '*.py'))
+    all_command_files = command_files + owner_command_files
+
+    for file in all_command_files:
+        if os.path.basename(file) == '__init__.py':
+            continue
+        if 'owner' in file:
+            extension = f"commands.owner.{os.path.splitext(os.path.basename(file))[0]}"
+        else:
+            extension = f"commands.{os.path.splitext(os.path.basename(file))[0]}"
+        try:
+            await bot.load_extension(extension)
+        except Exception as e:
+            logger.error(f'Failed to load extension {extension}: {e}')
+
 def load_command_class(module_name, class_name):
     module_spec = importlib.util.find_spec(module_name)
     if module_spec is None:

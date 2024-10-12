@@ -2,7 +2,7 @@ from discord import app_commands
 from discord.ext import commands
 from utils.handle_error import handle_error
 from utils.is_owner import is_owner
-from utils.utils import load_blacklist
+from utils.data_manager import load_blacklist
 
 class OwnerHelpCommand(commands.Cog):
     def __init__(self, bot):

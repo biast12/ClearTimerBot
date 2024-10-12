@@ -5,7 +5,7 @@ from utils.handle_error import handle_error
 from utils.is_owner import is_owner
 from utils.logger import logger
 from utils.scheduler import get_scheduler
-from utils.utils import load_servers, save_servers
+from utils.data_manager import load_servers, save_servers
 
 class ForceUnsubCommand(commands.Cog):
     def __init__(self, bot):
