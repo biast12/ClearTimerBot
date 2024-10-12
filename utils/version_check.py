@@ -11,7 +11,7 @@ def check_for_update(current_version):
         response.raise_for_status()
         content = response.text
 
-        version_match = re.search(r'current_version\s*=\s*"(\d+\.\d+\.\d+)"', content)
+        version_match = re.search(r'version\s*=\s*"(\d+\.\d+\.\d+)"', content)
         
         if version_match:
             latest_version = version_match.group(1)
