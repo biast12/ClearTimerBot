@@ -13,6 +13,12 @@ class ListCommand(commands.Cog):
     @app_commands.command(name="list", description="List all servers and channels subscribed to message deletion (Bot owner only)")
     @is_owner()
     async def list(self, interaction):
+        """
+        List all servers and their subscribed channels.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+        """
         servers = load_servers()
         
         embed = discord.Embed(title="Subscribed Servers and Channels", color=discord.Color.blue())

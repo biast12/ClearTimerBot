@@ -1,10 +1,17 @@
 import asyncio
 import pytz
 from utils.logger import logger
-from utils.scheduler import get_scheduler
 from utils.data_manager import load_servers, save_servers
 
 async def clear_channel_messages(channel):
+    """
+    Clear all messages in the specified Discord channel.
+
+    Args:
+        channel (discord.TextChannel): The channel to clear messages from.
+    """
+    from utils.scheduler import get_scheduler
+
     servers = load_servers()
     scheduler = get_scheduler()
     logger.info(f'Attempting to clear messages in channel {channel.id}')

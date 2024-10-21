@@ -13,6 +13,13 @@ class BlacklistRemoveCommand(commands.Cog):
     @app_commands.command(name='blacklist_remove', description="Remove a server from the blacklist (Bot owner only)")
     @is_owner()
     async def blacklist_remove(self, interaction, server_id: str):
+        """
+        Remove a server from the blacklist.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+            server_id (str): The ID of the server to remove from the blacklist.
+        """
         blacklist = load_blacklist()
 
         server_id = str(server_id)

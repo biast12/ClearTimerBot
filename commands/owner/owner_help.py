@@ -11,6 +11,12 @@ class OwnerHelpCommand(commands.Cog):
     @app_commands.command(name="owner_help", description="Display available bot owner only commands (Bot owner only)")
     @is_owner()
     async def owner_help(self, interaction):
+        """
+        Display the owner-specific commands and help.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+        """
         blacklist = load_blacklist()
 
         server_id = str(interaction.guild.id)

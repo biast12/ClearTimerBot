@@ -6,6 +6,15 @@ from apscheduler.triggers.interval import IntervalTrigger
 from utils.data_manager import get_timezone
 
 def parse_timer(timer: str):
+    """
+    Parse a cron timer string and return the corresponding trigger and next run time.
+
+    Args:
+        timer (str): The cron timer string.
+
+    Returns:
+        tuple: A tuple containing the CronTrigger and the next run time.
+    """
     timezone_pattern = r'(\d{1,2}:\d{2})\s*([A-Z]*)'
     timezone_matches = re.match(timezone_pattern, timer)
 

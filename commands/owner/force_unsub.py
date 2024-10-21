@@ -14,6 +14,13 @@ class ForceUnsubCommand(commands.Cog):
     @app_commands.command(name="force_unsub", description="Force unsubscribe a server or channel from message deletion (Bot owner only)")
     @is_owner()
     async def force_unsub(self, interaction, target_id: str):
+        """
+        Force unsubscribe a channel from message deletion.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+            target_channel (discord.TextChannel): The target channel to unsubscribe.
+        """
         servers = load_servers()
         scheduler = get_scheduler()
 

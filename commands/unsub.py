@@ -14,6 +14,13 @@ class UnsubCommand(commands.Cog):
     @app_commands.command(name="unsub", description="Unsubscribe from message deletion")
     @app_commands.checks.has_permissions(manage_messages=True) or is_owner()
     async def unsub(self, interaction, target_channel: discord.TextChannel = None):
+        """
+        Unsubscribe a channel from message deletion.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+            target_channel (discord.TextChannel, optional): The target channel to unsubscribe. Defaults to None.
+        """
         servers = load_servers()
         blacklist = load_blacklist()
         scheduler = get_scheduler()

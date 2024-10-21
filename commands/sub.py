@@ -16,6 +16,14 @@ class SubCommand(commands.Cog):
     @app_commands.command(name="sub", description="Subscribe a channel to message deletion")
     @app_commands.checks.has_permissions(manage_messages=True) or is_owner()
     async def sub(self, interaction, timer: str = None, target_channel: discord.TextChannel = None):
+        """
+        Subscribe a channel to message deletion.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+            timer (str): The timer string for scheduling message deletion.
+            target_channel (discord.TextChannel, optional): The target channel to subscribe. Defaults to None.
+        """
         servers = load_servers()
         blacklist = load_blacklist()
         scheduler = get_scheduler()

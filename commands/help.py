@@ -9,6 +9,12 @@ class HelpCommand(commands.Cog):
 
     @app_commands.command(name="help", description="Display available commands")
     async def help(self, interaction):
+        """
+        Display the available commands to the user.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+        """
         blacklist = load_blacklist()
 
         server_id = str(interaction.guild.id)

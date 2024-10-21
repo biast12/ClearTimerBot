@@ -1,5 +1,13 @@
 import logging
 
+"""
+This module sets up logging for the bot and suppresses logs from the discord library.
+
+Attributes:
+    logger (logging.Logger): The logger instance for the bot.
+    discord_loggers (list): A list of discord-related loggers to suppress.
+"""
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S', format='[%(asctime)s] [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)

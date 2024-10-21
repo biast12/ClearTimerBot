@@ -13,6 +13,12 @@ class BlacklistListCommand(commands.Cog):
     @app_commands.command(name='blacklist_list', description="List all blacklisted servers (Bot owner only)")
     @is_owner()
     async def blacklist_list(self, interaction):
+        """
+        List all blacklisted servers.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+        """
         blacklist = load_blacklist()
 
         embed = discord.Embed(

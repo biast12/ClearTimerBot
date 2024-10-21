@@ -4,6 +4,12 @@ import importlib.util
 from utils.logger import logger
 
 async def load_commands(bot):
+    """
+    Load all command modules and add them to the bot.
+
+    Args:
+        bot (commands.Bot): The bot instance.
+    """
     command_files = glob.glob(os.path.join('commands', '*.py'))
     owner_command_files = glob.glob(os.path.join('commands', 'owner', '*.py'))
     all_command_files = command_files + owner_command_files
@@ -21,6 +27,16 @@ async def load_commands(bot):
             logger.error(f'Failed to load extension {extension}: {e}')
 
 def load_command_class(module_name, class_name):
+    """
+    Load a specific class from a module.
+
+    Args:
+        module_name (str): The name of the module.
+        class_name (str): The name of the class.
+
+    Returns:
+        type: The loaded class.
+    """
     module_spec = importlib.util.find_spec(module_name)
     if module_spec is None:
         raise ImportError(f"Module {module_name} not found")
@@ -38,6 +54,12 @@ def load_command_class(module_name, class_name):
     raise AttributeError(f"Module {module_name} has no attribute {class_name}")
 
 async def sync_commands(bot):
+    """
+    Sync the bot's commands with Discord.
+
+    Args:
+        bot (commands.Bot): The bot instance.
+    """
     try:
         # Load global commands dynamically
         command_files = glob.glob(os.path.join('commands', '*.py'))
@@ -55,6 +77,13 @@ async def sync_commands(bot):
         logger.error(f'Failed to sync command: {e}')
 
 async def sync_owner_commands(bot, GUILD_ID):
+    """
+    Sync owner-specific commands with a specific guild.
+
+    Args:
+        bot (commands.Bot): The bot instance.
+        GUILD_ID (int): The ID of the guild to sync commands with.
+    """
     try:
         bot_owner_guild = bot.get_guild(GUILD_ID)
         if bot_owner_guild:

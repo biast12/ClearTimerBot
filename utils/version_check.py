@@ -4,6 +4,12 @@ from utils.logger import logger
 
 # Check if there is a new version of the app available on GitHub.
 def check_for_update(current_version):
+    """
+    Check if there is a new version of the bot available.
+
+    Args:
+        current_version (str): The current version of the bot.
+    """
     raw_url = "https://raw.githubusercontent.com/biast12/ClearTimerBot/main/main.py"
     
     try:

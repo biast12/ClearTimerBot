@@ -1,6 +1,13 @@
 import discord
 
 async def notify_missed_clear(channel, job_id):
+    """
+    Notify the channel that the bot missed a scheduled clear and provide options to clear now or skip.
+
+    Args:
+        channel (discord.TextChannel): The channel to send the notification to.
+        job_id (str): The ID of the scheduled job.
+    """
     from utils.clear_channel_messages import clear_channel_messages
 
     class ClearChannelView(discord.ui.View):

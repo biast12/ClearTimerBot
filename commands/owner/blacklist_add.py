@@ -14,6 +14,13 @@ class BlacklistAddCommand(commands.Cog):
     @app_commands.command(name="blacklist_add", description="Blacklist a server from subscribing to message deletion (Bot owner only)")
     @is_owner()
     async def blacklist_add(self, interaction, server_id: str):
+        """
+        Blacklist a server from subscribing to message deletion.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+            server_id (str): The ID of the server to blacklist.
+        """
         servers = load_servers()
         blacklist = load_blacklist()
         scheduler = get_scheduler()

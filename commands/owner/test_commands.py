@@ -11,6 +11,12 @@ class TestCommandsCommand(commands.Cog):
     @app_commands.command(name="test_commands", description="Test all commands to see if they work (Bot owner only)")
     @is_owner()
     async def test_commands(self, interaction):
+        """
+        Test all commands to see if they work.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+        """
         failed_commands = []
         for command in self.bot.tree.walk_commands():
             try:

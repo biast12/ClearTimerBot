@@ -12,6 +12,12 @@ class ReloadCommandsCommand(commands.Cog):
     @app_commands.command(name='reload_commands', description="Reloads all synced commands (Bot owner only)")
     @is_owner()
     async def reload_commands(self, interaction):
+        """
+        Reload all bot commands.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+        """
         try:
             from utils.command_sync import sync_commands, sync_owner_commands
 

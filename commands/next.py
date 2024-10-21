@@ -11,6 +11,13 @@ class NextCommand(commands.Cog):
 
     @app_commands.command(name="next", description="Check when the next message clear is scheduled")
     async def next(self, interaction, target_channel: discord.TextChannel = None):
+        """
+        Check when the next message clear is scheduled for a channel.
+
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the command.
+            target_channel (discord.TextChannel, optional): The target channel to check. Defaults to None.
+        """
         blacklist = load_blacklist()
         scheduler = get_scheduler()
 
