@@ -1,4 +1,3 @@
-import asyncio
 import pytz
 from datetime import datetime
 from typing import Optional, Callable, Dict, Any
@@ -6,7 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.base import BaseTrigger
 from apscheduler.job import Job
 
-from src.models import Server, ChannelTimer
+from src.models import ChannelTimer
 from src.services.data_service import DataService
 from src.utils.timer_parser import TimerParser
 
@@ -18,70 +17,66 @@ class SchedulerService:
         self.timer_parser = TimerParser(data_service.get_timezone)
         self._clear_callback: Optional[Callable] = None
         self._notify_callback: Optional[Callable] = None
-    
+
     def set_clear_callback(self, callback: Callable) -> None:
         self._clear_callback = callback
-    
+
     def set_notify_callback(self, callback: Callable) -> None:
         self._notify_callback = callback
-    
+
     async def start(self) -> None:
         if not self.scheduler.running:
             self.scheduler.start()
-    
+
     async def shutdown(self) -> None:
         if self.scheduler.running:
             self.scheduler.shutdown(wait=True)
-    
+
     async def initialize_jobs(self, bot) -> None:
         servers = await self.data_service.get_all_servers()
-        
+
         for server_id, server in servers.items():
             for channel_id, channel_timer in server.channels.items():
                 await self._schedule_job(
                     bot=bot,
                     server_id=server_id,
                     channel_id=channel_id,
-                    channel_timer=channel_timer
+                    channel_timer=channel_timer,
                 )
-        
+
         # Schedule daily cleanup job for removed servers
         self.scheduler.add_job(
             self.data_service.cleanup_old_removed_servers,
-            'cron',
+            "cron",
             hour=3,  # Run at 3 AM daily
             minute=0,
-            id='cleanup_removed_servers',
-            replace_existing=True
+            id="cleanup_removed_servers",
+            replace_existing=True,
         )
-    
+
     async def _schedule_job(
-        self,
-        bot,
-        server_id: str,
-        channel_id: str,
-        channel_timer: ChannelTimer
+        self, bot, server_id: str, channel_id: str, channel_timer: ChannelTimer
     ) -> None:
         job_id = self._make_job_id(server_id, channel_id)
-        
+
         # Check if job needs rescheduling due to missed execution
         if channel_timer.next_run_time < datetime.now(pytz.UTC):
             await self._handle_missed_job(bot, server_id, channel_id, channel_timer)
             return
-        
+
         # Parse the timer to get the trigger
         try:
             trigger, _ = self.timer_parser.parse(channel_timer.timer)
         except Exception as e:
             print(f"Error parsing timer for job {job_id}: {e}")
             return
-        
+
         # Get the channel object
         channel = bot.get_channel(int(channel_id))
         if not channel:
             print(f"Channel {channel_id} not found for job {job_id}")
             return
-        
+
         # Schedule the job
         self.scheduler.add_job(
             self._clear_callback,
@@ -89,36 +84,32 @@ class SchedulerService:
             args=[channel],
             id=job_id,
             next_run_time=channel_timer.next_run_time,
-            replace_existing=True
+            replace_existing=True,
         )
-    
+
     async def _handle_missed_job(
-        self,
-        bot,
-        server_id: str,
-        channel_id: str,
-        channel_timer: ChannelTimer
+        self, bot, server_id: str, channel_id: str, channel_timer: ChannelTimer
     ) -> None:
         job_id = self._make_job_id(server_id, channel_id)
-        
+
         # Parse timer to get new next_run_time
         try:
             trigger, next_run_time = self.timer_parser.parse(channel_timer.timer)
         except Exception as e:
             print(f"Error parsing timer for missed job {job_id}: {e}")
             return
-        
+
         # Update the stored next_run_time
         server = await self.data_service.get_server(server_id)
         if server and channel_id in server.channels:
             server.channels[channel_id].next_run_time = next_run_time
             await self.data_service.save_servers()
-        
+
         # Notify about missed clear if callback is set
         channel = bot.get_channel(int(channel_id))
         if channel and self._notify_callback:
             await self._notify_callback(channel, job_id)
-        
+
         # Schedule with new time
         if channel:
             self.scheduler.add_job(
@@ -127,59 +118,59 @@ class SchedulerService:
                 args=[channel],
                 id=job_id,
                 next_run_time=next_run_time,
-                replace_existing=True
+                replace_existing=True,
             )
-    
+
     def add_job(
         self,
         channel_id: str,
         server_id: str,
         trigger: BaseTrigger,
         channel,
-        next_run_time: Optional[datetime] = None
+        next_run_time: Optional[datetime] = None,
     ) -> str:
         job_id = self._make_job_id(server_id, channel_id)
-        
+
         self.scheduler.add_job(
             self._clear_callback,
             trigger,
             args=[channel],
             id=job_id,
             next_run_time=next_run_time,
-            replace_existing=True
+            replace_existing=True,
         )
-        
+
         return job_id
-    
+
     def remove_job(self, server_id: str, channel_id: str) -> bool:
         job_id = self._make_job_id(server_id, channel_id)
-        
+
         try:
             self.scheduler.remove_job(job_id)
             return True
-        except:
+        except Exception:
             return False
-    
+
     def get_job(self, server_id: str, channel_id: str) -> Optional[Job]:
         job_id = self._make_job_id(server_id, channel_id)
         return self.scheduler.get_job(job_id)
-    
+
     def job_exists(self, server_id: str, channel_id: str) -> bool:
         return self.get_job(server_id, channel_id) is not None
-    
+
     def get_next_run_time(self, server_id: str, channel_id: str) -> Optional[datetime]:
         job = self.get_job(server_id, channel_id)
         return job.next_run_time if job else None
-    
+
     def get_all_jobs(self) -> Dict[str, Any]:
         jobs = {}
         for job in self.scheduler.get_jobs():
             jobs[job.id] = {
-                'next_run_time': job.next_run_time,
-                'trigger': str(job.trigger)
+                "next_run_time": job.next_run_time,
+                "trigger": str(job.trigger),
             }
         return jobs
-    
+
     @staticmethod
     def _make_job_id(server_id: str, channel_id: str) -> str:
         return f"{server_id}_{channel_id}"
