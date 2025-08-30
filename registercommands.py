@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Command Sync Script - Registers slash commands with Discord
+Command Registration Script - Registers slash commands with Discord
 """
 
 import asyncio
@@ -43,7 +43,7 @@ class MockMessageService:
     pass
 
 
-class CommandSyncBot(commands.Bot):
+class CommandRegisterBot(commands.Bot):
     def __init__(self, config):
         intents = discord.Intents.default()
         intents.message_content = True
@@ -85,15 +85,15 @@ class CommandSyncBot(commands.Bot):
         print("=" * 50)
 
         try:
-            # Sync global commands
-            print("\n[SYNC] Syncing global commands...")
-            synced = await self.tree.sync()
-            print(f"[OK] Successfully synced {len(synced)} global commands")
+            # Register global commands
+            print("\n[REGISTER] Registering global commands...")
+            registered = await self.tree.sync()
+            print(f"[OK] Successfully registered {len(registered)} global commands")
 
-            # List synced commands
-            if synced:
+            # List registered commands
+            if registered:
                 print("\nGlobal commands registered:")
-                for cmd in synced:
+                for cmd in registered:
                     print(f"  - /{cmd.name}: {cmd.description}")
                     # Check if it's a group command with subcommands
                     if hasattr(cmd, "options"):
@@ -102,21 +102,21 @@ class CommandSyncBot(commands.Bot):
                                 f"      - /{cmd.name} {option.name}: {option.description}"
                             )
 
-            # Sync owner commands to specific guild if configured
+            # Register owner commands to specific guild if configured
             if self.config.is_owner_mode and self.config.guild_id:
                 print(
-                    f"\n[SYNC] Syncing owner commands to guild {self.config.guild_id}..."
+                    f"\n[REGISTER] Registering owner commands to guild {self.config.guild_id}..."
                 )
                 guild = discord.Object(id=self.config.guild_id)
-                synced_guild = await self.tree.sync(guild=guild)
+                registered_guild = await self.tree.sync(guild=guild)
                 print(
-                    f"[OK] Successfully synced {len(synced_guild)} commands to owner guild"
+                    f"[OK] Successfully registered {len(registered_guild)} commands to owner guild"
                 )
 
                 # List guild-specific commands
-                if synced_guild:
+                if registered_guild:
                     print("\nOwner commands registered:")
-                    for cmd in synced_guild:
+                    for cmd in registered_guild:
                         print(f"  - /{cmd.name}: {cmd.description}")
                         # Check if it's a group command with subcommands
                         if hasattr(cmd, "options"):
@@ -125,14 +125,14 @@ class CommandSyncBot(commands.Bot):
                                     f"      - /{cmd.name} {option.name}: {option.description}"
                                 )
 
-            print("\n[SUCCESS] Command synchronization complete!")
+            print("\n[SUCCESS] Command registration complete!")
             print("=" * 50)
 
         except Exception as e:
-            print(f"\n[ERROR] Failed to sync commands: {e}")
+            print(f"\n[ERROR] Failed to register commands: {e}")
             print("=" * 50)
 
-        # Close the bot after syncing
+        # Close the bot after registering
         await self.close()
 
     async def close(self):
@@ -161,7 +161,7 @@ async def main(guild_id_override=None):
         print("[INFO] No guild ID specified (owner commands will be global)")
 
     # Create bot instance
-    bot = CommandSyncBot(config)
+    bot = CommandRegisterBot(config)
 
     # Run the bot
     try:
@@ -190,5 +190,5 @@ if __name__ == "__main__":
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    # Run the sync
+    # Run the registration
     asyncio.run(main(args.guild_id))

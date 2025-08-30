@@ -293,10 +293,10 @@ class OwnerCommands(
             for ext in extensions:
                 await self.bot.reload_extension(ext)
 
-            # Sync commands
+            # Register commands with Discord
             await self.bot.tree.sync()
 
-            await interaction.followup.send("✅ Successfully reloaded all commands.")
+            await interaction.followup.send("✅ Successfully reloaded and registered all commands.")
         except Exception as e:
             await interaction.followup.send(f"❌ Error reloading commands: {e}")
 
