@@ -1,10 +1,19 @@
 # ClearTimer Bot
 
-ClearTimer is a Discord bot designed to automatically clear messages in specified channels at regular intervals. This bot uses the Discord API and the APScheduler library to schedule and manage message deletion tasks.
+ClearTimer is a powerful Discord bot that automatically clears messages in specified channels at scheduled intervals. Built with Discord.py and APScheduler, it provides flexible scheduling options and comprehensive server management features.
 
 ## Adding the Bot to Your Server
 
 You can add the bot to your server using [this link](https://discord.com/oauth2/authorize?client_id=1290353946308775987&permissions=76800&integration_type=0&scope=bot). Alternatively, you can self-host the bot using the guide provided below.
+
+## Features
+
+- ⏰ **Flexible Scheduling**: Set timers using intervals (e.g., `24h`, `1d2h3m`) or specific daily times with timezone support
+- 🔄 **Automatic Message Cleanup**: Reliably clears messages at scheduled intervals
+- 🌍 **Timezone Support**: Schedule cleanups at specific times in any timezone
+- 🛡️ **Server Blacklist System**: Prevent specific servers from using the bot
+- 📊 **Comprehensive Management**: Track all subscribed channels and schedules
+- 🔐 **Owner Controls**: Advanced administrative commands for bot management
 
 ## Requirements
 
@@ -31,13 +40,16 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
     pip install -r requirements.txt
     ```
 
-4. **Ensure `servers.json` and `timezones.json` exist:**
-    - `servers.json` should be an empty JSON object `{}` initially.
-    - `timezones.json` should contain valid timezone abbreviations and their corresponding full names.
+4. **Set up environment variables:**
+    - Copy `.env.example` to `.env`
+    - Add your Discord bot token
+    - Optionally add `OWNER_ID` and `GUILD_ID` for owner commands and testing
 
-5. **Run `main.py` and set environment variables:**
-    - When running the script for the first time, it will ask you to enter your Discord bot token for the `.env` file.
-    - Additionally, you will be prompted to enter your `OWNER_ID` and `GUILD_ID`. These are optional but recommended if you want to use owner-only commands or test the bot in a specific server.
+5. **Initialize the bot:**
+    ```sh
+    python main.py
+    ```
+    The bot will automatically set up required files and database on first run.
 
 ## Running the Bot
 
@@ -53,52 +65,80 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 
 ## Commands
 
-### `/sub [timer] [target_channel]`
-Subscribe a channel to message deletion.
+### General Commands
 
-- **Timer syntax:** `1d2h3m` for days, hours, and minutes or `HH:MM <timezone>` for specific times every day.
-- **Example:** `/sub 24h #general` subscribes the `#general` channel to message deletion every 24 hours.
+#### `/sub [timer] [target_channel]`
+Subscribe a channel to automatic message deletion. Requires `Manage Messages` permission.
 
-### `/unsub [target_channel]`
-Unsubscribe a channel from message deletion.
+- **Parameters:**
+  - `timer` (optional): Defaults to `24h` if not specified
+  - `target_channel` (optional): Defaults to current channel if not specified
+- **Timer formats:** 
+  - **Intervals:** `24h`, `1d`, `30m`, `1d12h30m` (combine days, hours, minutes)
+  - **Daily schedule:** `15:30 EST`, `09:00 PST` (specific time with timezone)
+- **Examples:**
+  - `/sub` - Clear current channel every 24 hours
+  - `/sub 12h` - Clear current channel every 12 hours
+  - `/sub 1d #announcements` - Clear #announcements daily
+  - `/sub 09:00 EST #general` - Clear #general every day at 9 AM EST
 
-- **Example:** `/unsub #general` unsubscribes the `#general` channel from message deletion.
+#### `/unsub [target_channel]`
+Unsubscribe a channel from automatic message deletion. Requires `Manage Messages` permission.
 
-### `/next [target_channel]`
-Check when the next message clear is scheduled.
+- **Parameters:**
+  - `target_channel` (optional): Defaults to current channel if not specified
+- **Examples:**
+  - `/unsub` - Stop clearing current channel
+  - `/unsub #general` - Stop clearing #general
 
-- **Example:** `/next #general` shows the next scheduled message clear time for the `#general` channel.
+#### `/next [target_channel]`
+Check when the next message clear is scheduled for a channel.
 
-### `/ping`
-Check the bot's latency.
+- **Parameters:**
+  - `target_channel` (optional): Defaults to current channel if not specified
+- **Examples:**
+  - `/next` - Check next clear for current channel
+  - `/next #general` - Check next clear for #general
 
-- **Example:** `/ping` returns the bot's current latency.
+#### `/ping`
+Check the bot's response latency to Discord servers.
 
-### `/help`
-Display available commands and help server link.
+#### `/help`
+Display comprehensive help information including commands, timer formats, and useful links.
 
-## Bot Owner Only Commands
+### Owner Commands
 
-### `/list`
-List all servers and channels subscribed to message deletion.
+These commands are restricted to the bot owner for administrative purposes. All owner commands are under the `/owner` group:
 
-### `/force_unsub [target_id]`
+#### `/owner cache_stats`
+View cache statistics and performance metrics.
+
+#### `/owner stats`
+Display comprehensive bot statistics including server count, user count, and resource usage.
+
+#### `/owner list`
+Display all servers and channels with active subscriptions.
+
+#### `/owner force_unsub [target_id]`
 Force unsubscribe a server or channel from message deletion.
 
-### `/blacklist_add [server_id]`
-Blacklist a server from subscribing to message deletion.
+#### `/owner blacklist_add [server_id]`
+Add a server to the blacklist, preventing it from using the bot.
 
-### `/blacklist_remove [server_id]`
+#### `/owner blacklist_remove [server_id]`
 Remove a server from the blacklist.
 
-### `/blacklist_list`
-List all blacklisted servers.
+#### `/owner blacklist_list`
+Display all blacklisted servers.
 
-### `/reload_commands`
-Reload all commands without restarting the bot.
+#### `/owner reload`
+Reload all slash commands without restarting the bot.
 
-### `/owner_help`
-Display owner-specific commands and help.
+#### `/owner removed_servers`
+Show servers the bot has been removed from but still have data.
+
+#### `/owner cleanup_removed`
+Clean up data from servers the bot is no longer in.
 
 ## Terms of Service
 
@@ -118,8 +158,19 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request on GitHub.
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Troubleshooting
+
+- **Bot not responding to commands**: Ensure the bot has proper permissions in your server
+- **Commands not showing**: Run `/reload_commands` or restart the bot
+- **Timezone issues**: Check supported timezones in the bot's timezone configuration
 
 ---
 
-Thank you for using ClearTimer! If you have any questions or feedback, feel free to reach out on our support server.
+Thank you for using ClearTimer! If you have any questions or feedback, feel free to reach out on our [support server](https://discord.com/invite/ERFffj9Qs7).
