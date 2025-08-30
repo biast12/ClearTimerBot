@@ -218,7 +218,11 @@ class OwnerCommands(
     )
     @app_commands.describe(server_id="Server ID to blacklist")
     async def blacklist_add(self, interaction: discord.Interaction, server_id: str):
-        if await self.data_service.add_to_blacklist(server_id):
+        # Try to get the server name if the bot is in the server
+        guild = self.bot.get_guild(int(server_id))
+        server_name = guild.name if guild else "Unknown"
+        
+        if await self.data_service.add_to_blacklist(server_id, server_name):
             await self.data_service.save_blacklist()
 
             # Remove any existing subscriptions
@@ -230,7 +234,7 @@ class OwnerCommands(
                 await self.data_service.save_servers()
 
             await interaction.response.send_message(
-                f"✅ Added server {server_id} to blacklist and removed all subscriptions."
+                f"✅ Added server {server_name} ({server_id}) to blacklist and removed all subscriptions."
             )
         else:
             await interaction.response.send_message(

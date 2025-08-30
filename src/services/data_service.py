@@ -34,10 +34,10 @@ class DataService:
 
     async def _load_blacklist(self) -> None:
         blacklist_collection = db_manager.blacklist
-        blacklist_doc = await blacklist_collection.find_one()
-        if blacklist_doc and "blacklist" in blacklist_doc:
-            for server_id in blacklist_doc["blacklist"]:
-                self._blacklist_cache.add(str(server_id))
+        # Load all blacklist documents (array of objects with _id)
+        async for blacklist_doc in blacklist_collection.find():
+            if "_id" in blacklist_doc:
+                self._blacklist_cache.add(str(blacklist_doc["_id"]))
 
     async def _load_timezones(self) -> None:
         timezones_collection = db_manager.timezones
@@ -60,10 +60,14 @@ class DataService:
     async def save_blacklist(self) -> None:
         async with self._lock:
             blacklist_collection = db_manager.blacklist
-            blacklist_data = {"blacklist": list(self._blacklist_cache)}
-
-            # Replace the entire blacklist document
-            await blacklist_collection.replace_one({}, blacklist_data, upsert=True)
+            
+            # Clear existing blacklist
+            await blacklist_collection.delete_many({})
+            
+            # Insert each blacklisted server as a separate document
+            if self._blacklist_cache:
+                blacklist_docs = [{"_id": server_id, "server_name": ""} for server_id in self._blacklist_cache]
+                await blacklist_collection.insert_many(blacklist_docs)
 
     async def get_server(self, server_id: str) -> Optional[Server]:
         # Check memory cache first
@@ -166,15 +170,15 @@ class DataService:
             await self._cache.set(cache_key, result, cache_level="warm", ttl=600)  # 10 minutes
             return result
 
-    async def add_to_blacklist(self, server_id: str) -> bool:
+    async def add_to_blacklist(self, server_id: str, server_name: str = "Unknown") -> bool:
         async with self._lock:
             if server_id not in self._blacklist_cache:
                 self._blacklist_cache.add(server_id)
 
-                # Update the blacklist document
+                # Insert as a new document
                 blacklist_collection = db_manager.blacklist
-                await blacklist_collection.update_one(
-                    {}, {"$addToSet": {"blacklist": server_id}}, upsert=True
+                await blacklist_collection.insert_one(
+                    {"_id": server_id, "server_name": server_name}
                 )
                 
                 # Invalidate cache
@@ -188,10 +192,10 @@ class DataService:
             if server_id in self._blacklist_cache:
                 self._blacklist_cache.remove(server_id)
 
-                # Update the blacklist document
+                # Delete the document with this _id
                 blacklist_collection = db_manager.blacklist
-                await blacklist_collection.update_one(
-                    {}, {"$pull": {"blacklist": server_id}}
+                await blacklist_collection.delete_one(
+                    {"_id": server_id}
                 )
                 
                 # Invalidate cache
