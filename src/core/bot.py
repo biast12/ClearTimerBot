@@ -49,6 +49,9 @@ class ClearTimerBot(commands.Bot):
         activity = discord.Game(name="Cleaning up the mess! 🧹")
         await self.change_presence(activity=activity)
 
+        # Sync server cleanup status based on current guild membership
+        await self._sync_server_cleanup_status()
+
         # Start scheduler and initialize jobs
         await self.scheduler_service.start()
         await self.scheduler_service.initialize_jobs(self)
@@ -136,3 +139,48 @@ class ClearTimerBot(commands.Bot):
         print(
             f"Bot removed from server: {guild.name} (ID: {server_id}) - Added to removal tracking"
         )
+
+    async def _sync_server_cleanup_status(self) -> None:
+        """Sync server cleanup status based on current guild membership on startup"""
+        removed_servers_collection = db_manager.removed_servers
+        
+        # Get all servers from database
+        all_servers = await self.data_service.get_all_servers()
+        
+        # Get current guild IDs
+        current_guild_ids = {str(guild.id) for guild in self.guilds}
+        
+        # Check each server in database
+        servers_to_mark_removed = []
+        for server_id in all_servers.keys():
+            if server_id not in current_guild_ids:
+                # Bot is not in this server, should be marked as removed
+                server = all_servers[server_id]
+                servers_to_mark_removed.append({
+                    "_id": server_id,
+                    "server_name": server.name,
+                    "removed_at": datetime.now(timezone.utc),
+                    "member_count": 0,  # Unknown since bot is not in the server
+                })
+        
+        # Add servers to removed_servers collection if not already there
+        for removal_doc in servers_to_mark_removed:
+            server_id = removal_doc["_id"]
+            # Check if already in removed_servers
+            existing = await removed_servers_collection.find_one({"_id": server_id})
+            if not existing:
+                await removed_servers_collection.insert_one(removal_doc)
+                await self.data_service.cache_removed_server(server_id, removal_doc)
+                print(f"Marked server {removal_doc['server_name']} (ID: {server_id}) as removed (bot not in server)")
+        
+        # Check removed_servers collection for servers bot is currently in
+        removed_servers = await removed_servers_collection.find().to_list(None)
+        for removed_doc in removed_servers:
+            server_id = removed_doc["_id"]
+            if server_id in current_guild_ids:
+                # Bot is in this server, remove from removed_servers
+                await removed_servers_collection.delete_one({"_id": server_id})
+                await self.data_service.invalidate_removed_server_cache(server_id)
+                guild = self.get_guild(int(server_id))
+                guild_name = guild.name if guild else "Unknown"
+                print(f"Removed server {guild_name} (ID: {server_id}) from removal tracking (bot is in server)")
