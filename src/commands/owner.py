@@ -304,6 +304,55 @@ class OwnerCommands(
         except Exception as e:
             await interaction.followup.send(f"❌ Error reloading commands: {e}")
 
+    @app_commands.command(name="reload_cache", description="Reload all caches from database")
+    async def reload_cache(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True)
+        
+        try:
+            # Clear all multi-level caches
+            await self.data_service._cache.clear_all()
+            
+            # Clear internal caches
+            self.data_service._servers_cache.clear()
+            self.data_service._blacklist_cache.clear()
+            self.data_service._blacklist_names_cache.clear()
+            self.data_service._timezones_cache.clear()
+            
+            # Mark as uninitialized to force reload
+            self.data_service._initialized = False
+            
+            # Reinitialize to reload from database
+            await self.data_service.initialize()
+            
+            # Get stats after reload
+            servers_count = len(self.data_service._servers_cache)
+            blacklist_count = len(self.data_service._blacklist_cache)
+            timezones_count = len(self.data_service._timezones_cache)
+            
+            embed = discord.Embed(
+                title="🔄 Cache Reloaded",
+                description="All caches have been cleared and reloaded from the database.",
+                color=discord.Color.green(),
+                timestamp=datetime.now(timezone.utc)
+            )
+            
+            embed.add_field(
+                name="📊 Loaded Data",
+                value=(
+                    f"**Servers:** {servers_count}\n"
+                    f"**Blacklisted:** {blacklist_count}\n"
+                    f"**Timezones:** {timezones_count}"
+                ),
+                inline=False
+            )
+            
+            embed.set_footer(text="Cache reload successful")
+            
+            await interaction.followup.send(embed=embed)
+            
+        except Exception as e:
+            await interaction.followup.send(f"❌ Error reloading cache: {e}")
+
     @app_commands.command(name="stats", description="Show bot statistics")
     async def stats(self, interaction: discord.Interaction):
         servers = await self.data_service.get_all_servers()
