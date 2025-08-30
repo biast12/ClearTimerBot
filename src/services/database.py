@@ -58,6 +58,10 @@ class DatabaseManager:
     @property
     def blacklist(self):
         return self.db.blacklist
+    
+    @property
+    def removed_servers(self):
+        return self.db.removed_servers
 
 
 db_manager = DatabaseManager()

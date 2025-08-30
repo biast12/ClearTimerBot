@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from typing import Optional
+from datetime import datetime, timezone
 
 from src.core.config import BotConfig
 from src.services.data_service import DataService
@@ -55,6 +56,9 @@ class ClearTimerBot(commands.Bot):
         await self.scheduler_service.start()
         await self.scheduler_service.initialize_jobs(self)
         
+        # Clean up old removed servers on startup
+        await self.data_service.cleanup_old_removed_servers()
+        
         print("Bot initialization complete!")
     
     async def load_commands(self) -> None:
@@ -89,3 +93,40 @@ class ClearTimerBot(commands.Bot):
         if self.config.owner_id:
             return user.id == self.config.owner_id
         return False
+    
+    async def on_guild_join(self, guild: discord.Guild) -> None:
+        """Handle when bot joins a server"""
+        server_id = str(guild.id)
+        
+        # Check if this server was previously removed
+        removed_servers_collection = db_manager.removed_servers
+        removed_doc = await removed_servers_collection.find_one({'_id': server_id})
+        
+        if removed_doc:
+            # Server is rejoining, remove it from removed_servers collection
+            await removed_servers_collection.delete_one({'_id': server_id})
+            print(f"Bot rejoined server: {guild.name} (ID: {server_id}) - Removed from removal tracking")
+        else:
+            print(f"Bot joined new server: {guild.name} (ID: {server_id})")
+        
+        # Add or update server in data service
+        await self.data_service.add_server(server_id, guild.name)
+    
+    async def on_guild_remove(self, guild: discord.Guild) -> None:
+        """Handle when bot leaves or is removed from a server"""
+        server_id = str(guild.id)
+        
+        # Add to removed_servers collection with timestamp
+        removed_servers_collection = db_manager.removed_servers
+        await removed_servers_collection.replace_one(
+            {'_id': server_id},
+            {
+                '_id': server_id,
+                'server_name': guild.name,
+                'removed_at': datetime.now(timezone.utc),
+                'member_count': guild.member_count if guild else 0
+            },
+            upsert=True
+        )
+        
+        print(f"Bot removed from server: {guild.name} (ID: {server_id}) - Added to removal tracking")

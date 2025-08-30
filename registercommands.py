@@ -14,9 +14,29 @@ from discord.ext import commands
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.core.config import ConfigManager
-from src.services.data_service import DataService
-from src.services.scheduler_service import SchedulerService
-from src.services.message_service import MessageService
+
+
+# Mock classes for command registration
+class MockTimerParser:
+    """Mock timer parser for command registration"""
+    pass
+
+
+class MockSchedulerService:
+    """Mock scheduler service for command registration"""
+    def __init__(self):
+        self.timer_parser = MockTimerParser()
+
+
+class MockDataService:
+    """Mock data service for command registration"""
+    def get_timezone(self, tz):
+        return None
+
+
+class MockMessageService:
+    """Mock message service for command registration"""
+    pass
 
 
 class CommandSyncBot(commands.Bot):
@@ -32,20 +52,13 @@ class CommandSyncBot(commands.Bot):
         )
         
         self.config = config
-        self.data_service = DataService()
-        self.scheduler_service = SchedulerService(self.data_service)
-        self.message_service = MessageService(self.data_service, self.scheduler_service)
-        
-        # Set up service callbacks
-        self.scheduler_service.set_clear_callback(self.message_service.clear_channel_messages)
-        self.scheduler_service.set_notify_callback(self.message_service.notify_missed_clear)
-        
+        # Mock services that commands expect
+        self.data_service = MockDataService()
+        self.scheduler_service = MockSchedulerService()
+        self.message_service = MockMessageService()
         self.version = "2.0.0"
     
     async def setup_hook(self):
-        # Initialize data service
-        await self.data_service.initialize()
-        
         # Load command cogs
         command_modules = [
             "src.commands.subscription",
@@ -116,19 +129,9 @@ class CommandSyncBot(commands.Bot):
         await self.close()
     
     async def close(self):
-        # Clean up services before closing
-        if hasattr(self, 'scheduler_service'):
-            try:
-                # Don't start the scheduler if it's not running
-                if self.scheduler_service.scheduler.running:
-                    self.scheduler_service.scheduler.shutdown(wait=False)
-            except:
-                pass
-        
-        # Close the aiohttp session if it exists
-        if hasattr(self, 'http') and self.http._HTTPClient__session:
-            await self.http._HTTPClient__session.close()
-        
+        # Properly close the HTTP session
+        if self.http is not None:
+            await self.http.close()
         await super().close()
 
 
@@ -162,7 +165,8 @@ async def main(guild_id_override=None):
         print(f"Error: {e}")
     finally:
         # Ensure proper cleanup
-        await bot.close()
+        if bot and not bot.is_closed():
+            await bot.close()
 
 
 if __name__ == "__main__":

@@ -44,6 +44,16 @@ class SchedulerService:
                     channel_id=channel_id,
                     channel_timer=channel_timer
                 )
+        
+        # Schedule daily cleanup job for removed servers
+        self.scheduler.add_job(
+            self.data_service.cleanup_old_removed_servers,
+            'cron',
+            hour=3,  # Run at 3 AM daily
+            minute=0,
+            id='cleanup_removed_servers',
+            replace_existing=True
+        )
     
     async def _schedule_job(
         self,

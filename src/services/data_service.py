@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Set
 from contextlib import asynccontextmanager
 import asyncio
+from datetime import datetime, timezone, timedelta
 
 from src.models import Server
 from src.services.database import db_manager
@@ -172,3 +173,46 @@ class DataService:
                 self._servers_cache = backup_servers
                 self._blacklist_cache = backup_blacklist
                 raise
+    
+    async def cleanup_old_removed_servers(self) -> int:
+        """
+        Remove servers from database that have been removed for more than 30 days.
+        Returns the number of servers cleaned up.
+        """
+        removed_servers_collection = db_manager.removed_servers
+        servers_collection = db_manager.servers
+        
+        # Calculate cutoff date (30 days ago)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
+        
+        # Find servers that were removed more than 30 days ago
+        old_removed_servers = await removed_servers_collection.find(
+            {'removed_at': {'$lt': cutoff_date}}
+        ).to_list(None)
+        
+        cleaned_count = 0
+        
+        for server_doc in old_removed_servers:
+            server_id = server_doc['_id']
+            server_name = server_doc.get('server_name', 'Unknown')
+            removed_at = server_doc.get('removed_at')
+            
+            # Remove from servers collection if it exists
+            result = await servers_collection.delete_one({'_id': server_id})
+            
+            # Remove from cache if present
+            if server_id in self._servers_cache:
+                del self._servers_cache[server_id]
+            
+            # Remove from removed_servers collection
+            await removed_servers_collection.delete_one({'_id': server_id})
+            
+            if result.deleted_count > 0:
+                days_ago = (datetime.now(timezone.utc) - removed_at).days if removed_at else 30
+                print(f"Cleaned up server: {server_name} (ID: {server_id}) - Removed {days_ago} days ago")
+                cleaned_count += 1
+        
+        if cleaned_count > 0:
+            print(f"Total servers cleaned up: {cleaned_count}")
+        
+        return cleaned_count
