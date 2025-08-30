@@ -1,5 +1,4 @@
 from typing import Dict, List, Optional, Set
-from contextlib import asynccontextmanager
 import asyncio
 from datetime import datetime, timezone, timedelta
 
@@ -139,31 +138,6 @@ class DataService:
 
     def get_timezone(self, timezone_abbr: str) -> Optional[str]:
         return self._timezones_cache.get(timezone_abbr)
-
-    async def refresh_cache(self) -> None:
-        async with self._lock:
-            self._servers_cache.clear()
-            self._blacklist_cache.clear()
-            self._timezones_cache.clear()
-
-            await self._load_servers()
-            await self._load_blacklist()
-            await self._load_timezones()
-
-    @asynccontextmanager
-    async def transaction(self):
-        async with self._lock:
-            backup_servers = self._servers_cache.copy()
-            backup_blacklist = self._blacklist_cache.copy()
-
-            try:
-                yield self
-                await self.save_servers()
-                await self.save_blacklist()
-            except Exception:
-                self._servers_cache = backup_servers
-                self._blacklist_cache = backup_blacklist
-                raise
 
     async def cleanup_old_removed_servers(self) -> int:
         """

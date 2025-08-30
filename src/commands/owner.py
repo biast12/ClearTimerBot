@@ -217,7 +217,7 @@ class OwnerCommands(
                 await self.bot.reload_extension(ext)
 
             # Sync commands
-            await self.bot.sync_commands()
+            await self.bot.tree.sync()
 
             await interaction.followup.send("✅ Successfully reloaded all commands.")
         except Exception as e:
