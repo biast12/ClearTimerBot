@@ -4,7 +4,7 @@ from discord.ext import commands
 from typing import Optional
 
 
-class OwnerCommands(commands.GroupCog, group_name="owner"):
+class OwnerCommands(commands.GroupCog, group_name="owner", description="Owner-only management commands"):
     def __init__(self, bot):
         self.bot = bot
         self.data_service = bot.data_service

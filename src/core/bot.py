@@ -37,9 +37,6 @@ class ClearTimerBot(commands.Bot):
         
         # Load command cogs
         await self.load_commands()
-        
-        # Sync commands based on config
-        await self.sync_commands()
     
     async def on_ready(self) -> None:
         print(f"Bot ready: {self.user} (ID: {self.user.id})")
@@ -78,20 +75,6 @@ class ClearTimerBot(commands.Bot):
                 print("Loaded owner commands")
             except Exception as e:
                 print(f"Failed to load owner commands: {e}")
-    
-    async def sync_commands(self) -> None:
-        try:
-            # Sync global commands
-            synced = await self.tree.sync()
-            print(f"Synced {len(synced)} global commands")
-            
-            # Sync owner commands to specific guild if configured
-            if self.config.is_owner_mode and self.config.guild_id:
-                guild = discord.Object(id=self.config.guild_id)
-                synced_guild = await self.tree.sync(guild=guild)
-                print(f"Synced {len(synced_guild)} commands to owner guild")
-        except Exception as e:
-            print(f"Failed to sync commands: {e}")
     
     async def close(self) -> None:
         await self.scheduler_service.shutdown()
