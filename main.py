@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 ClearTimer Bot - A Discord bot for automatic message clearing
-Version: 2.0.0
 """
 
 import asyncio

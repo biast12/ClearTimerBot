@@ -30,7 +30,6 @@ class ClearTimerBot(commands.Bot):
             self.message_service.notify_missed_clear
         )
 
-        self.version = "2.0.0"
 
     async def setup_hook(self) -> None:
         # Connect to MongoDB
@@ -44,7 +43,6 @@ class ClearTimerBot(commands.Bot):
 
     async def on_ready(self) -> None:
         print(f"Bot ready: {self.user} (ID: {self.user.id})")
-        print(f"Version: {self.version}")
         print(f"Connected to {len(self.guilds)} guilds")
 
         # Set presence

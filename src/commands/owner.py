@@ -249,8 +249,6 @@ class OwnerCommands(
             name="Blacklist", value=f"Servers: {len(blacklist)}", inline=True
         )
 
-        embed.add_field(name="Version", value=self.bot.version, inline=True)
-
         embed.add_field(
             name="Latency", value=f"{round(self.bot.latency * 1000)}ms", inline=True
         )

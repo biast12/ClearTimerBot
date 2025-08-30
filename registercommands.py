@@ -56,7 +56,6 @@ class CommandSyncBot(commands.Bot):
         self.data_service = MockDataService()
         self.scheduler_service = MockSchedulerService()
         self.message_service = MockMessageService()
-        self.version = "2.0.0"
 
     async def setup_hook(self):
         # Load command cogs

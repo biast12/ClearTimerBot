@@ -122,7 +122,7 @@ class InformationCommands(commands.Cog):
             inline=False,
         )
 
-        embed.set_footer(text=f"ClearTimer Bot v{self.bot.version}")
+        embed.set_footer(text="ClearTimer Bot")
 
         await interaction.response.send_message(embed=embed)
 
