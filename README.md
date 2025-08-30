@@ -24,18 +24,21 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 ## Installation
 
 1. **Clone the repository:**
+
     ```sh
     git clone https://github.com/biast12/ClearTimerBot.git
     cd ClearTimerBot
     ```
 
 2. **Create a virtual environment and activate it:**
+
     ```sh
     python -m venv venv
     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
     ```
 
 3. **Install the required packages:**
+
     ```sh
     pip install -r requirements.txt
     ```
@@ -46,19 +49,23 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
     - Optionally add `OWNER_ID` and `GUILD_ID` for owner commands and testing
 
 5. **Initialize the bot:**
+
     ```sh
     python main.py
     ```
+
     The bot will automatically set up required files and database on first run.
 
 ## Running the Bot
 
 1. **Run the bot on Linux:**
+
     ```sh
     python3 main.py
     ```
 
 2. **Run the bot on Windows:**
+
     ```sh
     python main.py
     ```
@@ -68,12 +75,13 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 ### General Commands
 
 #### `/sub [timer] [target_channel]`
+
 Subscribe a channel to automatic message deletion. Requires `Manage Messages` permission.
 
 - **Parameters:**
   - `timer` (optional): Defaults to `24h` if not specified
   - `target_channel` (optional): Defaults to current channel if not specified
-- **Timer formats:** 
+- **Timer formats:**
   - **Intervals:** `24h`, `1d`, `30m`, `1d12h30m` (combine days, hours, minutes)
   - **Daily schedule:** `15:30 EST`, `09:00 PST` (specific time with timezone)
 - **Examples:**
@@ -83,6 +91,7 @@ Subscribe a channel to automatic message deletion. Requires `Manage Messages` pe
   - `/sub 09:00 EST #general` - Clear #general every day at 9 AM EST
 
 #### `/unsub [target_channel]`
+
 Unsubscribe a channel from automatic message deletion. Requires `Manage Messages` permission.
 
 - **Parameters:**
@@ -92,6 +101,7 @@ Unsubscribe a channel from automatic message deletion. Requires `Manage Messages
   - `/unsub #general` - Stop clearing #general
 
 #### `/next [target_channel]`
+
 Check when the next message clear is scheduled for a channel.
 
 - **Parameters:**
@@ -101,44 +111,65 @@ Check when the next message clear is scheduled for a channel.
   - `/next #general` - Check next clear for #general
 
 #### `/ping`
+
 Check the bot's response latency to Discord servers.
 
 #### `/help`
+
 Display comprehensive help information including commands, timer formats, and useful links.
 
 ### Owner Commands
 
+<details>
+<summary>Click to expand owner commands</summary>
+
 These commands are restricted to the bot owner for administrative purposes. All owner commands are under the `/owner` group:
 
 #### `/owner cache_stats`
+
 View cache statistics and performance metrics.
 
 #### `/owner stats`
+
 Display comprehensive bot statistics including server count, user count, and resource usage.
 
 #### `/owner list`
+
 Display all servers and channels with active subscriptions.
 
 #### `/owner force_unsub [target_id]`
+
 Force unsubscribe a server or channel from message deletion.
 
 #### `/owner blacklist_add [server_id]`
+
 Add a server to the blacklist, preventing it from using the bot.
 
 #### `/owner blacklist_remove [server_id]`
+
 Remove a server from the blacklist.
 
 #### `/owner blacklist_list`
+
 Display all blacklisted servers.
 
 #### `/owner reload`
+
 Reload all slash commands without restarting the bot.
 
+#### `/owner reload_cache`
+
+Reload the cache to sync with database changes.
+
 #### `/owner removed_servers`
+
 Show servers the bot has been removed from but still have data.
 
 #### `/owner cleanup_removed`
+
 Clean up data from servers the bot is no longer in.
+
+</details>
 
 ## Terms of Service
 
@@ -159,6 +190,7 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ## Contributing
 
 Contributions are welcome! Please:
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
@@ -173,4 +205,4 @@ Contributions are welcome! Please:
 
 ---
 
-Thank you for using ClearTimer! If you have any questions or feedback, feel free to reach out on our [support server](https://discord.com/invite/ERFffj9Qs7).
+Thank you for using ClearTimer! If you have any questions or feedback, feel free to reach out on our [support server](biast12.com/support).
