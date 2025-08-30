@@ -25,7 +25,7 @@ class SchedulerService:
         self._notify_callback = callback
     
     async def _cleanup_cache(self) -> None:
-        """Cleanup expired cache entries"""
+        """Cleanup expired cache entries from all cache levels"""
         cache = self.data_service._cache
         
         # Cleanup expired entries in all cache levels
@@ -57,11 +57,11 @@ class SchedulerService:
                     channel_timer=channel_timer,
                 )
 
-        # Schedule daily cleanup job for removed servers
+        # Schedule daily cleanup job for servers removed over 30 days ago
         self.scheduler.add_job(
             self.data_service.cleanup_old_removed_servers,
             "cron",
-            hour=3,  # Run at 3 AM daily
+            hour=3,  # Run at 3 AM UTC daily
             minute=0,
             id="cleanup_removed_servers",
             replace_existing=True,

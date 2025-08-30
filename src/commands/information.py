@@ -105,7 +105,7 @@ class InformationCommands(commands.Cog):
         )
 
         # Links
-        # Bot invite URL split for readability
+        # Discord bot invite URL with required permissions
         bot_invite_url = (
             "https://discord.com/oauth2/authorize?"
             "client_id=1290353946308775987&permissions=76800&"
