@@ -179,16 +179,16 @@ class OwnerCommands(
             server = servers[target_id]
             channels_removed = len(server.channels)
 
-            # Remove all jobs for this server
-            for channel_id in server.channels:
+            # Remove all jobs and channels for this server
+            for channel_id in list(server.channels.keys()):
                 self.scheduler_service.remove_job(target_id, channel_id)
+                server.remove_channel(channel_id)
 
-            # Remove from data service
-            await self.data_service.remove_server(target_id)
+            # Keep server in database even with no channels
             await self.data_service.save_servers()
 
             await interaction.followup.send(
-                f"✅ Removed server {target_id} with {channels_removed} subscribed channels."
+                f"✅ Cleared {channels_removed} subscribed channels from server {target_id}."
             )
             return
 
@@ -200,8 +200,6 @@ class OwnerCommands(
 
                 # Remove from data service
                 server.remove_channel(target_id)
-                if not server.channels:
-                    await self.data_service.remove_server(server_id)
                 await self.data_service.save_servers()
 
                 await interaction.followup.send(
@@ -225,12 +223,13 @@ class OwnerCommands(
         if await self.data_service.add_to_blacklist(server_id, server_name):
             await self.data_service.save_blacklist()
 
-            # Remove any existing subscriptions
+            # Remove any existing subscriptions but keep server in database
             server = await self.data_service.get_server(server_id)
             if server:
-                for channel_id in server.channels:
+                for channel_id in list(server.channels.keys()):
                     self.scheduler_service.remove_job(server_id, channel_id)
-                await self.data_service.remove_server(server_id)
+                    server.remove_channel(channel_id)
+                # Keep server in database even with no channels
                 await self.data_service.save_servers()
 
             await interaction.response.send_message(

@@ -126,8 +126,6 @@ class SubscriptionCommands(commands.Cog):
         server = await self.data_service.get_server(server_id)
         if server:
             server.remove_channel(channel_id)
-            if not server.channels:
-                await self.data_service.remove_server(server_id)
             await self.data_service.save_servers()
 
         # Send success message
