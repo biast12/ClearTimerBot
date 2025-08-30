@@ -1,26 +1,17 @@
-import json
-import asyncio
-from pathlib import Path
 from typing import Dict, List, Optional, Set
 from contextlib import asynccontextmanager
+import asyncio
 
 from src.models import Server
+from src.services.database import db_manager
 
 
 class DataService:
-    def __init__(
-        self,
-        servers_file: Path = Path('servers.json'),
-        blacklist_file: Path = Path('blacklist.json'),
-        timezones_file: Path = Path('timezones.json')
-    ):
-        self.servers_file = servers_file
-        self.blacklist_file = blacklist_file
-        self.timezones_file = timezones_file
+    def __init__(self):
         self._lock = asyncio.Lock()
-        self._servers: Dict[str, Server] = {}
-        self._blacklist: Set[str] = set()
-        self._timezones: Dict[str, str] = {}
+        self._servers_cache: Dict[str, Server] = {}
+        self._blacklist_cache: Set[str] = set()
+        self._timezones_cache: Dict[str, str] = {}
         self._initialized = False
     
     async def initialize(self) -> None:
@@ -28,122 +19,156 @@ class DataService:
             return
         
         async with self._lock:
-            self._servers = await self._load_servers()
-            self._blacklist = await self._load_blacklist()
-            self._timezones = await self._load_timezones()
+            await self._load_servers()
+            await self._load_blacklist()
+            await self._load_timezones()
             self._initialized = True
     
-    async def _load_servers(self) -> Dict[str, Server]:
-        if not self.servers_file.exists():
-            return {}
-        
-        try:
-            with open(self.servers_file, 'r') as f:
-                data = json.load(f)
-            
-            servers = {}
-            for server_id, server_data in data.items():
-                servers[server_id] = Server.from_dict(server_id, server_data)
-            return servers
-        except (json.JSONDecodeError, KeyError) as e:
-            print(f"Error loading servers: {e}")
-            return {}
+    async def _load_servers(self) -> None:
+        servers_collection = db_manager.servers
+        async for server_doc in servers_collection.find():
+            server_id = str(server_doc['_id'])
+            self._servers_cache[server_id] = Server.from_dict(server_id, server_doc)
     
-    async def _load_blacklist(self) -> Set[str]:
-        if not self.blacklist_file.exists():
-            return set()
-        
-        try:
-            with open(self.blacklist_file, 'r') as f:
-                data = json.load(f)
-            return set(data) if isinstance(data, list) else set()
-        except (json.JSONDecodeError, TypeError) as e:
-            print(f"Error loading blacklist: {e}")
-            return set()
+    async def _load_blacklist(self) -> None:
+        blacklist_collection = db_manager.blacklist
+        blacklist_doc = await blacklist_collection.find_one()
+        if blacklist_doc and 'blacklist' in blacklist_doc:
+            for server_id in blacklist_doc['blacklist']:
+                self._blacklist_cache.add(str(server_id))
     
-    async def _load_timezones(self) -> Dict[str, str]:
-        if not self.timezones_file.exists():
-            return {}
-        
-        try:
-            with open(self.timezones_file, 'r') as f:
-                return json.load(f)
-        except json.JSONDecodeError as e:
-            print(f"Error loading timezones: {e}")
-            return {}
+    async def _load_timezones(self) -> None:
+        timezones_collection = db_manager.timezones
+        tz_doc = await timezones_collection.find_one()
+        if tz_doc:
+            for key, value in tz_doc.items():
+                if key != '_id':
+                    self._timezones_cache[key] = value
     
     async def save_servers(self) -> None:
         async with self._lock:
-            data = {
-                server_id: server.to_dict()
-                for server_id, server in self._servers.items()
-            }
-            
-            with open(self.servers_file, 'w') as f:
-                json.dump(data, f, indent=4)
+            servers_collection = db_manager.servers
+            for server_id, server in self._servers_cache.items():
+                server_data = server.to_dict()
+                server_data['_id'] = server_id
+                await servers_collection.replace_one(
+                    {'_id': server_id},
+                    server_data,
+                    upsert=True
+                )
     
     async def save_blacklist(self) -> None:
         async with self._lock:
-            with open(self.blacklist_file, 'w') as f:
-                json.dump(list(self._blacklist), f, indent=4)
+            blacklist_collection = db_manager.blacklist
+            blacklist_data = {'blacklist': list(self._blacklist_cache)}
+            
+            # Replace the entire blacklist document
+            await blacklist_collection.replace_one(
+                {},
+                blacklist_data,
+                upsert=True
+            )
     
     async def get_server(self, server_id: str) -> Optional[Server]:
         async with self._lock:
-            return self._servers.get(server_id)
+            if server_id in self._servers_cache:
+                return self._servers_cache[server_id]
+            
+            servers_collection = db_manager.servers
+            server_doc = await servers_collection.find_one({'_id': server_id})
+            if server_doc:
+                server = Server.from_dict(server_id, server_doc)
+                self._servers_cache[server_id] = server
+                return server
+            return None
     
     async def add_server(self, server_id: str, server_name: str) -> Server:
         async with self._lock:
-            if server_id not in self._servers:
-                self._servers[server_id] = Server(server_id, server_name)
-            return self._servers[server_id]
+            if server_id not in self._servers_cache:
+                server = Server(server_id, server_name)
+                self._servers_cache[server_id] = server
+                
+                servers_collection = db_manager.servers
+                server_data = server.to_dict()
+                server_data['_id'] = server_id
+                await servers_collection.insert_one(server_data)
+            return self._servers_cache[server_id]
     
     async def remove_server(self, server_id: str) -> bool:
         async with self._lock:
-            if server_id in self._servers:
-                del self._servers[server_id]
-                return True
+            if server_id in self._servers_cache:
+                del self._servers_cache[server_id]
+                
+                servers_collection = db_manager.servers
+                result = await servers_collection.delete_one({'_id': server_id})
+                return result.deleted_count > 0
             return False
     
     async def get_all_servers(self) -> Dict[str, Server]:
         async with self._lock:
-            return self._servers.copy()
+            return self._servers_cache.copy()
     
     async def is_blacklisted(self, server_id: str) -> bool:
         async with self._lock:
-            return server_id in self._blacklist
+            return server_id in self._blacklist_cache
     
     async def add_to_blacklist(self, server_id: str) -> bool:
         async with self._lock:
-            if server_id not in self._blacklist:
-                self._blacklist.add(server_id)
+            if server_id not in self._blacklist_cache:
+                self._blacklist_cache.add(server_id)
+                
+                # Update the blacklist document
+                blacklist_collection = db_manager.blacklist
+                await blacklist_collection.update_one(
+                    {},
+                    {'$addToSet': {'blacklist': server_id}},
+                    upsert=True
+                )
                 return True
             return False
     
     async def remove_from_blacklist(self, server_id: str) -> bool:
         async with self._lock:
-            if server_id in self._blacklist:
-                self._blacklist.remove(server_id)
+            if server_id in self._blacklist_cache:
+                self._blacklist_cache.remove(server_id)
+                
+                # Update the blacklist document
+                blacklist_collection = db_manager.blacklist
+                await blacklist_collection.update_one(
+                    {},
+                    {'$pull': {'blacklist': server_id}}
+                )
                 return True
             return False
     
     async def get_blacklist(self) -> List[str]:
         async with self._lock:
-            return list(self._blacklist)
+            return list(self._blacklist_cache)
     
     def get_timezone(self, timezone_abbr: str) -> Optional[str]:
-        return self._timezones.get(timezone_abbr)
+        return self._timezones_cache.get(timezone_abbr)
+    
+    async def refresh_cache(self) -> None:
+        async with self._lock:
+            self._servers_cache.clear()
+            self._blacklist_cache.clear()
+            self._timezones_cache.clear()
+            
+            await self._load_servers()
+            await self._load_blacklist()
+            await self._load_timezones()
     
     @asynccontextmanager
     async def transaction(self):
         async with self._lock:
-            backup_servers = self._servers.copy()
-            backup_blacklist = self._blacklist.copy()
+            backup_servers = self._servers_cache.copy()
+            backup_blacklist = self._blacklist_cache.copy()
             
             try:
                 yield self
                 await self.save_servers()
                 await self.save_blacklist()
             except Exception:
-                self._servers = backup_servers
-                self._blacklist = backup_blacklist
+                self._servers_cache = backup_servers
+                self._blacklist_cache = backup_blacklist
                 raise

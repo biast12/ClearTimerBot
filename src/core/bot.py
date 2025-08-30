@@ -4,6 +4,7 @@ from typing import Optional
 
 from src.core.config import BotConfig
 from src.services.data_service import DataService
+from src.services.database import db_manager
 from src.services.scheduler_service import SchedulerService
 from src.services.message_service import MessageService
 
@@ -32,6 +33,9 @@ class ClearTimerBot(commands.Bot):
         self.version = "2.0.0"
     
     async def setup_hook(self) -> None:
+        # Connect to MongoDB
+        await db_manager.connect()
+        
         # Initialize services
         await self.data_service.initialize()
         
@@ -78,6 +82,7 @@ class ClearTimerBot(commands.Bot):
     
     async def close(self) -> None:
         await self.scheduler_service.shutdown()
+        await db_manager.disconnect()
         await super().close()
     
     def is_owner(self, user: discord.User) -> bool:
