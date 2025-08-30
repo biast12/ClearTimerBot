@@ -49,6 +49,9 @@ class ClearTimerBot(commands.Bot):
         activity = discord.Game(name="Cleaning up the mess! 🧹")
         await self.change_presence(activity=activity)
 
+        # Update server names for all connected guilds
+        await self._update_server_names()
+
         # Sync server cleanup status based on current guild membership
         await self._sync_server_cleanup_status()
 
@@ -139,6 +142,30 @@ class ClearTimerBot(commands.Bot):
         print(
             f"Bot removed from server: {guild.name} (ID: {server_id}) - Added to removal tracking"
         )
+
+    async def _update_server_names(self) -> None:
+        """Update server names for all connected guilds on startup"""
+        updated_count = 0
+        
+        for guild in self.guilds:
+            server_id = str(guild.id)
+            server = await self.data_service.get_server(server_id)
+            
+            if server:
+                # Check if server name is empty or different
+                if not server.server_name or server.server_name != guild.name:
+                    old_name = server.server_name or "(empty)"
+                    await self.data_service.update_server_name(server_id, guild.name)
+                    updated_count += 1
+                    print(f"Updated server name: {old_name} -> {guild.name} (ID: {server_id})")
+            else:
+                # Server not in database, add it
+                await self.data_service.add_server(server_id, guild.name)
+                updated_count += 1
+                print(f"Added new server: {guild.name} (ID: {server_id})")
+        
+        if updated_count > 0:
+            print(f"Updated {updated_count} server name(s)")
 
     async def _sync_server_cleanup_status(self) -> None:
         """Sync server cleanup status based on current guild membership on startup"""

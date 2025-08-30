@@ -101,7 +101,39 @@ class DataService:
                 # Invalidate cache for this server
                 cache_key = f"server:{server_id}"
                 await self._cache.invalidate(cache_key)
+            else:
+                # Server already exists, update its name if different
+                existing_server = self._servers_cache[server_id]
+                if existing_server.server_name != server_name:
+                    existing_server.server_name = server_name
+                    servers_collection = db_manager.servers
+                    await servers_collection.update_one(
+                        {"_id": server_id},
+                        {"$set": {"server_name": server_name}}
+                    )
+                    # Invalidate cache for this server
+                    cache_key = f"server:{server_id}"
+                    await self._cache.invalidate(cache_key)
             return self._servers_cache[server_id]
+    
+    async def update_server_name(self, server_id: str, server_name: str) -> bool:
+        """Update the name of an existing server"""
+        async with self._lock:
+            if server_id in self._servers_cache:
+                server = self._servers_cache[server_id]
+                server.server_name = server_name
+                
+                servers_collection = db_manager.servers
+                await servers_collection.update_one(
+                    {"_id": server_id},
+                    {"$set": {"server_name": server_name}}
+                )
+                
+                # Invalidate cache for this server
+                cache_key = f"server:{server_id}"
+                await self._cache.invalidate(cache_key)
+                return True
+            return False
 
     async def remove_server(self, server_id: str) -> bool:
         async with self._lock:

@@ -41,7 +41,7 @@ class Server:
 
     def to_dict(self) -> Dict:
         return {
-            "server_name": self.server_name,
+            "server_name": self.server_name or "",
             "channels": {
                 channel_id: timer.to_dict()
                 for channel_id, timer in self.channels.items()
@@ -50,7 +50,10 @@ class Server:
 
     @classmethod
     def from_dict(cls, server_id: str, data: Dict) -> "Server":
-        server = cls(server_id=server_id, server_name=data["server_name"])
+        server = cls(
+            server_id=server_id,
+            server_name=data.get("server_name", "") or ""
+        )
         for channel_id, channel_data in data.get("channels", {}).items():
             server.channels[channel_id] = ChannelTimer.from_dict(
                 channel_id, channel_data
