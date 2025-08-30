@@ -23,6 +23,19 @@ class SchedulerService:
 
     def set_notify_callback(self, callback: Callable) -> None:
         self._notify_callback = callback
+    
+    async def _cleanup_cache(self) -> None:
+        """Cleanup expired cache entries"""
+        cache = self.data_service._cache
+        
+        # Cleanup expired entries in all cache levels
+        memory_cleaned = await cache.memory_cache.cleanup_expired()
+        warm_cleaned = await cache.warm_cache.cleanup_expired()
+        cold_cleaned = await cache.cold_cache.cleanup_expired()
+        
+        total_cleaned = memory_cleaned + warm_cleaned + cold_cleaned
+        if total_cleaned > 0:
+            print(f"Cache cleanup: Removed {total_cleaned} expired entries (Memory: {memory_cleaned}, Warm: {warm_cleaned}, Cold: {cold_cleaned})")
 
     async def start(self) -> None:
         if not self.scheduler.running:
@@ -51,6 +64,15 @@ class SchedulerService:
             hour=3,  # Run at 3 AM daily
             minute=0,
             id="cleanup_removed_servers",
+            replace_existing=True,
+        )
+        
+        # Schedule periodic cache cleanup (every 15 minutes)
+        self.scheduler.add_job(
+            self._cleanup_cache,
+            "interval",
+            minutes=15,
+            id="cleanup_cache",
             replace_existing=True,
         )
 

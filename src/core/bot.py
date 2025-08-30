@@ -95,13 +95,14 @@ class ClearTimerBot(commands.Bot):
         """Handle when bot joins a server"""
         server_id = str(guild.id)
 
-        # Check if this server was previously removed
-        removed_servers_collection = db_manager.removed_servers
-        removed_doc = await removed_servers_collection.find_one({"_id": server_id})
+        # Check if this server was previously removed (using cache)
+        removed_doc = await self.data_service.get_removed_server(server_id)
 
         if removed_doc:
             # Server is rejoining, remove it from removed_servers collection
+            removed_servers_collection = db_manager.removed_servers
             await removed_servers_collection.delete_one({"_id": server_id})
+            await self.data_service.invalidate_removed_server_cache(server_id)
             print(
                 f"Bot rejoined server: {guild.name} (ID: {server_id}) - Removed from removal tracking"
             )
@@ -117,16 +118,20 @@ class ClearTimerBot(commands.Bot):
 
         # Add to removed_servers collection with timestamp
         removed_servers_collection = db_manager.removed_servers
+        removal_doc = {
+            "_id": server_id,
+            "server_name": guild.name,
+            "removed_at": datetime.now(timezone.utc),
+            "member_count": guild.member_count if guild else 0,
+        }
         await removed_servers_collection.replace_one(
             {"_id": server_id},
-            {
-                "_id": server_id,
-                "server_name": guild.name,
-                "removed_at": datetime.now(timezone.utc),
-                "member_count": guild.member_count if guild else 0,
-            },
+            removal_doc,
             upsert=True,
         )
+        
+        # Cache the removal document
+        await self.data_service.cache_removed_server(server_id, removal_doc)
 
         print(
             f"Bot removed from server: {guild.name} (ID: {server_id}) - Added to removal tracking"

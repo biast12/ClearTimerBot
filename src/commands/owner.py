@@ -19,6 +19,83 @@ class OwnerCommands(
             )
             return False
         return True
+    
+    @app_commands.command(
+        name="cache_stats", description="View cache statistics and performance"
+    )
+    async def cache_stats(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True)
+        
+        # Get cache statistics
+        cache_stats = self.data_service.get_cache_stats()
+        
+        embed = discord.Embed(
+            title="📊 Cache Statistics",
+            color=discord.Color.green(),
+            timestamp=datetime.now(timezone.utc)
+        )
+        
+        # Memory cache stats
+        memory_stats = cache_stats.get("memory", {})
+        embed.add_field(
+            name="🔥 Memory Cache (Hot Data)",
+            value=(
+                f"**Hit Rate:** {memory_stats.get('hit_rate', 0)}%\n"
+                f"**Hits:** {memory_stats.get('hits', 0)}\n"
+                f"**Misses:** {memory_stats.get('misses', 0)}\n"
+                f"**Cached Items:** {memory_stats.get('cached_items', 0)}\n"
+                f"**Evictions:** {memory_stats.get('evictions', 0)}"
+            ),
+            inline=True
+        )
+        
+        # Warm cache stats
+        warm_stats = cache_stats.get("warm", {})
+        embed.add_field(
+            name="🌡️ Warm Cache",
+            value=(
+                f"**Hit Rate:** {warm_stats.get('hit_rate', 0)}%\n"
+                f"**Hits:** {warm_stats.get('hits', 0)}\n"
+                f"**Misses:** {warm_stats.get('misses', 0)}\n"
+                f"**Cached Items:** {warm_stats.get('cached_items', 0)}\n"
+                f"**Evictions:** {warm_stats.get('evictions', 0)}"
+            ),
+            inline=True
+        )
+        
+        # Cold cache stats
+        cold_stats = cache_stats.get("cold", {})
+        embed.add_field(
+            name="❄️ Cold Cache",
+            value=(
+                f"**Hit Rate:** {cold_stats.get('hit_rate', 0)}%\n"
+                f"**Hits:** {cold_stats.get('hits', 0)}\n"
+                f"**Misses:** {cold_stats.get('misses', 0)}\n"
+                f"**Cached Items:** {cold_stats.get('cached_items', 0)}\n"
+                f"**Evictions:** {cold_stats.get('evictions', 0)}"
+            ),
+            inline=True
+        )
+        
+        # Calculate overall stats
+        total_hits = memory_stats.get('hits', 0) + warm_stats.get('hits', 0) + cold_stats.get('hits', 0)
+        total_misses = memory_stats.get('misses', 0) + warm_stats.get('misses', 0) + cold_stats.get('misses', 0)
+        total_requests = total_hits + total_misses
+        overall_hit_rate = (total_hits / total_requests * 100) if total_requests > 0 else 0
+        
+        embed.add_field(
+            name="📈 Overall Performance",
+            value=(
+                f"**Total Requests:** {total_requests}\n"
+                f"**Overall Hit Rate:** {overall_hit_rate:.2f}%\n"
+                f"**Database Calls Saved:** {total_hits}"
+            ),
+            inline=False
+        )
+        
+        embed.set_footer(text="Cache helps reduce database load and improve response times")
+        
+        await interaction.followup.send(embed=embed)
 
     @app_commands.command(
         name="list", description="List all servers and their subscribed channels"

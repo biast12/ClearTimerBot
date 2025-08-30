@@ -1,9 +1,10 @@
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Any
 import asyncio
 from datetime import datetime, timezone, timedelta
 
 from src.models import Server
 from src.services.database import db_manager
+from src.services.cache_manager import MultiLevelCache
 
 
 class DataService:
@@ -12,6 +13,7 @@ class DataService:
         self._servers_cache: Dict[str, Server] = {}
         self._blacklist_cache: Set[str] = set()
         self._timezones_cache: Dict[str, str] = {}
+        self._cache = MultiLevelCache()
         self._initialized = False
 
     async def initialize(self) -> None:
@@ -64,15 +66,24 @@ class DataService:
             await blacklist_collection.replace_one({}, blacklist_data, upsert=True)
 
     async def get_server(self, server_id: str) -> Optional[Server]:
+        # Check memory cache first
+        cache_key = f"server:{server_id}"
+        cached_server = await self._cache.get(cache_key)
+        if cached_server is not None:
+            return cached_server
+
         async with self._lock:
             if server_id in self._servers_cache:
-                return self._servers_cache[server_id]
+                server = self._servers_cache[server_id]
+                await self._cache.set(cache_key, server, cache_level="memory")
+                return server
 
             servers_collection = db_manager.servers
             server_doc = await servers_collection.find_one({"_id": server_id})
             if server_doc:
                 server = Server.from_dict(server_id, server_doc)
                 self._servers_cache[server_id] = server
+                await self._cache.set(cache_key, server, cache_level="warm")
                 return server
             return None
 
@@ -86,6 +97,10 @@ class DataService:
                 server_data = server.to_dict()
                 server_data["_id"] = server_id
                 await servers_collection.insert_one(server_data)
+                
+                # Invalidate cache for this server
+                cache_key = f"server:{server_id}"
+                await self._cache.invalidate(cache_key)
             return self._servers_cache[server_id]
 
     async def remove_server(self, server_id: str) -> bool:
@@ -95,6 +110,11 @@ class DataService:
 
                 servers_collection = db_manager.servers
                 result = await servers_collection.delete_one({"_id": server_id})
+                
+                # Invalidate cache for this server
+                cache_key = f"server:{server_id}"
+                await self._cache.invalidate(cache_key)
+                
                 return result.deleted_count > 0
             return False
 
@@ -103,8 +123,16 @@ class DataService:
             return self._servers_cache.copy()
 
     async def is_blacklisted(self, server_id: str) -> bool:
+        # Check cache first
+        cache_key = f"blacklist:{server_id}"
+        cached_result = await self._cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        
         async with self._lock:
-            return server_id in self._blacklist_cache
+            result = server_id in self._blacklist_cache
+            await self._cache.set(cache_key, result, cache_level="warm", ttl=600)  # 10 minutes
+            return result
 
     async def add_to_blacklist(self, server_id: str) -> bool:
         async with self._lock:
@@ -116,6 +144,10 @@ class DataService:
                 await blacklist_collection.update_one(
                     {}, {"$addToSet": {"blacklist": server_id}}, upsert=True
                 )
+                
+                # Invalidate cache
+                cache_key = f"blacklist:{server_id}"
+                await self._cache.invalidate(cache_key)
                 return True
             return False
 
@@ -129,6 +161,10 @@ class DataService:
                 await blacklist_collection.update_one(
                     {}, {"$pull": {"blacklist": server_id}}
                 )
+                
+                # Invalidate cache
+                cache_key = f"blacklist:{server_id}"
+                await self._cache.invalidate(cache_key)
                 return True
             return False
 
@@ -138,6 +174,29 @@ class DataService:
 
     def get_timezone(self, timezone_abbr: str) -> Optional[str]:
         return self._timezones_cache.get(timezone_abbr)
+    
+    async def get_removed_server(self, server_id: str) -> Optional[Dict]:
+        cache_key = f"removed_server:{server_id}"
+        cached_doc = await self._cache.get(cache_key)
+        if cached_doc is not None:
+            return cached_doc
+        
+        removed_servers_collection = db_manager.removed_servers
+        doc = await removed_servers_collection.find_one({"_id": server_id})
+        if doc:
+            await self._cache.set(cache_key, doc, cache_level="cold", ttl=1800)  # 30 minutes
+        return doc
+    
+    async def cache_removed_server(self, server_id: str, server_doc: Dict) -> None:
+        cache_key = f"removed_server:{server_id}"
+        await self._cache.set(cache_key, server_doc, cache_level="cold", ttl=1800)
+    
+    async def invalidate_removed_server_cache(self, server_id: str) -> None:
+        cache_key = f"removed_server:{server_id}"
+        await self._cache.invalidate(cache_key)
+    
+    def get_cache_stats(self) -> Dict:
+        return self._cache.get_all_stats()
 
     async def cleanup_old_removed_servers(self) -> int:
         """
