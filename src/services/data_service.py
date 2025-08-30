@@ -12,6 +12,7 @@ class DataService:
         self._lock = asyncio.Lock()
         self._servers_cache: Dict[str, Server] = {}
         self._blacklist_cache: Set[str] = set()
+        self._blacklist_names_cache: Dict[str, str] = {}  # Store server names
         self._timezones_cache: Dict[str, str] = {}
         self._cache = MultiLevelCache()
         self._initialized = False
@@ -34,10 +35,13 @@ class DataService:
 
     async def _load_blacklist(self) -> None:
         blacklist_collection = db_manager.blacklist
-        # Load all blacklist documents (array of objects with _id)
+        # Load all blacklist documents (array of objects with _id and server_name)
+        self._blacklist_names_cache: Dict[str, str] = {}  # Store server names
         async for blacklist_doc in blacklist_collection.find():
             if "_id" in blacklist_doc:
-                self._blacklist_cache.add(str(blacklist_doc["_id"]))
+                server_id = str(blacklist_doc["_id"])
+                self._blacklist_cache.add(server_id)
+                self._blacklist_names_cache[server_id] = blacklist_doc.get("server_name", "")
 
     async def _load_timezones(self) -> None:
         timezones_collection = db_manager.timezones
@@ -64,9 +68,12 @@ class DataService:
             # Clear existing blacklist
             await blacklist_collection.delete_many({})
             
-            # Insert each blacklisted server as a separate document
+            # Insert each blacklisted server as a separate document with its name
             if self._blacklist_cache:
-                blacklist_docs = [{"_id": server_id, "server_name": ""} for server_id in self._blacklist_cache]
+                blacklist_docs = [
+                    {"_id": server_id, "server_name": self._blacklist_names_cache.get(server_id, "")}
+                    for server_id in self._blacklist_cache
+                ]
                 await blacklist_collection.insert_many(blacklist_docs)
 
     async def get_server(self, server_id: str) -> Optional[Server]:
@@ -174,6 +181,7 @@ class DataService:
         async with self._lock:
             if server_id not in self._blacklist_cache:
                 self._blacklist_cache.add(server_id)
+                self._blacklist_names_cache[server_id] = server_name
 
                 # Insert as a new document
                 blacklist_collection = db_manager.blacklist
@@ -191,6 +199,8 @@ class DataService:
         async with self._lock:
             if server_id in self._blacklist_cache:
                 self._blacklist_cache.remove(server_id)
+                if server_id in self._blacklist_names_cache:
+                    del self._blacklist_names_cache[server_id]
 
                 # Delete the document with this _id
                 blacklist_collection = db_manager.blacklist
@@ -207,6 +217,10 @@ class DataService:
     async def get_blacklist(self) -> List[str]:
         async with self._lock:
             return list(self._blacklist_cache)
+    
+    async def get_blacklist_with_names(self) -> Dict[str, str]:
+        async with self._lock:
+            return self._blacklist_names_cache.copy()
 
     def get_timezone(self, timezone_abbr: str) -> Optional[str]:
         return self._timezones_cache.get(timezone_abbr)

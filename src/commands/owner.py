@@ -259,9 +259,9 @@ class OwnerCommands(
         name="blacklist_list", description="List all blacklisted servers"
     )
     async def blacklist_list(self, interaction: discord.Interaction):
-        blacklist = await self.data_service.get_blacklist()
+        blacklist_with_names = await self.data_service.get_blacklist_with_names()
 
-        if not blacklist:
+        if not blacklist_with_names:
             await interaction.response.send_message(
                 "No servers are currently blacklisted."
             )
@@ -270,9 +270,10 @@ class OwnerCommands(
         embed = discord.Embed(title="🚫 Blacklisted Servers", color=discord.Color.red())
 
         server_list = []
-        for server_id in blacklist:
+        for server_id, stored_name in blacklist_with_names.items():
+            # Try to get current name from bot's cache, fallback to stored name
             guild = self.bot.get_guild(int(server_id))
-            guild_name = guild.name if guild else "Unknown"
+            guild_name = guild.name if guild else (stored_name or "Unknown")
             server_list.append(f"• {guild_name} ({server_id})")
 
         # Split into chunks if needed
@@ -282,7 +283,7 @@ class OwnerCommands(
             field_name = "Servers" if i == 0 else "Servers (continued)"
             embed.add_field(name=field_name, value="\n".join(chunk), inline=False)
 
-        embed.set_footer(text=f"Total: {len(blacklist)} servers")
+        embed.set_footer(text=f"Total: {len(blacklist_with_names)} servers")
 
         await interaction.response.send_message(embed=embed)
 
