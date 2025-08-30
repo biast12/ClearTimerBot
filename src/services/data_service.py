@@ -179,21 +179,31 @@ class DataService:
 
     async def add_to_blacklist(self, server_id: str, server_name: str = "Unknown") -> bool:
         async with self._lock:
-            if server_id not in self._blacklist_cache:
+            # Check if already in cache
+            if server_id in self._blacklist_cache:
+                return False
+            
+            # Check if already in database (in case cache is out of sync)
+            blacklist_collection = db_manager.blacklist
+            existing = await blacklist_collection.find_one({"_id": server_id})
+            if existing:
+                # Update cache to match database
                 self._blacklist_cache.add(server_id)
-                self._blacklist_names_cache[server_id] = server_name
-
-                # Insert as a new document
-                blacklist_collection = db_manager.blacklist
-                await blacklist_collection.insert_one(
-                    {"_id": server_id, "server_name": server_name}
-                )
-                
-                # Invalidate cache
-                cache_key = f"blacklist:{server_id}"
-                await self._cache.invalidate(cache_key)
-                return True
-            return False
+                self._blacklist_names_cache[server_id] = existing.get("server_name", server_name)
+                return False
+            
+            # Add to cache and database
+            self._blacklist_cache.add(server_id)
+            self._blacklist_names_cache[server_id] = server_name
+            
+            await blacklist_collection.insert_one(
+                {"_id": server_id, "server_name": server_name}
+            )
+            
+            # Invalidate cache
+            cache_key = f"blacklist:{server_id}"
+            await self._cache.invalidate(cache_key)
+            return True
 
     async def remove_from_blacklist(self, server_id: str) -> bool:
         async with self._lock:
