@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from datetime import datetime, timezone
+from src.utils.logger import logger, LogArea
 
 
 class OwnerCommands(
@@ -464,6 +465,144 @@ class OwnerCommands(
                 )
         except Exception as e:
             await interaction.followup.send(f"❌ Error during cleanup: {e}")
+
+    @app_commands.command(
+        name="error_lookup", description="Look up an error by its ID"
+    )
+    @app_commands.describe(error_id="The error ID to look up")
+    async def error_lookup(self, interaction: discord.Interaction, error_id: str):
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        # Get error from database
+        error_doc = await logger.get_error(error_id)
+        
+        if not error_doc:
+            await interaction.followup.send(f"❌ No error found with ID: `{error_id}`")
+            return
+        
+        # Create embed with error details
+        embed = discord.Embed(
+            title=f"Error Details: {error_id}",
+            color=discord.Color.red(),
+            timestamp=error_doc["timestamp"]
+        )
+        
+        embed.add_field(name="Level", value=error_doc["level"], inline=True)
+        embed.add_field(name="Area", value=error_doc["area"], inline=True)
+        embed.add_field(name="Time", value=f"<t:{int(error_doc['timestamp'].timestamp())}:F>", inline=True)
+        
+        embed.add_field(name="Message", value=error_doc["message"][:1024], inline=False)
+        
+        # Add context fields if present
+        if error_doc.get("server_id"):
+            guild = self.bot.get_guild(int(error_doc["server_id"]))
+            guild_name = guild.name if guild else "Unknown"
+            embed.add_field(name="Server", value=f"{guild_name} ({error_doc['server_id']})", inline=True)
+        
+        if error_doc.get("channel_id"):
+            channel = self.bot.get_channel(int(error_doc["channel_id"]))
+            channel_name = channel.name if channel else "Unknown"
+            embed.add_field(name="Channel", value=f"{channel_name} ({error_doc['channel_id']})", inline=True)
+        
+        if error_doc.get("user_id"):
+            user = self.bot.get_user(int(error_doc["user_id"]))
+            user_name = str(user) if user else "Unknown"
+            embed.add_field(name="User", value=f"{user_name} ({error_doc['user_id']})", inline=True)
+        
+        if error_doc.get("command"):
+            embed.add_field(name="Command", value=error_doc["command"], inline=True)
+        
+        # Add traceback if present (truncate if too long)
+        if error_doc.get("traceback"):
+            tb = error_doc["traceback"]
+            if len(tb) > 1024:
+                tb = tb[:1021] + "..."
+            embed.add_field(name="Traceback", value=f"```python\n{tb}```", inline=False)
+        
+        # Add additional data if present
+        if error_doc.get("additional_data"):
+            data_str = "\n".join([f"**{k}:** {v}" for k, v in error_doc["additional_data"].items()])
+            if len(data_str) > 1024:
+                data_str = data_str[:1021] + "..."
+            embed.add_field(name="Additional Data", value=data_str, inline=False)
+        
+        await interaction.followup.send(embed=embed)
+
+    @app_commands.command(
+        name="error_delete", description="Delete an error by its ID"
+    )
+    @app_commands.describe(error_id="The error ID to delete")
+    async def error_delete(self, interaction: discord.Interaction, error_id: str):
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        # Delete error from database
+        success = await logger.delete_error(error_id)
+        
+        if success:
+            await interaction.followup.send(f"✅ Error `{error_id}` has been deleted.")
+        else:
+            await interaction.followup.send(f"❌ Could not delete error `{error_id}`. It may not exist.")
+
+    @app_commands.command(
+        name="error_list", description="List recent errors"
+    )
+    @app_commands.describe(limit="Number of errors to show (default: 10, max: 25)")
+    async def error_list(self, interaction: discord.Interaction, limit: int = 10):
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        # Validate limit
+        limit = min(max(1, limit), 25)
+        
+        # Get recent errors
+        errors = await logger.get_recent_errors(limit)
+        
+        if not errors:
+            await interaction.followup.send("No errors found in the database.")
+            return
+        
+        # Create embed with error list
+        embed = discord.Embed(
+            title=f"Recent Errors (Last {len(errors)})",
+            color=discord.Color.red(),
+            timestamp=datetime.now(timezone.utc)
+        )
+        
+        for error in errors:
+            timestamp = f"<t:{int(error['timestamp'].timestamp())}:R>"
+            message = error['message']
+            if len(message) > 50:
+                message = message[:47] + "..."
+            
+            field_value = f"**Area:** {error['area']}\n**Time:** {timestamp}\n**Message:** {message}"
+            embed.add_field(
+                name=f"ID: {error['_id']} | {error['level']}",
+                value=field_value,
+                inline=False
+            )
+        
+        embed.set_footer(text=f"Use /owner error_lookup <id> to see full details")
+        
+        await interaction.followup.send(embed=embed)
+
+    @app_commands.command(
+        name="error_clear", description="Clear all errors from the database"
+    )
+    async def error_clear(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        from src.services.database import db_manager
+        
+        try:
+            errors_collection = db_manager.db.errors
+            result = await errors_collection.delete_many({})
+            await interaction.followup.send(f"✅ Cleared {result.deleted_count} errors from the database.")
+        except Exception as e:
+            error_id = await logger.log_error(
+                LogArea.DATABASE,
+                "Failed to clear errors from database",
+                exception=e
+            )
+            await interaction.followup.send(f"❌ Failed to clear errors. Error ID: `{error_id}`")
 
 
 async def setup(bot):

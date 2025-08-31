@@ -29,7 +29,10 @@ class DatabaseManager:
         self._database = self._client.get_default_database()
 
         await self._client.admin.command("ping")
-        print("Successfully connected to MongoDB")
+        
+        # Import logger here to avoid circular import
+        from src.utils.logger import logger, LogArea
+        logger.info(LogArea.DATABASE, "Successfully connected to MongoDB")
 
         self.initialized = True
 

@@ -5,6 +5,7 @@ import discord
 
 from src.services.data_service import DataService
 from src.services.scheduler_service import SchedulerService
+from src.utils.logger import logger, LogArea
 
 
 class MessageService:
@@ -14,7 +15,8 @@ class MessageService:
         self.rate_limit_delay = 1.0  # Delay between message deletions
 
     async def clear_channel_messages(self, channel: discord.TextChannel) -> None:
-        print(
+        logger.info(
+            LogArea.SCHEDULER,
             f"Starting message clear for channel {channel.id} in guild {channel.guild.id}"
         )
 
@@ -28,21 +30,21 @@ class MessageService:
         # Update next run time
         await self._update_next_run_time(channel)
 
-        print(f"Cleared {deleted_count} messages from channel {channel.id}")
+        logger.info(LogArea.SCHEDULER, f"Cleared {deleted_count} messages from channel {channel.id}")
 
     async def _check_permissions(self, channel: discord.TextChannel) -> bool:
         permissions = channel.permissions_for(channel.guild.me)
 
         if not permissions.manage_messages:
-            print(f"Missing 'Manage Messages' permission in channel {channel.id}")
+            logger.warning(LogArea.PERMISSIONS, f"Missing 'Manage Messages' permission in channel {channel.id}")
             return False
 
         if not permissions.read_message_history:
-            print(f"Missing 'Read Message History' permission in channel {channel.id}")
+            logger.warning(LogArea.PERMISSIONS, f"Missing 'Read Message History' permission in channel {channel.id}")
             return False
 
         if not permissions.read_messages:
-            print(f"Missing 'Read Messages' permission in channel {channel.id}")
+            logger.warning(LogArea.PERMISSIONS, f"Missing 'Read Messages' permission in channel {channel.id}")
             return False
 
         return True
@@ -73,7 +75,8 @@ class MessageService:
                         await channel.delete_messages(batch)
                         deleted_count += len(batch)
                     except discord.HTTPException as e:
-                        print(
+                        logger.warning(
+                            LogArea.DISCORD,
                             f"Bulk delete failed: {e}, falling back to individual deletion"
                         )
                         for msg in batch:
@@ -94,7 +97,13 @@ class MessageService:
                     pass
 
         except Exception as e:
-            print(f"Error clearing messages in channel {channel.id}: {e}")
+            error_id = await logger.log_error(
+                LogArea.SCHEDULER,
+                f"Error clearing messages in channel {channel.id}",
+                exception=e,
+                channel_id=str(channel.id)
+            )
+            logger.error(LogArea.SCHEDULER, f"Error clearing messages in channel {channel.id}. Error ID: {error_id}")
 
         return deleted_count
 
@@ -133,4 +142,4 @@ class MessageService:
 
             await channel.send(embed=embed, delete_after=60)
         except discord.HTTPException:
-            print(f"Could not send missed clear notification to channel {channel.id}")
+            logger.warning(LogArea.SCHEDULER, f"Could not send missed clear notification to channel {channel.id}")

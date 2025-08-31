@@ -5,6 +5,7 @@ from datetime import datetime, timezone, timedelta
 from src.models import Server
 from src.services.database import db_manager
 from src.services.cache_manager import MultiLevelCache
+from src.utils.logger import logger, LogArea
 
 
 class DataService:
@@ -295,12 +296,13 @@ class DataService:
                 days_ago = (
                     (datetime.now(timezone.utc) - removed_at).days if removed_at else 30
                 )
-                print(
+                logger.info(
+                    LogArea.CLEANUP,
                     f"Cleaned up server: {server_name} (ID: {server_id}) - Removed {days_ago} days ago"
                 )
                 cleaned_count += 1
 
         if cleaned_count > 0:
-            print(f"Total servers cleaned up: {cleaned_count}")
+            logger.info(LogArea.CLEANUP, f"Total servers cleaned up: {cleaned_count}")
 
         return cleaned_count

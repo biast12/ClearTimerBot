@@ -8,6 +8,7 @@ from apscheduler.job import Job
 from src.models import ChannelTimer
 from src.services.data_service import DataService
 from src.utils.timer_parser import TimerParser
+from src.utils.logger import logger, LogArea
 
 
 class SchedulerService:
@@ -35,7 +36,7 @@ class SchedulerService:
         
         total_cleaned = memory_cleaned + warm_cleaned + cold_cleaned
         if total_cleaned > 0:
-            print(f"Cache cleanup: Removed {total_cleaned} expired entries (Memory: {memory_cleaned}, Warm: {warm_cleaned}, Cold: {cold_cleaned})")
+            logger.debug(LogArea.CACHE, f"Cache cleanup: Removed {total_cleaned} expired entries (Memory: {memory_cleaned}, Warm: {warm_cleaned}, Cold: {cold_cleaned})")
 
     async def start(self) -> None:
         if not self.scheduler.running:
@@ -97,13 +98,13 @@ class SchedulerService:
         try:
             trigger, _ = self.timer_parser.parse(channel_timer.timer)
         except Exception as e:
-            print(f"Error parsing timer for job {job_id}: {e}")
+            logger.error(LogArea.SCHEDULER, f"Error parsing timer for job {job_id}: {e}")
             return
 
         # Get the channel object
         channel = bot.get_channel(int(channel_id))
         if not channel:
-            print(f"Channel {channel_id} not found for job {job_id}")
+            logger.warning(LogArea.SCHEDULER, f"Channel {channel_id} not found for job {job_id}")
             return
 
         # Schedule the job
@@ -125,7 +126,7 @@ class SchedulerService:
         try:
             trigger, next_run_time = self.timer_parser.parse(channel_timer.timer)
         except Exception as e:
-            print(f"Error parsing timer for missed job {job_id}: {e}")
+            logger.error(LogArea.SCHEDULER, f"Error parsing timer for missed job {job_id}: {e}")
             return
 
         # Update the stored next_run_time

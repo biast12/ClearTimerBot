@@ -1,0 +1,269 @@
+import sys
+import traceback
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Optional, Dict, Any
+import uuid
+from dataclasses import dataclass, field
+
+
+class LogLevel(Enum):
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"
+    NONE = "NONE"  # Special case - doesn't display level field
+
+
+class LogArea(Enum):
+    STARTUP = "STARTUP"
+    SCHEDULER = "SCHEDULER"
+    COMMANDS = "COMMANDS"
+    DATABASE = "DATABASE"
+    DISCORD = "DISCORD"
+    CACHE = "CACHE"
+    CLEANUP = "CLEANUP"
+    PERMISSIONS = "PERMISSIONS"
+    GENERAL = "GENERAL"
+    NONE = "NONE"  # Special case - doesn't display area field
+
+
+@dataclass
+class ErrorRecord:
+    error_id: str
+    timestamp: datetime
+    level: str
+    area: str
+    message: str
+    traceback: str
+    server_id: Optional[str] = None
+    channel_id: Optional[str] = None
+    user_id: Optional[str] = None
+    command: Optional[str] = None
+    additional_data: Dict[str, Any] = field(default_factory=dict)
+
+
+class BotLogger:
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    def __init__(self):
+        if not hasattr(self, 'initialized'):
+            self.initialized = True
+            self.console_enabled = True
+            self.db_enabled = True
+            self.min_level = LogLevel.INFO
+    
+    def _get_color(self, level: LogLevel) -> str:
+        """Get ANSI color code for log level"""
+        colors = {
+            LogLevel.DEBUG: "\033[90m",     # Gray
+            LogLevel.INFO: "\033[92m",      # Green
+            LogLevel.WARNING: "\033[93m",   # Yellow
+            LogLevel.ERROR: "\033[91m",     # Red
+            LogLevel.CRITICAL: "\033[95m",   # Magenta
+            LogLevel.NONE: "\033[37m"       # White/default
+        }
+        return colors.get(level, "")
+    
+    def _reset_color(self) -> str:
+        """Reset ANSI color"""
+        return "\033[0m"
+    
+    def _should_log(self, level: LogLevel) -> bool:
+        """Check if this level should be logged based on min_level"""
+        # NONE level always gets logged
+        if level == LogLevel.NONE:
+            return True
+        level_order = [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARNING, LogLevel.ERROR, LogLevel.CRITICAL]
+        return level_order.index(level) >= level_order.index(self.min_level)
+    
+    def _format_message(self, level: LogLevel, area: LogArea, message: str) -> str:
+        """Format log message for console output"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        color = self._get_color(level)
+        reset = self._reset_color()
+        
+        # Build format based on NONE values
+        if level == LogLevel.NONE and area == LogArea.NONE:
+            # Neither level nor area
+            return f"{color}[{timestamp}] {message}{reset}"
+        elif level == LogLevel.NONE:
+            # No level, but has area
+            return f"{color}[{timestamp}] [{area.value:10}] {message}{reset}"
+        elif area == LogArea.NONE:
+            # No area, but has level
+            return f"{color}[{timestamp}] [{level.value:8}] {message}{reset}"
+        else:
+            # Both level and area
+            return f"{color}[{timestamp}] [{level.value:8}] [{area.value:10}] {message}{reset}"
+    
+    async def _save_error_to_db(self, error_record: ErrorRecord) -> None:
+        """Save error record to database"""
+        if not self.db_enabled:
+            return
+            
+        try:
+            from src.services.database import db_manager
+            errors_collection = db_manager.db.errors
+            error_doc = {
+                "_id": error_record.error_id,
+                "timestamp": error_record.timestamp,
+                "level": error_record.level,
+                "area": error_record.area,
+                "message": error_record.message,
+                "traceback": error_record.traceback,
+                "server_id": error_record.server_id,
+                "channel_id": error_record.channel_id,
+                "user_id": error_record.user_id,
+                "command": error_record.command,
+                "additional_data": error_record.additional_data
+            }
+            await errors_collection.insert_one(error_doc)
+        except Exception as e:
+            # Fallback to console if DB save fails
+            print(f"Failed to save error to database: {e}")
+    
+    def log(self, level: LogLevel, area: LogArea, message: str, **kwargs) -> Optional[str]:
+        """
+        Log a message with specified level and area.
+        Returns error_id if level is ERROR or CRITICAL.
+        """
+        if not self._should_log(level):
+            return None
+        
+        # Console output
+        if self.console_enabled:
+            formatted = self._format_message(level, area, message)
+            print(formatted)
+        
+        # Return error_id for errors
+        if level in [LogLevel.ERROR, LogLevel.CRITICAL]:
+            return self._generate_error_id()
+        
+        return None
+    
+    async def log_error(
+        self, 
+        area: LogArea, 
+        message: str,
+        exception: Optional[Exception] = None,
+        server_id: Optional[str] = None,
+        channel_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        command: Optional[str] = None,
+        **additional_data
+    ) -> str:
+        """
+        Log an error and save it to the database.
+        Returns the error ID for reference.
+        """
+        error_id = str(uuid.uuid4())[:8]  # Short ID for easy reference
+        
+        # Get traceback if exception provided
+        tb_str = ""
+        if exception:
+            tb_str = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__))
+        elif sys.exc_info()[0]:
+            tb_str = traceback.format_exc()
+        
+        # Create error record
+        error_record = ErrorRecord(
+            error_id=error_id,
+            timestamp=datetime.now(timezone.utc),
+            level=LogLevel.ERROR.value,
+            area=area.value,
+            message=message,
+            traceback=tb_str,
+            server_id=server_id,
+            channel_id=channel_id,
+            user_id=user_id,
+            command=command,
+            additional_data=additional_data
+        )
+        
+        # Console output
+        if self.console_enabled:
+            formatted = self._format_message(LogLevel.ERROR, area, f"{message} [Error ID: {error_id}]")
+            print(formatted)
+            if tb_str and self.min_level == LogLevel.DEBUG:
+                print(tb_str)
+        
+        # Save to database
+        await self._save_error_to_db(error_record)
+        
+        return error_id
+    
+    def _generate_error_id(self) -> str:
+        """Generate a short unique error ID"""
+        return str(uuid.uuid4())[:8]
+    
+    # Convenience methods
+    def debug(self, area: LogArea, message: str, **kwargs) -> None:
+        self.log(LogLevel.DEBUG, area, message, **kwargs)
+    
+    def info(self, area: LogArea, message: str, **kwargs) -> None:
+        self.log(LogLevel.INFO, area, message, **kwargs)
+    
+    def warning(self, area: LogArea, message: str, **kwargs) -> None:
+        self.log(LogLevel.WARNING, area, message, **kwargs)
+    
+    def error(self, area: LogArea, message: str, **kwargs) -> Optional[str]:
+        return self.log(LogLevel.ERROR, area, message, **kwargs)
+    
+    def critical(self, area: LogArea, message: str, **kwargs) -> Optional[str]:
+        return self.log(LogLevel.CRITICAL, area, message, **kwargs)
+    
+    def print(self, message: str, **kwargs) -> None:
+        """Print a clean message without level or area fields"""
+        self.log(LogLevel.NONE, LogArea.NONE, message, **kwargs)
+    
+    def spacer(self, char: str = "=", length: int = 100, color: Optional[LogLevel] = None) -> None:
+        """Print a colored spacer line that fits the logger theme"""
+        if color:
+            color_code = self._get_color(color)
+        else:
+            # Default to a cyan/blue color for better visibility
+            color_code = "\033[36m"  # Cyan
+        reset = self._reset_color()
+        print(f"{color_code}{char * length}{reset}")
+    
+    async def get_error(self, error_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve an error from the database by ID"""
+        try:
+            from src.services.database import db_manager
+            errors_collection = db_manager.db.errors
+            error_doc = await errors_collection.find_one({"_id": error_id})
+            return error_doc
+        except Exception:
+            return None
+    
+    async def delete_error(self, error_id: str) -> bool:
+        """Delete an error from the database by ID"""
+        try:
+            from src.services.database import db_manager
+            errors_collection = db_manager.db.errors
+            result = await errors_collection.delete_one({"_id": error_id})
+            return result.deleted_count > 0
+        except Exception:
+            return False
+    
+    async def get_recent_errors(self, limit: int = 10) -> list:
+        """Get recent errors from the database"""
+        try:
+            from src.services.database import db_manager
+            errors_collection = db_manager.db.errors
+            cursor = errors_collection.find().sort("timestamp", -1).limit(limit)
+            errors = await cursor.to_list(length=limit)
+            return errors
+        except Exception:
+            return []
+
+
+# Global logger instance
+logger = BotLogger()

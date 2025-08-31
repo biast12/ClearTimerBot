@@ -14,6 +14,7 @@ from discord.ext import commands
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.core.config import ConfigManager
+from src.utils.logger import logger, LogArea
 
 
 # Mock classes for command registration
@@ -68,69 +69,61 @@ class CommandRegisterBot(commands.Bot):
         for module in command_modules:
             try:
                 await self.load_extension(module)
-                print(f"[OK] Loaded extension: {module}")
+                logger.info(LogArea.NONE, f"Loaded extension: {module}")
             except Exception as e:
-                print(f"[ERROR] Failed to load extension {module}: {e}")
+                logger.error(LogArea.NONE, f"Failed to load extension {module}: {e}")
 
         # Load owner commands if configured
         if self.config.is_owner_mode:
             try:
                 await self.load_extension("src.commands.owner")
-                print("[OK] Loaded owner commands")
+                logger.info(LogArea.NONE, "Loaded owner commands")
             except Exception as e:
-                print(f"[ERROR] Failed to load owner commands: {e}")
+                logger.error(LogArea.NONE, f"Failed to load owner commands: {e}")
 
     async def on_ready(self):
-        print(f"\n[BOT] Connected as: {self.user} (ID: {self.user.id})")
-        print("=" * 50)
+        logger.info(LogArea.NONE, f"Connected as: {self.user} (ID: {self.user.id})")
+        logger.spacer()
 
         try:
             # Register global commands
-            print("\n[REGISTER] Registering global commands...")
+            logger.info(LogArea.NONE, "Registering global commands...")
             registered = await self.tree.sync()
-            print(f"[OK] Successfully registered {len(registered)} global commands")
+            logger.info(LogArea.NONE, f"Successfully registered {len(registered)} global commands")
 
             # List registered commands
             if registered:
-                print("\nGlobal commands registered:")
+                logger.info(LogArea.NONE, "Global commands registered:")
                 for cmd in registered:
-                    print(f"  - /{cmd.name}: {cmd.description}")
+                    logger.info(LogArea.NONE, f"  - /{cmd.name}: {cmd.description}")
                     # Check if it's a group command with subcommands
                     if hasattr(cmd, "options"):
                         for option in cmd.options:
-                            print(
-                                f"      - {option.name}: {option.description}"
-                            )
+                            logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
 
             # Register owner commands to specific guild if configured
             if self.config.is_owner_mode and self.config.guild_id:
-                print(
-                    f"\n[REGISTER] Registering owner commands to guild {self.config.guild_id}..."
-                )
+                logger.info(LogArea.NONE, f"Registering owner commands to guild {self.config.guild_id}...")
                 guild = discord.Object(id=self.config.guild_id)
                 registered_guild = await self.tree.sync(guild=guild)
-                print(
-                    f"[OK] Successfully registered {len(registered_guild)} commands to owner guild"
-                )
+                logger.info(LogArea.NONE, f"Successfully registered {len(registered_guild)} commands to owner guild")
 
                 # List guild-specific commands
                 if registered_guild:
-                    print("\nOwner commands registered:")
+                    logger.info(LogArea.NONE, "Owner commands registered:")
                     for cmd in registered_guild:
-                        print(f"  - /{cmd.name}: {cmd.description}")
+                        logger.info(LogArea.NONE, f"  - /{cmd.name}: {cmd.description}")
                         # Check if it's a group command with subcommands
                         if hasattr(cmd, "options"):
                             for option in cmd.options:
-                                print(
-                                    f"      - /{cmd.name} {option.name}: {option.description}"
-                                )
+                                logger.info(LogArea.NONE, f"      - /{cmd.name} {option.name}: {option.description}")
 
-            print("\n[SUCCESS] Command registration complete!")
-            print("=" * 50)
+            logger.info(LogArea.NONE, "Command registration complete!")
+            logger.spacer()
 
         except Exception as e:
-            print(f"\n[ERROR] Failed to register commands: {e}")
-            print("=" * 50)
+            logger.error(LogArea.NONE, f"Failed to register commands: {e}")
+            logger.spacer()
 
         # Close the bot after registering
         await self.close()
@@ -143,9 +136,10 @@ class CommandRegisterBot(commands.Bot):
 
 
 async def main(guild_id_override=None):
-    print("=" * 50)
-    print("ClearTimer Bot - Command Registration")
-    print("=" * 50)
+    logger.spacer()
+    logger.info(LogArea.NONE, "ClearTimer Bot - Command Registration")
+    logger.spacer()
+    logger.info(LogArea.NONE, "Starting command registration")
 
     # Load configuration
     config_manager = ConfigManager()
@@ -154,11 +148,11 @@ async def main(guild_id_override=None):
     # Override guild_id if provided via command line
     if guild_id_override:
         config.guild_id = int(guild_id_override)
-        print(f"[INFO] Using guild ID from command line: {config.guild_id}")
+        logger.info(LogArea.NONE, f"Using guild ID from command line: {config.guild_id}")
     elif config.guild_id:
-        print(f"[INFO] Using guild ID from .env: {config.guild_id}")
+        logger.info(LogArea.NONE, f"Using guild ID from .env: {config.guild_id}")
     else:
-        print("[INFO] No guild ID specified (owner commands will be global)")
+        logger.info(LogArea.NONE, "No guild ID specified (owner commands will be global)")
 
     # Create bot instance
     bot = CommandRegisterBot(config)
@@ -167,9 +161,9 @@ async def main(guild_id_override=None):
     try:
         await bot.start(config.token)
     except KeyboardInterrupt:
-        print("\nInterrupted by user")
+        logger.info(LogArea.NONE, "Interrupted by user")
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(LogArea.NONE, f"Error during registration: {e}")
     finally:
         # Ensure proper cleanup
         if bot and not bot.is_closed():

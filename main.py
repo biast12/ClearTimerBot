@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from src.core.bot import ClearTimerBot  # noqa: E402
 from src.core.config import ConfigManager  # noqa: E402
 from src.utils.errors import ErrorHandler  # noqa: E402
+from src.utils.logger import logger, LogArea  # noqa: E402
 
 
 async def main():
@@ -30,12 +31,19 @@ async def main():
 
     # Run the bot
     try:
+        logger.info(LogArea.STARTUP, "Starting ClearTimer Bot...")
         await bot.start(config.token)
     except KeyboardInterrupt:
-        print("\nShutting down...")
+        logger.info(LogArea.STARTUP, "Received shutdown signal...")
     except Exception as e:
-        print(f"Fatal error: {e}")
+        error_id = await logger.log_error(
+            LogArea.STARTUP,
+            "Fatal error occurred",
+            exception=e
+        )
+        logger.critical(LogArea.STARTUP, f"Fatal error: {e}. Error ID: {error_id}")
     finally:
+        logger.info(LogArea.STARTUP, "Shutting down bot...")
         await bot.close()
 
 

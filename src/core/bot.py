@@ -7,6 +7,7 @@ from src.services.data_service import DataService
 from src.services.database import db_manager
 from src.services.scheduler_service import SchedulerService
 from src.services.message_service import MessageService
+from src.utils.logger import logger, LogArea, LogLevel
 
 
 class ClearTimerBot(commands.Bot):
@@ -34,35 +35,49 @@ class ClearTimerBot(commands.Bot):
     async def setup_hook(self) -> None:
         # Connect to MongoDB
         await db_manager.connect()
+        logger.info(LogArea.DATABASE, "Connected to MongoDB")
 
         # Initialize services
         await self.data_service.initialize()
+        logger.info(LogArea.STARTUP, "Data service initialized")
 
         # Load command cogs
         await self.load_commands()
 
     async def on_ready(self) -> None:
-        print(f"Bot ready: {self.user} (ID: {self.user.id})")
-        print(f"Connected to {len(self.guilds)} guilds")
+        logger.info(LogArea.STARTUP, f"Bot ready: {self.user} (ID: {self.user.id})")
+        logger.info(LogArea.STARTUP, f"Connected to {len(self.guilds)} guilds")
 
-        # Set presence
-        activity = discord.Game(name="Cleaning up the mess! 🧹")
-        await self.change_presence(activity=activity)
+        try:
+            # Set presence
+            activity = discord.Game(name="Cleaning up the mess! 🧹")
+            await self.change_presence(activity=activity)
+            logger.debug(LogArea.DISCORD, "Presence set")
 
-        # Update server names for all connected guilds
-        await self._update_server_names()
+            # Update server names for all connected guilds
+            await self._update_server_names()
 
-        # Sync server cleanup status based on current guild membership
-        await self._sync_server_cleanup_status()
+            # Sync server cleanup status based on current guild membership
+            await self._sync_server_cleanup_status()
 
-        # Start scheduler and initialize jobs
-        await self.scheduler_service.start()
-        await self.scheduler_service.initialize_jobs(self)
+            # Start scheduler and initialize jobs
+            await self.scheduler_service.start()
+            logger.info(LogArea.SCHEDULER, "Scheduler started")
+            await self.scheduler_service.initialize_jobs(self)
+            logger.info(LogArea.SCHEDULER, "Scheduler jobs initialized")
 
-        # Clean up old removed servers on startup
-        await self.data_service.cleanup_old_removed_servers()
+            # Clean up old removed servers on startup
+            await self.data_service.cleanup_old_removed_servers()
+            logger.info(LogArea.CLEANUP, "Old removed servers cleanup completed")
 
-        print("Bot initialization complete!")
+            logger.info(LogArea.STARTUP, "Bot initialization complete!")
+        except Exception as e:
+            error_id = await logger.log_error(
+                LogArea.STARTUP,
+                f"Critical error during bot initialization: {str(e)}",
+                exception=e
+            )
+            logger.critical(LogArea.STARTUP, f"Bot initialization failed! Error ID: {error_id}")
 
     async def load_commands(self) -> None:
         # Load standard commands
@@ -75,17 +90,27 @@ class ClearTimerBot(commands.Bot):
         for module in command_modules:
             try:
                 await self.load_extension(module)
-                print(f"Loaded extension: {module}")
+                logger.info(LogArea.STARTUP, f"Loaded extension: {module}")
             except Exception as e:
-                print(f"Failed to load extension {module}: {e}")
+                error_id = await logger.log_error(
+                    LogArea.STARTUP,
+                    f"Failed to load extension {module}",
+                    exception=e
+                )
+                logger.error(LogArea.STARTUP, f"Failed to load extension {module}. Error ID: {error_id}")
 
         # Load owner commands if configured
         if self.config.is_owner_mode:
             try:
                 await self.load_extension("src.commands.owner")
-                print("Loaded owner commands")
+                logger.info(LogArea.STARTUP, "Loaded owner commands")
             except Exception as e:
-                print(f"Failed to load owner commands: {e}")
+                error_id = await logger.log_error(
+                    LogArea.STARTUP,
+                    "Failed to load owner commands",
+                    exception=e
+                )
+                logger.error(LogArea.STARTUP, f"Failed to load owner commands. Error ID: {error_id}")
 
     async def close(self) -> None:
         await self.scheduler_service.shutdown()
@@ -109,11 +134,12 @@ class ClearTimerBot(commands.Bot):
             removed_servers_collection = db_manager.removed_servers
             await removed_servers_collection.delete_one({"_id": server_id})
             await self.data_service.invalidate_removed_server_cache(server_id)
-            print(
+            logger.info(
+                LogArea.DISCORD,
                 f"Bot rejoined server: {guild.name} (ID: {server_id}) - Removed from removal tracking"
             )
         else:
-            print(f"Bot joined new server: {guild.name} (ID: {server_id})")
+            logger.info(LogArea.DISCORD, f"Bot joined new server: {guild.name} (ID: {server_id})")
 
         # Add or update server in data service
         await self.data_service.add_server(server_id, guild.name)
@@ -139,7 +165,8 @@ class ClearTimerBot(commands.Bot):
         # Cache the removal document
         await self.data_service.cache_removed_server(server_id, removal_doc)
 
-        print(
+        logger.info(
+            LogArea.DISCORD,
             f"Bot removed from server: {guild.name} (ID: {server_id}) - Added to removal tracking"
         )
 
@@ -157,15 +184,15 @@ class ClearTimerBot(commands.Bot):
                     old_name = server.server_name or "(empty)"
                     await self.data_service.update_server_name(server_id, guild.name)
                     updated_count += 1
-                    print(f"Updated server name: {old_name} -> {guild.name} (ID: {server_id})")
+                    logger.debug(LogArea.DATABASE, f"Updated server name: {old_name} -> {guild.name} (ID: {server_id})")
             else:
                 # Server not in database, add it
                 await self.data_service.add_server(server_id, guild.name)
                 updated_count += 1
-                print(f"Added new server: {guild.name} (ID: {server_id})")
+                logger.debug(LogArea.DATABASE, f"Added new server: {guild.name} (ID: {server_id})")
         
         if updated_count > 0:
-            print(f"Updated {updated_count} server name(s)")
+            logger.info(LogArea.DATABASE, f"Updated {updated_count} server name(s)")
 
     async def _sync_server_cleanup_status(self) -> None:
         """Sync server cleanup status based on current guild membership on startup"""
@@ -198,7 +225,7 @@ class ClearTimerBot(commands.Bot):
             if not existing:
                 await removed_servers_collection.insert_one(removal_doc)
                 await self.data_service.cache_removed_server(server_id, removal_doc)
-                print(f"Marked server {removal_doc['server_name']} (ID: {server_id}) as removed (bot not in server)")
+                logger.info(LogArea.CLEANUP, f"Marked server {removal_doc['server_name']} (ID: {server_id}) as removed (bot not in server)")
         
         # Check removed_servers collection for servers bot is currently in
         removed_servers = await removed_servers_collection.find().to_list(None)
@@ -210,4 +237,4 @@ class ClearTimerBot(commands.Bot):
                 await self.data_service.invalidate_removed_server_cache(server_id)
                 guild = self.get_guild(int(server_id))
                 guild_name = guild.name if guild else "Unknown"
-                print(f"Removed server {guild_name} (ID: {server_id}) from removal tracking (bot is in server)")
+                logger.info(LogArea.CLEANUP, f"Removed server {guild_name} (ID: {server_id}) from removal tracking (bot is in server)")

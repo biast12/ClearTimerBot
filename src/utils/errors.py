@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 import traceback
 from typing import Union
+from src.utils.logger import logger, LogArea
 
 
 class ErrorHandler:
@@ -49,15 +50,20 @@ class ErrorHandler:
             embed.description = f"An error occurred with Discord's API: {error.text}"
 
         else:
-            # Generic error
-            embed.title = "❌ An Error Occurred"
-            embed.description = str(error)
-
-            # Log the full traceback
-            print(
-                f"Unhandled error in command: {interaction.command.name if interaction.command else 'Unknown'}"
+            # Generic error - log it and give user an error ID
+            command_name = interaction.command.name if interaction.command else 'Unknown'
+            error_id = await logger.log_error(
+                LogArea.COMMANDS,
+                f"Unhandled error in command: {command_name}",
+                exception=error,
+                server_id=str(interaction.guild_id) if interaction.guild_id else None,
+                channel_id=str(interaction.channel_id) if interaction.channel_id else None,
+                user_id=str(interaction.user.id),
+                command=command_name
             )
-            traceback.print_exception(type(error), error, error.__traceback__)
+            
+            embed.title = "❌ An Error Occurred"
+            embed.description = f"An unexpected error occurred. Please report this to the bot owner.\n\nError ID: `{error_id}`"
 
         # Send error message
         if interaction.response.is_done():
