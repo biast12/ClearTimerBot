@@ -12,7 +12,7 @@ class TimerParseError(ValueError):
 
 class TimerParser:
     TIMEZONE_PATTERN = re.compile(r"^(\d{1,2}:\d{2})\s*([A-Z][\w+-]*)?\s*$")
-    INTERVAL_PATTERN = re.compile(r"^(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?$")
+    INTERVAL_PATTERN = re.compile(r"^(?:(\d+)d)?(?:(\d+)h(?:r)?)?(?:(\d+)m)?$")
 
     def __init__(self, timezone_resolver):
         self.timezone_resolver = timezone_resolver
@@ -72,7 +72,9 @@ class TimerParser:
 
     def _parse_interval(self, match: re.Match) -> Tuple[IntervalTrigger, datetime]:
         days = int(match.group(1) or 0)
-        hours = int(match.group(2) or 0)
+        # Handle hours - group 2 might include 'hr' or just 'h'
+        hours_str = match.group(2) or "0"
+        hours = int(hours_str.replace('hr', '').replace('h', '') or 0)
         minutes = int(match.group(3) or 0)
 
         if days == 0 and hours == 0 and minutes == 0:
