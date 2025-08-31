@@ -47,8 +47,15 @@ class SchedulerService:
 
     async def initialize_jobs(self, bot) -> None:
         servers = await self.data_service.get_all_servers()
+        
+        # Get current guild IDs the bot is in
+        current_guild_ids = {str(guild.id) for guild in bot.guilds}
 
         for server_id, server in servers.items():
+            # Skip servers the bot is not in
+            if server_id not in current_guild_ids:
+                continue
+            
             for channel_id, channel_timer in server.channels.items():
                 await self._schedule_job(
                     bot=bot,

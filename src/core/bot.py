@@ -185,7 +185,7 @@ class ClearTimerBot(commands.Bot):
                 server = all_servers[server_id]
                 servers_to_mark_removed.append({
                     "_id": server_id,
-                    "server_name": server.name,
+                    "server_name": server.server_name,
                     "removed_at": datetime.now(timezone.utc),
                     "member_count": 0,  # Unknown since bot is not in the server
                 })
