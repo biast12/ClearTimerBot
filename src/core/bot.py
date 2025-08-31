@@ -326,11 +326,7 @@ class ClearTimerBot(commands.Bot):
         if server and channel_id in server.channels:
             # Remove the subscription
             if await self.data_service.remove_channel_subscription(server_id, channel_id):
-                logger.info(
-                    LogArea.DISCORD,
-                    f"Channel deleted: Removed subscription for #{channel.name} (ID: {channel_id}) in {channel.guild.name}"
-                )
-                
+
                 # Cancel the scheduled job if it exists
                 job_id = f"{server_id}_{channel_id}"
                 if await self.scheduler_service.cancel_job(job_id):
