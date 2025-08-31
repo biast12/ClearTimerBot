@@ -293,12 +293,16 @@ class DataService:
             await removed_servers_collection.delete_one({"_id": server_id})
 
             if result.deleted_count > 0:
-                days_ago = (
-                    (datetime.now(timezone.utc) - removed_at).days if removed_at else 30
-                )
+                # Ensure removed_at is timezone-aware
+                if removed_at:
+                    if removed_at.tzinfo is None:
+                        removed_at = removed_at.replace(tzinfo=timezone.utc)
+                    days_ago = (datetime.now(timezone.utc) - removed_at).days
+                else:
+                    days_ago = 30
                 logger.info(
                     LogArea.CLEANUP,
-                    f"Cleaned up server: {server_name} (ID: {server_id}) - Removed {days_ago} days ago"
+                    f"Cleaned up server: {server_name} (ID: {server_id})"
                 )
                 cleaned_count += 1
 
