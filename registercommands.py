@@ -99,7 +99,7 @@ class CommandRegisterBot(commands.Bot):
                     if hasattr(cmd, "options"):
                         for option in cmd.options:
                             print(
-                                f"      - /{cmd.name} {option.name}: {option.description}"
+                                f"      - {option.name}: {option.description}"
                             )
 
             # Register owner commands to specific guild if configured
