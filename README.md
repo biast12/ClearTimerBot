@@ -74,21 +74,22 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 
 ### General Commands
 
-#### `/sub [timer] [target_channel]`
+#### `/sub [timer] [target_channel] [ignored_message]`
 
 Subscribe a channel to automatic message deletion. Requires `Manage Messages` permission.
 
 - **Parameters:**
-  - `timer` (optional): Defaults to `24h` if not specified
+  - `timer`: Timer format (e.g., `24h`, `1d12h30m`, or `15:30 EST`)
   - `target_channel` (optional): Defaults to current channel if not specified
+  - `ignored_message` (optional): Message ID or link to ignore during clearing
 - **Timer formats:**
   - **Intervals:** `24h`, `1d`, `30m`, `1d12h30m` (combine days, hours, minutes)
   - **Daily schedule:** `15:30 EST`, `09:00 PST` (specific time with timezone)
 - **Examples:**
-  - `/sub` - Clear current channel every 24 hours
   - `/sub 12h` - Clear current channel every 12 hours
   - `/sub 1d #announcements` - Clear #announcements daily
   - `/sub 09:00 EST #general` - Clear #general every day at 9 AM EST
+  - `/sub 24h #general 123456789` - Clear #general daily, ignoring message 123456789
 
 #### `/unsub [target_channel]`
 
@@ -99,6 +100,18 @@ Unsubscribe a channel from automatic message deletion. Requires `Manage Messages
 - **Examples:**
   - `/unsub` - Stop clearing current channel
   - `/unsub #general` - Stop clearing #general
+
+#### `/ignoremsg [message] [target_channel]`
+
+Toggle a message to be ignored during channel clearing. Requires `Manage Messages` permission.
+
+- **Parameters:**
+  - `message`: Message ID or Discord message link to toggle ignore status
+  - `target_channel` (optional): Defaults to current channel if not specified
+- **Examples:**
+  - `/ignoremsg 123456789` - Toggle ignore status for message in current channel
+  - `/ignoremsg https://discord.com/channels/.../123456789` - Toggle using message link
+  - `/ignoremsg 123456789 #general` - Toggle ignore status in #general
 
 #### `/next [target_channel]`
 
@@ -153,21 +166,25 @@ Remove a server from the blacklist.
 
 Display all blacklisted servers.
 
-#### `/owner reload`
-
-Reload all slash commands without restarting the bot.
-
 #### `/owner reload_cache`
 
-Reload the cache to sync with database changes.
+Reload all caches from database to sync with database changes.
 
-#### `/owner removed_servers`
+#### `/owner error_lookup [error_id]`
 
-Show servers the bot has been removed from but still have data.
+Look up detailed information about a specific error by its ID.
 
-#### `/owner cleanup_removed`
+#### `/owner error_delete [error_id]`
 
-Clean up data from servers the bot is no longer in.
+Delete a specific error from the database by its ID.
+
+#### `/owner error_list [limit]`
+
+List recent errors from the database (default: 10, max: 25).
+
+#### `/owner error_clear`
+
+Clear all errors from the database.
 
 </details>
 
@@ -199,8 +216,7 @@ Contributions are welcome! Please:
 
 ## Troubleshooting
 
-- **Bot not responding to commands**: Ensure the bot has proper permissions in your server
-- **Commands not showing**: Run `/reload_commands` or restart the bot
+- **Commands not showing**: Register the commands with `register_commands.py` / `register_commands.bat`
 - **Timezone issues**: Check supported timezones in the bot's timezone configuration
 
 ---
