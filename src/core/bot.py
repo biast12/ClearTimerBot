@@ -135,7 +135,7 @@ class ClearTimerBot(commands.Bot):
             await self.data_service.invalidate_removed_server_cache(server_id)
             logger.info(
                 LogArea.DISCORD,
-                f"Bot rejoined server: {guild.name} (ID: {server_id}) - Removed from removal tracking"
+                f"Bot rejoined server: {guild.name} (ID: {server_id})"
             )
         else:
             logger.info(LogArea.DISCORD, f"Bot joined new server: {guild.name} (ID: {server_id})")
