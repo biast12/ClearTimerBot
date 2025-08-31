@@ -50,9 +50,8 @@ class ClearTimerBot(commands.Bot):
 
         try:
             # Set presence
-            activity = discord.Game(name="Cleaning up the mess! 🧹")
+            activity = discord.CustomActivity(name="Cleaning up the mess! 🧹")
             await self.change_presence(activity=activity)
-            logger.debug(LogArea.DISCORD, "Presence set")
 
             # Update server names for all connected guilds
             await self._update_server_names()
