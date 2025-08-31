@@ -180,6 +180,14 @@ class SchedulerService:
             return True
         except Exception:
             return False
+    
+    async def cancel_job(self, job_id: str) -> bool:
+        """Cancel a job by its job_id directly"""
+        try:
+            self.scheduler.remove_job(job_id)
+            return True
+        except Exception:
+            return False
 
     def get_job(self, server_id: str, channel_id: str) -> Optional[Job]:
         job_id = self._make_job_id(server_id, channel_id)

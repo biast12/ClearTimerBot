@@ -146,6 +146,31 @@ class DataService:
                 await self._cache.invalidate(cache_key)
                 return True
             return False
+    
+    async def remove_channel_subscription(self, server_id: str, channel_id: str) -> bool:
+        """Remove a channel subscription from a server"""
+        async with self._lock:
+            server = self._servers_cache.get(server_id)
+            if not server:
+                return False
+            
+            # Remove channel from server
+            if not server.remove_channel(channel_id):
+                return False
+            
+            # Update database
+            servers_collection = db_manager.servers
+            await servers_collection.update_one(
+                {"_id": server_id},
+                {"$unset": {f"channels.{channel_id}": ""}}
+            )
+            
+            # Invalidate cache for this server
+            cache_key = f"server:{server_id}"
+            await self._cache.invalidate(cache_key)
+            
+            logger.debug(LogArea.DATABASE, f"Removed channel {channel_id} from server {server_id}")
+            return True
 
     async def remove_server(self, server_id: str) -> bool:
         async with self._lock:

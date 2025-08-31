@@ -59,6 +59,9 @@ class ClearTimerBot(commands.Bot):
 
             # Sync server cleanup status based on current guild membership
             await self._sync_server_cleanup_status()
+            
+            # Clean up subscriptions for deleted channels
+            await self._cleanup_deleted_channels()
 
             # Start scheduler and initialize jobs
             await self.scheduler_service.start()
@@ -137,6 +140,9 @@ class ClearTimerBot(commands.Bot):
                 LogArea.DISCORD,
                 f"Bot rejoined server: {guild.name} (ID: {server_id})"
             )
+            
+            # Clean up any deleted channels for this rejoined server
+            await self._cleanup_server_channels(guild)
         else:
             logger.info(LogArea.DISCORD, f"Bot joined new server: {guild.name} (ID: {server_id})")
 
@@ -237,3 +243,85 @@ class ClearTimerBot(commands.Bot):
                 guild = self.get_guild(int(server_id))
                 guild_name = guild.name if guild else "Unknown"
                 logger.info(LogArea.CLEANUP, f"Removed server {guild_name} (ID: {server_id}) from removal tracking (bot is in server)")
+    
+    async def _cleanup_deleted_channels(self) -> None:
+        """Remove subscriptions for channels that no longer exist (only for servers bot is in)"""
+        
+        all_servers = await self.data_service.get_all_servers()
+        
+        for server_id, server in all_servers.items():
+            # Check if server is in removed_servers (bot was removed)
+            removed_server = await self.data_service.get_removed_server(server_id)
+            if removed_server:
+                # Bot is not in this server, skip cleanup to preserve subscriptions
+                continue
+            
+            guild = self.get_guild(int(server_id))
+            if not guild:
+                # Server not in removed_servers but bot doesn't have access
+                # This shouldn't happen, but skip to be safe
+                continue
+            
+            # Get list of channel IDs that are subscribed
+            subscribed_channels = list(server.channels.keys())
+            
+            for channel_id in subscribed_channels:
+                channel = guild.get_channel(int(channel_id))
+                if not channel:
+                    # Channel doesn't exist, remove subscription
+                    await self.data_service.remove_channel_subscription(server_id, channel_id)
+    
+    async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel) -> None:
+        """Handle when a channel is deleted"""
+        if not isinstance(channel, discord.TextChannel):
+            return
+        
+        server_id = str(channel.guild.id)
+        channel_id = str(channel.id)
+        
+        # Check if this channel had a subscription
+        server = await self.data_service.get_server(server_id)
+        if server and channel_id in server.channels:
+            # Remove the subscription
+            if await self.data_service.remove_channel_subscription(server_id, channel_id):
+                logger.info(
+                    LogArea.DISCORD,
+                    f"Channel deleted: Removed subscription for #{channel.name} (ID: {channel_id}) in {channel.guild.name}"
+                )
+                
+                # Cancel the scheduled job if it exists
+                job_id = f"{server_id}_{channel_id}"
+                if await self.scheduler_service.cancel_job(job_id):
+                    logger.debug(LogArea.SCHEDULER, f"Cancelled scheduled job for deleted channel: {job_id}")
+    
+    async def _cleanup_server_channels(self, guild: discord.Guild) -> None:
+        """Clean up deleted channels when bot rejoins a server"""
+        server_id = str(guild.id)
+        server = await self.data_service.get_server(server_id)
+        
+        if not server or not server.channels:
+            return
+        
+        cleaned_count = 0
+        subscribed_channels = list(server.channels.keys())
+        
+        for channel_id in subscribed_channels:
+            channel = guild.get_channel(int(channel_id))
+            if not channel:
+                # Channel was deleted while bot was away
+                if await self.data_service.remove_channel_subscription(server_id, channel_id):
+                    cleaned_count += 1
+                    logger.info(
+                        LogArea.CLEANUP,
+                        f"Removed subscription for deleted channel {channel_id} in rejoined server {guild.name}"
+                    )
+                    
+                    # Cancel any scheduled job
+                    job_id = f"{server_id}_{channel_id}"
+                    await self.scheduler_service.cancel_job(job_id)
+        
+        if cleaned_count > 0:
+            logger.info(
+                LogArea.CLEANUP,
+                f"Cleaned up {cleaned_count} deleted channel(s) in rejoined server {guild.name}"
+            )
