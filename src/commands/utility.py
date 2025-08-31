@@ -19,38 +19,12 @@ class UtilityCommands(commands.Cog):
         end_time = time.perf_counter()
         response_time = round((end_time - start_time) * 1000)
 
-        # Create response embed
-        embed = discord.Embed(
-            title="🏓 Pong!", color=self._get_latency_color(ws_latency)
-        )
+        # Use Components v2 for ping display
+        from src.components.utility import PingView
+        
+        view = PingView(ws_latency, response_time)
+        await interaction.followup.send(view=view)
 
-        embed.add_field(name="WebSocket Latency", value=f"{ws_latency}ms", inline=True)
-
-        embed.add_field(name="Response Time", value=f"{response_time}ms", inline=True)
-
-        embed.add_field(
-            name="Status", value=self._get_status_emoji(ws_latency), inline=True
-        )
-
-        await interaction.followup.send(embed=embed)
-
-    def _get_latency_color(self, latency: int) -> discord.Color:
-        if latency < 100:
-            return discord.Color.green()
-        elif latency < 300:
-            return discord.Color.yellow()
-        else:
-            return discord.Color.red()
-
-    def _get_status_emoji(self, latency: int) -> str:
-        if latency < 100:
-            return "🟢 Excellent"
-        elif latency < 200:
-            return "🟡 Good"
-        elif latency < 300:
-            return "🟠 Fair"
-        else:
-            return "🔴 Poor"
 
 
 async def setup(bot):

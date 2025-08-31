@@ -16,38 +16,43 @@ class ErrorHandler:
         if not interaction.response.is_done():
             await interaction.response.defer(ephemeral=True)
 
-        embed = discord.Embed(color=discord.Color.red())
-
-        # Handle specific error types
+        # Determine error type and message
         if isinstance(error, app_commands.CommandOnCooldown):
-            embed.title = "⏰ Command on Cooldown"
-            embed.description = f"Please wait {error.retry_after:.1f} seconds before using this command again."
+            error_title = "⏰ Command on Cooldown"
+            error_description = f"Please wait {error.retry_after:.1f} seconds before using this command again."
+            error_id = None
 
         elif isinstance(error, app_commands.MissingPermissions):
-            embed.title = "🔒 Missing Permissions"
             missing = ", ".join(error.missing_permissions)
-            embed.description = f"You need the following permissions: {missing}"
+            error_title = "🔒 Missing Permissions"
+            error_description = f"You need the following permissions: {missing}"
+            error_id = None
 
         elif isinstance(error, app_commands.BotMissingPermissions):
-            embed.title = "🤖 Bot Missing Permissions"
             missing = ", ".join(error.missing_permissions)
-            embed.description = f"I need the following permissions: {missing}"
+            error_title = "🤖 Bot Missing Permissions"
+            error_description = f"I need the following permissions: {missing}"
+            error_id = None
 
         elif isinstance(error, app_commands.NoPrivateMessage):
-            embed.title = "❌ Guild Only"
-            embed.description = "This command can only be used in a server."
+            error_title = "❌ Guild Only"
+            error_description = "This command can only be used in a server."
+            error_id = None
 
         elif isinstance(error, app_commands.CheckFailure):
-            embed.title = "❌ Check Failed"
-            embed.description = "You don't have permission to use this command."
+            error_title = "❌ Check Failed"
+            error_description = "You don't have permission to use this command."
+            error_id = None
 
         elif isinstance(error, discord.Forbidden):
-            embed.title = "🚫 Forbidden"
-            embed.description = "I don't have permission to perform this action."
+            error_title = "🚫 Forbidden"
+            error_description = "I don't have permission to perform this action."
+            error_id = None
 
         elif isinstance(error, discord.HTTPException):
-            embed.title = "⚠️ Discord API Error"
-            embed.description = f"An error occurred with Discord's API: {error.text}"
+            error_title = "⚠️ Discord API Error"
+            error_description = f"An error occurred with Discord's API: {error.text}"
+            error_id = None
 
         else:
             # Generic error - log it and give user an error ID
@@ -62,11 +67,16 @@ class ErrorHandler:
                 command=command_name
             )
             
-            embed.title = "❌ An Error Occurred"
-            embed.description = f"An unexpected error occurred. Please report this to the bot owner.\n\nError ID: `{error_id}`"
+            error_title = "❌ An Error Occurred"
+            error_description = "An unexpected error occurred. Please report this to the bot owner."
 
+        # Use Components v2 for error display
+        from src.components.errors import ErrorView
+        
+        view = ErrorView(error_title, error_description, error_id)
+        
         # Send error message
         if interaction.response.is_done():
-            await interaction.followup.send(embed=embed, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
         else:
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.response.send_message(view=view, ephemeral=True)

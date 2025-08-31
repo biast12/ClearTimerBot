@@ -85,20 +85,10 @@ class SubscriptionCommands(commands.Cog):
         await self.data_service.save_servers()
 
         # Send success message
-        timestamp = int(next_run_time.timestamp())
-        embed = discord.Embed(
-            title="✅ Channel Subscribed",
-            description=f"Messages in {channel.mention} will be cleared automatically.",
-            color=discord.Color.green(),
-        )
-        embed.add_field(name="Timer", value=timer, inline=True)
-        embed.add_field(name="Next Clear", value=f"<t:{timestamp}:f>", inline=True)
-        embed.add_field(name="Time Until", value=f"<t:{timestamp}:R>", inline=True)
+        from src.components.subscription import SubscriptionSuccessView
         
-        if message_id:
-            embed.add_field(name="Ignored Message", value=f"Message ID: {message_id}", inline=False)
-
-        await interaction.response.send_message(embed=embed)
+        view = SubscriptionSuccessView(channel, timer, next_run_time, message_id)
+        await interaction.response.send_message(view=view)
 
     @app_commands.command(
         name="ignoremsg",
@@ -160,23 +150,17 @@ class SubscriptionCommands(commands.Cog):
             channel_timer.remove_ignored_message(message_id)
             await self.data_service.save_servers()
             
-            embed = discord.Embed(
-                title="✅ Message Removed from Ignore List",
-                description=f"Message `{message_id}` will no longer be ignored in {channel.mention}.",
-                color=discord.Color.green(),
-            )
-            await interaction.response.send_message(embed=embed)
+            from src.components.subscription import IgnoreMessageView
+            view = IgnoreMessageView("Message Removed from Ignore List", message_id, channel, added=False)
+            await interaction.response.send_message(view=view)
         else:
             # Add the message
             channel_timer.add_ignored_message(message_id)
             await self.data_service.save_servers()
             
-            embed = discord.Embed(
-                title="✅ Message Added to Ignore List",
-                description=f"Message `{message_id}` will be ignored during clearing in {channel.mention}.",
-                color=discord.Color.green(),
-            )
-            await interaction.response.send_message(embed=embed)
+            from src.components.subscription import IgnoreMessageView
+            view = IgnoreMessageView("Message Added to Ignore List", message_id, channel, added=True)
+            await interaction.response.send_message(view=view)
 
     @app_commands.command(
         name="unsub",
@@ -220,13 +204,10 @@ class SubscriptionCommands(commands.Cog):
             await self.data_service.save_servers()
 
         # Send success message
-        embed = discord.Embed(
-            title="✅ Channel Unsubscribed",
-            description=f"{channel.mention} has been unsubscribed from automatic message deletion.",
-            color=discord.Color.green(),
-        )
-
-        await interaction.response.send_message(embed=embed)
+        from src.components.subscription import UnsubscribeSuccessView
+        
+        view = UnsubscribeSuccessView(channel)
+        await interaction.response.send_message(view=view)
 
     async def _check_permissions(self, interaction: discord.Interaction, target_channel: discord.TextChannel = None) -> bool:
         member = interaction.guild.get_member(interaction.user.id)

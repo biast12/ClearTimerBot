@@ -146,14 +146,7 @@ class MessageService:
     async def notify_missed_clear(
         self, channel: discord.TextChannel, job_id: str
     ) -> None:
-        embed = discord.Embed(
-                title="⚠️ Missed Clear Notification",
-                description=(
-                    "A scheduled message clear was missed for this channel.\n"
-                    "The timer has been rescheduled."
-                ),
-                color=discord.Color.yellow(),
-                timestamp=discord.utils.utcnow(),
-            )
-
-        await channel.send(embed=embed, delete_after=60)
+        from src.components.errors import MissedClearView
+        
+        view = MissedClearView()
+        await channel.send(view=view, delete_after=60)

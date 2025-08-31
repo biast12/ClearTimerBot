@@ -30,73 +30,11 @@ class OwnerCommands(
         # Get cache statistics
         cache_stats = self.data_service.get_cache_stats()
         
-        embed = discord.Embed(
-            title="📊 Cache Statistics",
-            color=discord.Color.green(),
-            timestamp=datetime.now(timezone.utc)
-        )
+        # Use Components v2 for cache stats display
+        from src.components.owner import CacheStatsView
         
-        # Memory cache stats
-        memory_stats = cache_stats.get("memory", {})
-        embed.add_field(
-            name="🔥 Memory Cache (Hot Data)",
-            value=(
-                f"**Hit Rate:** {memory_stats.get('hit_rate', 0)}%\n"
-                f"**Hits:** {memory_stats.get('hits', 0)}\n"
-                f"**Misses:** {memory_stats.get('misses', 0)}\n"
-                f"**Cached Items:** {memory_stats.get('cached_items', 0)}\n"
-                f"**Evictions:** {memory_stats.get('evictions', 0)}"
-            ),
-            inline=True
-        )
-        
-        # Warm cache stats
-        warm_stats = cache_stats.get("warm", {})
-        embed.add_field(
-            name="🌡️ Warm Cache",
-            value=(
-                f"**Hit Rate:** {warm_stats.get('hit_rate', 0)}%\n"
-                f"**Hits:** {warm_stats.get('hits', 0)}\n"
-                f"**Misses:** {warm_stats.get('misses', 0)}\n"
-                f"**Cached Items:** {warm_stats.get('cached_items', 0)}\n"
-                f"**Evictions:** {warm_stats.get('evictions', 0)}"
-            ),
-            inline=True
-        )
-        
-        # Cold cache stats
-        cold_stats = cache_stats.get("cold", {})
-        embed.add_field(
-            name="❄️ Cold Cache",
-            value=(
-                f"**Hit Rate:** {cold_stats.get('hit_rate', 0)}%\n"
-                f"**Hits:** {cold_stats.get('hits', 0)}\n"
-                f"**Misses:** {cold_stats.get('misses', 0)}\n"
-                f"**Cached Items:** {cold_stats.get('cached_items', 0)}\n"
-                f"**Evictions:** {cold_stats.get('evictions', 0)}"
-            ),
-            inline=True
-        )
-        
-        # Calculate overall stats
-        total_hits = memory_stats.get('hits', 0) + warm_stats.get('hits', 0) + cold_stats.get('hits', 0)
-        total_misses = memory_stats.get('misses', 0) + warm_stats.get('misses', 0) + cold_stats.get('misses', 0)
-        total_requests = total_hits + total_misses
-        overall_hit_rate = (total_hits / total_requests * 100) if total_requests > 0 else 0
-        
-        embed.add_field(
-            name="📈 Overall Performance",
-            value=(
-                f"**Total Requests:** {total_requests}\n"
-                f"**Overall Hit Rate:** {overall_hit_rate:.2f}%\n"
-                f"**Database Calls Saved:** {total_hits}"
-            ),
-            inline=False
-        )
-        
-        embed.set_footer(text="Cache helps reduce database load and improve response times")
-        
-        await interaction.followup.send(embed=embed)
+        view = CacheStatsView(cache_stats)
+        await interaction.followup.send(view=view)
 
     @app_commands.command(
         name="list", description="List all servers and their subscribed channels"
@@ -110,60 +48,11 @@ class OwnerCommands(
             await interaction.followup.send("No servers have subscribed channels.")
             return
 
-        embeds = []
-        current_embed = discord.Embed(
-            title="📋 Subscribed Servers and Channels", color=discord.Color.blue()
-        )
-
-        field_count = 0
-
-        for server_id, server in servers.items():
-            if not server.channels:
-                continue
-
-            # Get guild name
-            guild = self.bot.get_guild(int(server_id))
-            guild_name = guild.name if guild else f"Unknown ({server.server_name})"
-
-            # Build channel list
-            channel_list = []
-            for channel_id, timer_data in server.channels.items():
-                channel = self.bot.get_channel(int(channel_id))
-                channel_name = channel.name if channel else "Unknown"
-                channel_list.append(f"• #{channel_name} ({timer_data.timer})")
-
-            field_value = "\n".join(channel_list[:10])
-            if len(channel_list) > 10:
-                field_value += f"\n... and {len(channel_list) - 10} more"
-
-            # Add field to embed
-            current_embed.add_field(
-                name=f"{guild_name} ({server_id})", value=field_value, inline=False
-            )
-
-            field_count += 1
-
-            # Create new embed if current one is full
-            if field_count >= 10:
-                embeds.append(current_embed)
-                current_embed = discord.Embed(
-                    title="📋 Subscribed Servers and Channels (continued)",
-                    color=discord.Color.blue(),
-                )
-                field_count = 0
-
-        if field_count > 0:
-            embeds.append(current_embed)
-
-        # Add statistics to the last embed
-        total_servers = len(servers)
-        total_channels = sum(len(s.channels) for s in servers.values())
-
-        embeds[-1].set_footer(
-            text=f"Total: {total_servers} servers, {total_channels} channels"
-        )
-
-        await interaction.followup.send(embeds=embeds)
+        # Use Components v2 for server list display
+        from src.components.owner import ServerListView
+        
+        view = ServerListView(servers, self.bot)
+        await interaction.followup.send(view=view)
 
     @app_commands.command(
         name="force_unsub", description="Force unsubscribe a server or channel"
@@ -268,25 +157,11 @@ class OwnerCommands(
             )
             return
 
-        embed = discord.Embed(title="🚫 Blacklisted Servers", color=discord.Color.red())
-
-        server_list = []
-        for server_id, stored_name in blacklist_with_names.items():
-            # Try to get current name from bot's cache, fallback to stored name
-            guild = self.bot.get_guild(int(server_id))
-            guild_name = guild.name if guild else (stored_name or "Unknown")
-            server_list.append(f"• {guild_name} ({server_id})")
-
-        # Split into chunks if needed
-        chunk_size = 20
-        for i in range(0, len(server_list), chunk_size):
-            chunk = server_list[i : i + chunk_size]
-            field_name = "Servers" if i == 0 else "Servers (continued)"
-            embed.add_field(name=field_name, value="\n".join(chunk), inline=False)
-
-        embed.set_footer(text=f"Total: {len(blacklist_with_names)} servers")
-
-        await interaction.response.send_message(embed=embed)
+        # Use Components v2 for blacklist display
+        from src.components.owner import BlacklistView
+        
+        view = BlacklistView(blacklist_with_names, self.bot)
+        await interaction.response.send_message(view=view)
 
     @app_commands.command(name="reload_cache", description="Reload all caches from database")
     async def reload_cache(self, interaction: discord.Interaction):
@@ -313,26 +188,11 @@ class OwnerCommands(
             blacklist_count = len(self.data_service._blacklist_cache)
             timezones_count = len(self.data_service._timezones_cache)
             
-            embed = discord.Embed(
-                title="🔄 Cache Reloaded",
-                description="All caches have been cleared and reloaded from the database.",
-                color=discord.Color.green(),
-                timestamp=datetime.now(timezone.utc)
-            )
+            # Use Components v2 for cache reload display
+            from src.components.owner import CacheReloadView
             
-            embed.add_field(
-                name="📊 Loaded Data",
-                value=(
-                    f"**Servers:** {servers_count}\n"
-                    f"**Blacklisted:** {blacklist_count}\n"
-                    f"**Timezones:** {timezones_count}"
-                ),
-                inline=False
-            )
-            
-            embed.set_footer(text="Cache reload successful")
-            
-            await interaction.followup.send(embed=embed)
+            view = CacheReloadView(servers_count, blacklist_count, timezones_count)
+            await interaction.followup.send(view=view)
             
         except Exception as e:
             await interaction.followup.send(f"❌ Error reloading cache: {e}")
@@ -343,31 +203,11 @@ class OwnerCommands(
         blacklist = await self.data_service.get_blacklist()
         jobs = self.scheduler_service.get_all_jobs()
 
-        embed = discord.Embed(title="📊 Bot Statistics", color=discord.Color.blue())
-
-        embed.add_field(
-            name="Servers",
-            value=f"Connected: {len(self.bot.guilds)}\nSubscribed: {len(servers)}",
-            inline=True,
-        )
-
-        embed.add_field(
-            name="Channels",
-            value=f"Total Subscribed: {sum(len(s.channels) for s in servers.values())}",
-            inline=True,
-        )
-
-        embed.add_field(name="Jobs", value=f"Active: {len(jobs)}", inline=True)
-
-        embed.add_field(
-            name="Blacklist", value=f"Servers: {len(blacklist)}", inline=True
-        )
-
-        embed.add_field(
-            name="Latency", value=f"{round(self.bot.latency * 1000)}ms", inline=True
-        )
-
-        await interaction.response.send_message(embed=embed)
+        # Use Components v2 for stats display
+        from src.components.owner import StatsView
+        
+        view = StatsView(self.bot, servers, blacklist, jobs)
+        await interaction.response.send_message(view=view)
 
     @app_commands.command(
         name="error_lookup", description="Look up an error by its ID"
@@ -383,61 +223,11 @@ class OwnerCommands(
             await interaction.followup.send(f"❌ No error found with ID: `{error_id}`")
             return
         
-        # Create embed with error details
-        embed = discord.Embed(
-            title=f"Error Details: {error_id}",
-            color=discord.Color.red(),
-            timestamp=error_doc.timestamp
-        )
+        # Use Components v2 for error details display
+        from src.components.owner import ErrorDetailsView
         
-        embed.add_field(name="Level", value=str(error_doc.level), inline=True)
-        embed.add_field(name="Area", value=str(error_doc.area), inline=True)
-        
-        embed.add_field(name="Time", value=f"<t:{int(error_doc.timestamp.timestamp())}:F>", inline=True)
-        
-        # Truncate message field to Discord's limit
-        message = error_doc.message
-        if len(message) > 1024:
-            message = message[:1021] + "..."
-        embed.add_field(name="Message", value=message, inline=False)
-        
-        # Add context fields if present
-        if error_doc.guild_id:
-            guild = self.bot.get_guild(int(error_doc.guild_id))
-            guild_name = guild.name if guild else "Unknown"
-            embed.add_field(name="Server", value=f"{guild_name} ({error_doc.guild_id})", inline=True)
-        
-        if error_doc.channel_id:
-            channel = self.bot.get_channel(int(error_doc.channel_id))
-            channel_name = channel.name if channel else "Unknown"
-            embed.add_field(name="Channel", value=f"{channel_name} ({error_doc.channel_id})", inline=True)
-        
-        if error_doc.user_id:
-            embed.add_field(name="User", value=f"<@{error_doc.user_id}> ({error_doc.user_id})", inline=True)
-        
-        if error_doc.command:
-            embed.add_field(name="Command", value=error_doc.command, inline=True)
-        
-        # Add traceback if present (truncate if too long)
-        if error_doc.stack_trace:
-            tb = error_doc.stack_trace
-            # Account for code block formatting when truncating
-            formatted_tb = f"```python\n{tb}```"
-            if len(formatted_tb) > 1024:
-                # Subtract length of formatting characters
-                max_tb_length = 1024 - len("```python\n```") - 3  # -3 for "..."
-                tb = tb[:max_tb_length] + "..."
-                formatted_tb = f"```python\n{tb}```"
-            embed.add_field(name="Traceback", value=formatted_tb, inline=False)
-        
-        # Add additional data if present
-        if error_doc.get("additional_data"):
-            data_str = "\n".join([f"**{k}:** {v}" for k, v in error_doc["additional_data"].items()])
-            if len(data_str) > 1024:
-                data_str = data_str[:1021] + "..."
-            embed.add_field(name="Additional Data", value=data_str, inline=False)
-        
-        await interaction.followup.send(embed=embed)
+        view = ErrorDetailsView(error_doc, self.bot)
+        await interaction.followup.send(view=view)
 
     @app_commands.command(
         name="error_delete", description="Delete an error by its ID"
@@ -471,29 +261,11 @@ class OwnerCommands(
             await interaction.followup.send("No errors found in the database.")
             return
         
-        # Create embed with error list
-        embed = discord.Embed(
-            title=f"Recent Errors (Last {len(errors)})",
-            color=discord.Color.red(),
-            timestamp=datetime.now(timezone.utc)
-        )
+        # Use Components v2 for error list display
+        from src.components.owner import ErrorListView
         
-        for error in errors:
-            timestamp = f"<t:{int(error.timestamp.timestamp())}:R>"
-            message = error.message
-            if len(message) > 50:
-                message = message[:47] + "..."
-            
-            field_value = f"**Area:** {error.area}\n**Time:** {timestamp}\n**Message:** {message}"
-            embed.add_field(
-                name=f"ID: {error.error_id} | {error.level}",
-                value=field_value,
-                inline=False
-            )
-        
-        embed.set_footer(text=f"Use /owner error_lookup <id> to see full details")
-        
-        await interaction.followup.send(embed=embed)
+        view = ErrorListView(errors)
+        await interaction.followup.send(view=view)
 
     @app_commands.command(
         name="error_clear", description="Clear all errors from the database"

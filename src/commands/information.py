@@ -44,88 +44,21 @@ class InformationCommands(commands.Cog):
         server = await self.data_service.get_server(server_id)
         timer_info = server.get_channel(channel_id) if server else None
 
-        timestamp = int(next_run_time.timestamp())
-
-        embed = discord.Embed(
-            title="⏰ Next Clear Scheduled",
-            description=f"Message clear information for {channel.mention}",
-            color=discord.Color.blue(),
-        )
-
-        if timer_info:
-            embed.add_field(name="Timer", value=timer_info.timer, inline=True)
-
-        embed.add_field(name="Next Clear", value=f"<t:{timestamp}:f>", inline=True)
-        embed.add_field(name="Time Until", value=f"<t:{timestamp}:R>", inline=True)
-
-        await interaction.response.send_message(embed=embed)
+        # Use Components v2 for next clear display
+        from src.components.information import NextClearView
+        
+        view = NextClearView(channel, next_run_time, timer_info)
+        await interaction.response.send_message(view=view)
 
     @app_commands.command(
         name="help", description="Display help information about the bot"
     )
     async def help_command(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="ClearTimer Bot Help",
-            description="Automatically clear messages in Discord channels on a schedule.",
-            color=discord.Color.blue(),
-        )
-
-        # Basic Commands
-        embed.add_field(
-            name="📝 Basic Commands",
-            value=(
-                "`/sub <timer> [channel]` - Subscribe a channel to automatic clearing\n"
-                "`/unsub [channel]` - Unsubscribe a channel\n"
-                "`/next [channel]` - Check next clear time\n"
-                "`/ping` - Check bot latency\n"
-                "`/help` - Show this help message"
-            ),
-            inline=False,
-        )
-
-        # Timer Formats
-        embed.add_field(
-            name="⏱️ Timer Formats",
-            value=(
-                "**Intervals:** `1d2h3m` (days, hours, minutes)\n"
-                "**Daily Schedule:** `15:30 EST` (time + timezone)\n"
-                "**Examples:** `24h`, `1d`, `30m`, `09:00 PST`"
-            ),
-            inline=False,
-        )
-
-        # Permissions
-        embed.add_field(
-            name="🔒 Required Permissions",
-            value=(
-                "**For You:** Manage Messages\n"
-                "**For Bot:** Read Messages, Manage Messages, Read Message History"
-            ),
-            inline=False,
-        )
-
-        # Links
-        # Discord bot invite URL with required permissions
-        # Permissions: View Channels, Send Messages, Send Messages in Threads, Manage Messages, Embed Links, Read Message History, Use Slash Commands
-        bot_invite_url = (
-            "https://discord.com/oauth2/authorize?"
-            "client_id=1290353946308775987&permissions=277025483776&"
-            "integration_type=0&scope=bot"
-        )
-
-        embed.add_field(
-            name="🔗 Links",
-            value=(
-                "[Support Server](https://discord.com/invite/ERFffj9Qs7) | "
-                f"[Add Bot]({bot_invite_url}) | "
-                "[GitHub](https://github.com/biast12/ClearTimerBot)"
-            ),
-            inline=False,
-        )
-
-        embed.set_footer(text="ClearTimer Bot")
-
-        await interaction.response.send_message(embed=embed)
+        # Use Components v2 for help display
+        from src.components.information import HelpView
+        
+        view = HelpView()
+        await interaction.response.send_message(view=view)
 
     async def _is_blacklisted(self, interaction: discord.Interaction) -> bool:
         server_id = str(interaction.guild.id)
