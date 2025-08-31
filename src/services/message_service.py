@@ -15,11 +15,6 @@ class MessageService:
         self.rate_limit_delay = 1.0  # Delay between message deletions
 
     async def clear_channel_messages(self, channel: discord.TextChannel) -> None:
-        logger.info(
-            LogArea.SCHEDULER,
-            f"Starting message clear for channel {channel.id} in guild {channel.guild.id}"
-        )
-
         # Check permissions
         if not await self._check_permissions(channel):
             return
@@ -29,8 +24,6 @@ class MessageService:
 
         # Update next run time
         await self._update_next_run_time(channel)
-
-        logger.info(LogArea.SCHEDULER, f"Cleared {deleted_count} messages from channel {channel.id}")
 
     async def _check_permissions(self, channel: discord.TextChannel) -> bool:
         permissions = channel.permissions_for(channel.guild.me)
@@ -138,7 +131,6 @@ class MessageService:
                 color=discord.Color.yellow(),
                 timestamp=discord.utils.utcnow(),
             )
-            embed.set_footer(text=f"Job ID: {job_id}")
 
             await channel.send(embed=embed, delete_after=60)
         except discord.HTTPException:
