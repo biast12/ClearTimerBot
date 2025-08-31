@@ -24,14 +24,8 @@ async def main():
     # Create bot instance
     bot = ClearTimerBot(config)
 
-    # Set up error handler
-    @bot.tree.error
-    async def on_app_command_error(interaction, error):
-        await ErrorHandler.handle_command_error(interaction, error)
-
     # Run the bot
     try:
-        logger.info(LogArea.STARTUP, "Starting ClearTimer Bot...")
         await bot.start(config.token)
     except KeyboardInterrupt:
         logger.info(LogArea.STARTUP, "Received shutdown signal...")

@@ -78,16 +78,6 @@ class CacheManager:
             "cached_items": len(self._cache),
         }
 
-    async def invalidate_pattern(self, pattern: str) -> int:
-        async with self._lock:
-            keys_to_delete = [
-                key for key in self._cache.keys()
-                if pattern in key
-            ]
-            for key in keys_to_delete:
-                del self._cache[key]
-            return len(keys_to_delete)
-
 
 class MultiLevelCache:
     def __init__(self):

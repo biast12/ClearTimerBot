@@ -172,21 +172,6 @@ class DataService:
             logger.debug(LogArea.DATABASE, f"Removed channel {channel_id} from server {server_id}")
             return True
 
-    async def remove_server(self, server_id: str) -> bool:
-        async with self._lock:
-            if server_id in self._servers_cache:
-                del self._servers_cache[server_id]
-
-                servers_collection = db_manager.servers
-                result = await servers_collection.delete_one({"_id": server_id})
-                
-                # Invalidate cache for this server
-                cache_key = f"server:{server_id}"
-                await self._cache.invalidate(cache_key)
-                
-                return result.deleted_count > 0
-            return False
-
     async def get_all_servers(self) -> Dict[str, Server]:
         async with self._lock:
             return self._servers_cache.copy()

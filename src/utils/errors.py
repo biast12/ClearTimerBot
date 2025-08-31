@@ -70,27 +70,3 @@ class ErrorHandler:
             await interaction.followup.send(embed=embed, ephemeral=True)
         else:
             await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
-class BotException(Exception):
-    """Base exception for bot-specific errors"""
-
-    pass
-
-
-class ConfigurationError(BotException):
-    """Raised when there's a configuration issue"""
-
-    pass
-
-
-class DataError(BotException):
-    """Raised when there's an issue with data operations"""
-
-    pass
-
-
-class SchedulerError(BotException):
-    """Raised when there's an issue with the scheduler"""
-
-    pass
