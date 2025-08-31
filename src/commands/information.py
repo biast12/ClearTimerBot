@@ -74,7 +74,7 @@ class InformationCommands(commands.Cog):
         embed.add_field(
             name="📝 Basic Commands",
             value=(
-                "`/sub [timer] [channel]` - Subscribe a channel to automatic clearing\n"
+                "`/sub <timer> [channel]` - Subscribe a channel to automatic clearing\n"
                 "`/unsub [channel]` - Unsubscribe a channel\n"
                 "`/next [channel]` - Check next clear time\n"
                 "`/ping` - Check bot latency\n"

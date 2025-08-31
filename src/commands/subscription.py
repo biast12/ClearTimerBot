@@ -23,7 +23,7 @@ class SubscriptionCommands(commands.Cog):
     async def subscribe(
         self,
         interaction: discord.Interaction,
-        timer: Optional[str] = "24h",
+        timer: str,
         target_channel: Optional[discord.TextChannel] = None,
     ):
         # Check permissions
