@@ -387,40 +387,40 @@ class OwnerCommands(
         embed = discord.Embed(
             title=f"Error Details: {error_id}",
             color=discord.Color.red(),
-            timestamp=error_doc["timestamp"]
+            timestamp=error_doc.timestamp
         )
         
-        embed.add_field(name="Level", value=str(error_doc["level"]), inline=True)
-        embed.add_field(name="Area", value=str(error_doc["area"]), inline=True)
+        embed.add_field(name="Level", value=str(error_doc.level), inline=True)
+        embed.add_field(name="Area", value=str(error_doc.area), inline=True)
         
-        embed.add_field(name="Time", value=f"<t:{int(error_doc['timestamp'].timestamp())}:F>", inline=True)
+        embed.add_field(name="Time", value=f"<t:{int(error_doc.timestamp.timestamp())}:F>", inline=True)
         
         # Truncate message field to Discord's limit
-        message = error_doc["message"]
+        message = error_doc.message
         if len(message) > 1024:
             message = message[:1021] + "..."
         embed.add_field(name="Message", value=message, inline=False)
         
         # Add context fields if present
-        if error_doc.get("server_id"):
-            guild = self.bot.get_guild(int(error_doc["server_id"]))
+        if error_doc.guild_id:
+            guild = self.bot.get_guild(int(error_doc.guild_id))
             guild_name = guild.name if guild else "Unknown"
-            embed.add_field(name="Server", value=f"{guild_name} ({error_doc['server_id']})", inline=True)
+            embed.add_field(name="Server", value=f"{guild_name} ({error_doc.guild_id})", inline=True)
         
-        if error_doc.get("channel_id"):
-            channel = self.bot.get_channel(int(error_doc["channel_id"]))
+        if error_doc.channel_id:
+            channel = self.bot.get_channel(int(error_doc.channel_id))
             channel_name = channel.name if channel else "Unknown"
-            embed.add_field(name="Channel", value=f"{channel_name} ({error_doc['channel_id']})", inline=True)
+            embed.add_field(name="Channel", value=f"{channel_name} ({error_doc.channel_id})", inline=True)
         
-        if error_doc.get("user_id"):
-            embed.add_field(name="User", value=f"<@{error_doc['user_id']}> ({error_doc['user_id']})", inline=True)
+        if error_doc.user_id:
+            embed.add_field(name="User", value=f"<@{error_doc.user_id}> ({error_doc.user_id})", inline=True)
         
-        if error_doc.get("command"):
-            embed.add_field(name="Command", value=error_doc["command"], inline=True)
+        if error_doc.command:
+            embed.add_field(name="Command", value=error_doc.command, inline=True)
         
         # Add traceback if present (truncate if too long)
-        if error_doc.get("traceback"):
-            tb = error_doc["traceback"]
+        if error_doc.stack_trace:
+            tb = error_doc.stack_trace
             # Account for code block formatting when truncating
             formatted_tb = f"```python\n{tb}```"
             if len(formatted_tb) > 1024:
@@ -479,14 +479,14 @@ class OwnerCommands(
         )
         
         for error in errors:
-            timestamp = f"<t:{int(error['timestamp'].timestamp())}:R>"
-            message = error['message']
+            timestamp = f"<t:{int(error.timestamp.timestamp())}:R>"
+            message = error.message
             if len(message) > 50:
                 message = message[:47] + "..."
             
-            field_value = f"**Area:** {error['area']}\n**Time:** {timestamp}\n**Message:** {message}"
+            field_value = f"**Area:** {error.area}\n**Time:** {timestamp}\n**Message:** {message}"
             embed.add_field(
-                name=f"ID: {error['_id']} | {error['level']}",
+                name=f"ID: {error.error_id} | {error.level}",
                 value=field_value,
                 inline=False
             )

@@ -52,7 +52,7 @@ class BotLogger:
     
     def _format_message(self, level: LogLevel, area: LogArea, message: str) -> str:
         """Format log message for console output"""
-        timestamp = datetime.now().strftime("%H:%M:%S")
+        timestamp = datetime.now(timezone.utc).strftime("%H:%M:%S")
         color = self._get_color(level)
         reset = self._reset_color()
         

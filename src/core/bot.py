@@ -65,7 +65,6 @@ class ClearTimerBot(commands.Bot):
 
             # Start scheduler and initialize jobs
             await self.scheduler_service.start()
-            logger.info(LogArea.SCHEDULER, "Scheduler started")
             await self.scheduler_service.initialize_jobs(self)
             logger.info(LogArea.SCHEDULER, "Scheduler jobs initialized")
 
