@@ -1,8 +1,13 @@
-from typing import Dict, List, Optional, Set, Any
+from typing import Dict, List, Optional, Set
 import asyncio
 from datetime import datetime, timezone, timedelta
 
-from src.models import Server
+from src.models import (
+    Server, 
+    BlacklistEntry, 
+    RemovedServer,
+    TimezoneDocument
+)
 from src.services.database import db_manager
 from src.services.cache_manager import MultiLevelCache
 from src.utils.logger import logger, LogArea
@@ -36,21 +41,20 @@ class DataService:
 
     async def _load_blacklist(self) -> None:
         blacklist_collection = db_manager.blacklist
-        # Load all blacklist documents (array of objects with _id and server_name)
+        # Load all blacklist documents as BlacklistEntry models
         self._blacklist_names_cache: Dict[str, str] = {}  # Store server names
         async for blacklist_doc in blacklist_collection.find():
             if "_id" in blacklist_doc:
-                server_id = str(blacklist_doc["_id"])
-                self._blacklist_cache.add(server_id)
-                self._blacklist_names_cache[server_id] = blacklist_doc.get("server_name", "")
+                entry = BlacklistEntry.from_dict(blacklist_doc)
+                self._blacklist_cache.add(entry.server_id)
+                self._blacklist_names_cache[entry.server_id] = entry.server_name
 
     async def _load_timezones(self) -> None:
         timezones_collection = db_manager.timezones
         tz_doc = await timezones_collection.find_one()
         if tz_doc:
-            for key, value in tz_doc.items():
-                if key != "_id":
-                    self._timezones_cache[key] = value
+            timezone_doc = TimezoneDocument.from_dict(tz_doc)
+            self._timezones_cache = timezone_doc.timezones
 
     async def save_servers(self) -> None:
         async with self._lock:
@@ -69,13 +73,16 @@ class DataService:
             # Clear existing blacklist
             await blacklist_collection.delete_many({})
             
-            # Insert each blacklisted server as a separate document with its name
+            # Insert each blacklisted server as a BlacklistEntry document
             if self._blacklist_cache:
-                blacklist_docs = [
-                    {"_id": server_id, "server_name": self._blacklist_names_cache.get(server_id, "")}
+                blacklist_entries = [
+                    BlacklistEntry(
+                        server_id=server_id, 
+                        server_name=self._blacklist_names_cache.get(server_id, "Unknown")
+                    ).to_dict()
                     for server_id in self._blacklist_cache
                 ]
-                await blacklist_collection.insert_many(blacklist_docs)
+                await blacklist_collection.insert_many(blacklist_entries)
 
     async def get_server(self, server_id: str) -> Optional[Server]:
         # Check memory cache first
@@ -199,17 +206,17 @@ class DataService:
             existing = await blacklist_collection.find_one({"_id": server_id})
             if existing:
                 # Update cache to match database
-                self._blacklist_cache.add(server_id)
-                self._blacklist_names_cache[server_id] = existing.get("server_name", server_name)
+                entry = BlacklistEntry.from_dict(existing)
+                self._blacklist_cache.add(entry.server_id)
+                self._blacklist_names_cache[entry.server_id] = entry.server_name
                 return False
             
             # Add to cache and database
-            self._blacklist_cache.add(server_id)
-            self._blacklist_names_cache[server_id] = server_name
+            entry = BlacklistEntry(server_id=server_id, server_name=server_name)
+            self._blacklist_cache.add(entry.server_id)
+            self._blacklist_names_cache[entry.server_id] = entry.server_name
             
-            await blacklist_collection.insert_one(
-                {"_id": server_id, "server_name": server_name}
-            )
+            await blacklist_collection.insert_one(entry.to_dict())
             
             # Invalidate cache
             cache_key = f"blacklist:{server_id}"
@@ -246,7 +253,7 @@ class DataService:
     def get_timezone(self, timezone_abbr: str) -> Optional[str]:
         return self._timezones_cache.get(timezone_abbr)
     
-    async def get_removed_server(self, server_id: str) -> Optional[Dict]:
+    async def get_removed_server(self, server_id: str) -> Optional[RemovedServer]:
         cache_key = f"removed_server:{server_id}"
         cached_doc = await self._cache.get(cache_key)
         if cached_doc is not None:
@@ -255,12 +262,15 @@ class DataService:
         removed_servers_collection = db_manager.removed_servers
         doc = await removed_servers_collection.find_one({"_id": server_id})
         if doc:
-            await self._cache.set(cache_key, doc, cache_level="cold", ttl=1800)  # 30 minutes
-        return doc
+            removed_server = RemovedServer.from_dict(doc)
+            await self._cache.set(cache_key, removed_server, cache_level="cold", ttl=1800)  # 30 minutes
+            return removed_server
+        return None
     
     async def cache_removed_server(self, server_id: str, server_doc: Dict) -> None:
         cache_key = f"removed_server:{server_id}"
-        await self._cache.set(cache_key, server_doc, cache_level="cold", ttl=1800)
+        removed_server = RemovedServer.from_dict(server_doc) if isinstance(server_doc, dict) else server_doc
+        await self._cache.set(cache_key, removed_server, cache_level="cold", ttl=1800)
     
     async def invalidate_removed_server_cache(self, server_id: str) -> None:
         cache_key = f"removed_server:{server_id}"
@@ -288,9 +298,10 @@ class DataService:
         cleaned_count = 0
 
         for server_doc in old_removed_servers:
-            server_id = server_doc["_id"]
-            server_name = server_doc.get("server_name", "Unknown")
-            removed_at = server_doc.get("removed_at")
+            removed_server = RemovedServer.from_dict(server_doc)
+            server_id = removed_server.server_id
+            server_name = removed_server.server_name
+            removed_at = removed_server.removed_at
 
             # Remove from servers collection if it exists
             result = await servers_collection.delete_one({"_id": server_id})

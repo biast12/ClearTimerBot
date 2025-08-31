@@ -4,7 +4,6 @@ from discord.ext import commands
 from typing import Optional
 
 from src.utils.timer_parser import TimerParseError
-from src.utils.logger import logger, LogArea
 
 
 class SubscriptionCommands(commands.Cog):

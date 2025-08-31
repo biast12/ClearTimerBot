@@ -2,12 +2,12 @@ import discord
 from discord.ext import commands
 from datetime import datetime, timezone
 
-from src.core.config import BotConfig
+from src.models import BotConfig, GuildInfo, CommandUsage
 from src.services.data_service import DataService
 from src.services.database import db_manager
 from src.services.scheduler_service import SchedulerService
 from src.services.message_service import MessageService
-from src.utils.logger import logger, LogArea, LogLevel
+from src.utils.logger import logger, LogArea
 
 
 class ClearTimerBot(commands.Bot):
@@ -127,6 +127,16 @@ class ClearTimerBot(commands.Bot):
     async def on_guild_join(self, guild: discord.Guild) -> None:
         """Handle when bot joins a server"""
         server_id = str(guild.id)
+        
+        # Create GuildInfo model for tracking
+        guild_info = GuildInfo(
+            guild_id=server_id,
+            guild_name=guild.name,
+            member_count=guild.member_count,
+            owner_id=str(guild.owner_id),
+            joined_at=datetime.now(timezone.utc),
+            premium_tier=guild.premium_tier
+        )
 
         # Check if this server was previously removed (using cache)
         removed_doc = await self.data_service.get_removed_server(server_id)
@@ -270,6 +280,38 @@ class ClearTimerBot(commands.Bot):
                 if not channel:
                     # Channel doesn't exist, remove subscription
                     await self.data_service.remove_channel_subscription(server_id, channel_id)
+    
+    async def on_command(self, ctx: commands.Context) -> None:
+        """Track command usage"""
+        command_usage = CommandUsage(
+            command_name=ctx.command.name if ctx.command else "unknown",
+            user_id=str(ctx.author.id),
+            guild_id=str(ctx.guild.id) if ctx.guild else None,
+            timestamp=datetime.now(timezone.utc),
+            success=True
+        )
+        logger.debug(LogArea.COMMANDS, f"Command executed: {command_usage.command_name} by user {ctx.author}")
+    
+    async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        """Track command errors"""
+        command_usage = CommandUsage(
+            command_name=ctx.command.name if ctx.command else "unknown",
+            user_id=str(ctx.author.id),
+            guild_id=str(ctx.guild.id) if ctx.guild else None,
+            timestamp=datetime.now(timezone.utc),
+            success=False,
+            error_message=str(error)
+        )
+        
+        # Log the error
+        await logger.log_error(
+            LogArea.COMMANDS,
+            f"Command error: {command_usage.command_name}",
+            exception=error,
+            user_id=command_usage.user_id,
+            guild_id=command_usage.guild_id,
+            command=command_usage.command_name
+        )
     
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel) -> None:
         """Handle when a channel is deleted"""

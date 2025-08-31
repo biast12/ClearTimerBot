@@ -5,7 +5,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.base import BaseTrigger
 from apscheduler.job import Job
 
-from src.models import ChannelTimer
+from src.models import (
+    ChannelTimer,
+    ScheduledTask,
+    SchedulerStats
+)
 from src.services.data_service import DataService
 from src.utils.timer_parser import TimerParser
 from src.utils.logger import logger, LogArea
@@ -18,6 +22,7 @@ class SchedulerService:
         self.timer_parser = TimerParser(data_service.get_timezone)
         self._clear_callback: Optional[Callable] = None
         self._notify_callback: Optional[Callable] = None
+        self._stats = SchedulerStats()
 
     def set_clear_callback(self, callback: Callable) -> None:
         self._clear_callback = callback
@@ -88,6 +93,9 @@ class SchedulerService:
         self, bot, server_id: str, channel_id: str, channel_timer: ChannelTimer
     ) -> None:
         job_id = self._make_job_id(server_id, channel_id)
+        
+        # Track scheduled task
+        self._stats.total_tasks_scheduled += 1
 
         # Check if job needs rescheduling due to missed execution
         if channel_timer.next_run_time < datetime.now(pytz.UTC):
@@ -107,6 +115,15 @@ class SchedulerService:
             logger.warning(LogArea.SCHEDULER, f"Channel {channel_id} not found for job {job_id}")
             return
 
+        # Create scheduled task for tracking
+        task = ScheduledTask(
+            task_id=job_id,
+            name=f"clear_{channel_id}",
+            channel_id=channel_id,
+            guild_id=server_id,
+            scheduled_time=channel_timer.next_run_time
+        )
+        
         # Schedule the job
         self.scheduler.add_job(
             self._clear_callback,
@@ -142,6 +159,15 @@ class SchedulerService:
 
         # Schedule with new time
         if channel:
+            # Create scheduled task for tracking
+            task = ScheduledTask(
+                task_id=job_id,
+                name=f"clear_{channel_id}",
+                channel_id=channel_id,
+                guild_id=server_id,
+                scheduled_time=next_run_time
+            )
+            
             self.scheduler.add_job(
                 self._clear_callback,
                 trigger,
@@ -212,3 +238,8 @@ class SchedulerService:
     @staticmethod
     def _make_job_id(server_id: str, channel_id: str) -> str:
         return f"{server_id}_{channel_id}"
+    
+    def get_stats(self) -> Dict[str, Any]:
+        """Get scheduler statistics"""
+        self._stats.current_queue_size = len(self.scheduler.get_jobs())
+        return self._stats.to_dict()

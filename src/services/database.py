@@ -1,6 +1,7 @@
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional
+from src.models import CollectionName
 
 
 class DatabaseManager:
@@ -51,19 +52,23 @@ class DatabaseManager:
 
     @property
     def servers(self):
-        return self.db.servers
+        return self.db[CollectionName.SERVERS.value]
 
     @property
     def timezones(self):
-        return self.db.timezones
+        return self.db[CollectionName.TIMEZONES.value]
 
     @property
     def blacklist(self):
-        return self.db.blacklist
+        return self.db[CollectionName.BLACKLIST.value]
 
     @property
     def removed_servers(self):
-        return self.db.removed_servers
+        return self.db[CollectionName.REMOVED_SERVERS.value]
+
+    @property
+    def errors(self):
+        return self.db[CollectionName.ERRORS.value]
 
 
 db_manager = DatabaseManager()

@@ -12,7 +12,6 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from src.core.bot import ClearTimerBot  # noqa: E402
 from src.core.config import ConfigManager  # noqa: E402
-from src.utils.errors import ErrorHandler  # noqa: E402
 from src.utils.logger import logger, LogArea  # noqa: E402
 
 

@@ -1,47 +1,14 @@
 import sys
 import traceback
 from datetime import datetime, timezone
-from enum import Enum
-from typing import Optional, Dict, Any
+from typing import Optional
 import uuid
-from dataclasses import dataclass, field
 
-
-class LogLevel(Enum):
-    DEBUG = "DEBUG"
-    INFO = "INFO"
-    WARNING = "WARNING"
-    ERROR = "ERROR"
-    CRITICAL = "CRITICAL"
-    NONE = "NONE"  # Special case - doesn't display level field
-
-
-class LogArea(Enum):
-    STARTUP = "STARTUP"
-    SCHEDULER = "SCHEDULER"
-    COMMANDS = "COMMANDS"
-    DATABASE = "DATABASE"
-    DISCORD = "DISCORD"
-    CACHE = "CACHE"
-    CLEANUP = "CLEANUP"
-    PERMISSIONS = "PERMISSIONS"
-    GENERAL = "GENERAL"
-    NONE = "NONE"  # Special case - doesn't display area field
-
-
-@dataclass
-class ErrorRecord:
-    error_id: str
-    timestamp: datetime
-    level: str
-    area: str
-    message: str
-    traceback: str
-    server_id: Optional[str] = None
-    channel_id: Optional[str] = None
-    user_id: Optional[str] = None
-    command: Optional[str] = None
-    additional_data: Dict[str, Any] = field(default_factory=dict)
+from src.models import (
+    ErrorDocument,
+    LogArea,
+    LogLevel
+)
 
 
 class BotLogger:
@@ -103,27 +70,15 @@ class BotLogger:
             # Both level and area
             return f"{color}[{timestamp}] [{level.value:8}] [{area.value:10}] {message}{reset}"
     
-    async def _save_error_to_db(self, error_record: ErrorRecord) -> None:
+    async def _save_error_to_db(self, error_record: ErrorDocument) -> None:
         """Save error record to database"""
         if not self.db_enabled:
             return
             
         try:
             from src.services.database import db_manager
-            errors_collection = db_manager.db.errors
-            error_doc = {
-                "_id": error_record.error_id,
-                "timestamp": error_record.timestamp,
-                "level": error_record.level,
-                "area": error_record.area,
-                "message": error_record.message,
-                "traceback": error_record.traceback,
-                "server_id": error_record.server_id,
-                "channel_id": error_record.channel_id,
-                "user_id": error_record.user_id,
-                "command": error_record.command,
-                "additional_data": error_record.additional_data
-            }
+            errors_collection = db_manager.errors
+            error_doc = error_record.to_dict()
             await errors_collection.insert_one(error_doc)
         except Exception as e:
             # Fallback to console if DB save fails
@@ -172,19 +127,18 @@ class BotLogger:
         elif sys.exc_info()[0]:
             tb_str = traceback.format_exc()
         
-        # Create error record
-        error_record = ErrorRecord(
+        # Create error document using the model
+        error_record = ErrorDocument(
             error_id=error_id,
             timestamp=datetime.now(timezone.utc),
             level=LogLevel.ERROR.value,
-            area=area.value,
+            area=area.value if hasattr(area, 'value') else str(area),
             message=message,
-            traceback=tb_str,
-            server_id=server_id,
+            stack_trace=tb_str,
+            guild_id=server_id,
             channel_id=channel_id,
             user_id=user_id,
-            command=command,
-            additional_data=additional_data
+            command=command
         )
         
         # Console output
@@ -233,13 +187,15 @@ class BotLogger:
         reset = self._reset_color()
         print(f"{color_code}{char * length}{reset}")
     
-    async def get_error(self, error_id: str) -> Optional[Dict[str, Any]]:
+    async def get_error(self, error_id: str) -> Optional[ErrorDocument]:
         """Retrieve an error from the database by ID"""
         try:
             from src.services.database import db_manager
-            errors_collection = db_manager.db.errors
+            errors_collection = db_manager.errors
             error_doc = await errors_collection.find_one({"_id": error_id})
-            return error_doc
+            if error_doc:
+                return ErrorDocument.from_dict(error_doc)
+            return None
         except Exception:
             return None
     
@@ -247,20 +203,20 @@ class BotLogger:
         """Delete an error from the database by ID"""
         try:
             from src.services.database import db_manager
-            errors_collection = db_manager.db.errors
+            errors_collection = db_manager.errors
             result = await errors_collection.delete_one({"_id": error_id})
             return result.deleted_count > 0
         except Exception:
             return False
     
-    async def get_recent_errors(self, limit: int = 10) -> list:
+    async def get_recent_errors(self, limit: int = 10) -> list[ErrorDocument]:
         """Get recent errors from the database"""
         try:
             from src.services.database import db_manager
-            errors_collection = db_manager.db.errors
+            errors_collection = db_manager.errors
             cursor = errors_collection.find().sort("timestamp", -1).limit(limit)
-            errors = await cursor.to_list(length=limit)
-            return errors
+            error_docs = await cursor.to_list(length=limit)
+            return [ErrorDocument.from_dict(doc) for doc in error_docs]
         except Exception:
             return []
 
