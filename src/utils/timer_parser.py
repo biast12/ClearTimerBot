@@ -25,6 +25,18 @@ class TimerParser:
 
         timer_string = timer_string.strip()
 
+        # Check if it's just a number (interpret as hours)
+        if timer_string.isdigit():
+            hours = int(timer_string)
+            if hours < 1:
+                raise TimerParseError("Hour value must be at least 1")
+            
+            total_minutes = hours * 60
+            delta = timedelta(hours=hours)
+            next_run = datetime.now(pytz.UTC) + delta
+            trigger = IntervalTrigger(minutes=total_minutes)
+            return trigger, next_run
+
         # Try to parse as daily scheduled time
         if match := self.TIMEZONE_PATTERN.match(timer_string):
             return self._parse_scheduled_time(match)
@@ -35,7 +47,7 @@ class TimerParser:
 
         raise TimerParseError(
             f"Invalid timer format: '{timer_string}'. "
-            "Use '1d2h3m' for intervals or 'HH:MM TIMEZONE' for daily schedules."
+            "Use '1d2h3m' for intervals, '24' for hours, or 'HH:MM TIMEZONE' for daily schedules."
         )
 
     def _parse_scheduled_time(self, match: re.Match) -> Tuple[CronTrigger, datetime]:
@@ -79,9 +91,6 @@ class TimerParser:
 
         if days == 0 and hours == 0 and minutes == 0:
             raise TimerParseError("Timer interval cannot be zero.")
-
-        if days > 365:
-            raise TimerParseError("Timer interval cannot exceed 365 days.")
 
         total_minutes = (days * 24 * 60) + (hours * 60) + minutes
 

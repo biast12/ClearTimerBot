@@ -17,7 +17,7 @@ class SubscriptionCommands(commands.Cog):
         name="sub", description="Subscribe a channel to automatic message deletion"
     )
     @app_commands.describe(
-        timer="Timer format: '24h', '1d12h30m', or '15:30 EST' for daily at specific time",
+        timer="Timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to clear (defaults to current channel)",
     )
     async def subscribe(
