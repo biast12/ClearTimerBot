@@ -139,4 +139,4 @@ class MessageService:
                 timestamp=discord.utils.utcnow(),
             )
 
-        channel.send(embed=embed, delete_after=60)
+        await channel.send(embed=embed, delete_after=60)
