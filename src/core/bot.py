@@ -33,15 +33,15 @@ class ClearTimerBot(commands.Bot):
 
 
     async def setup_hook(self) -> None:
-        # Connect to MongoDB
+        # Connect to database first
         await db_manager.connect()
         logger.info(LogArea.DATABASE, "Connected to MongoDB")
 
-        # Initialize services
+        # Initialize data service
         await self.data_service.initialize()
         logger.info(LogArea.STARTUP, "Data service initialized")
 
-        # Load command cogs
+        # Load command cogs last
         await self.load_commands()
 
     async def on_ready(self) -> None:
@@ -49,25 +49,28 @@ class ClearTimerBot(commands.Bot):
         logger.info(LogArea.STARTUP, f"Connected to {len(self.guilds)} guilds")
 
         try:
-            # Set presence
+            # Set bot presence first
             activity = discord.CustomActivity(name="Cleaning up the mess! 🧹")
             await self.change_presence(activity=activity)
 
+            # Sync server data with current guild membership
+            await self._sync_server_cleanup_status()
+            
             # Update server names for all connected guilds
             await self._update_server_names()
-
-            # Sync server cleanup status based on current guild membership
-            await self._sync_server_cleanup_status()
             
             # Clean up subscriptions for deleted channels
             await self._cleanup_deleted_channels()
 
-            # Start scheduler and initialize jobs
+            # Start the scheduler service
             await self.scheduler_service.start()
+            
+            # Initialize scheduled jobs for all subscriptions
+            # Requires scheduler to be running
             await self.scheduler_service.initialize_jobs(self)
             logger.info(LogArea.SCHEDULER, "Scheduler jobs initialized")
 
-            # Clean up old removed servers on startup
+            # Perform maintenance tasks (cleanup old removed servers)
             await self.data_service.cleanup_old_removed_servers()
 
             logger.info(LogArea.STARTUP, "Bot initialization complete!")
@@ -113,8 +116,15 @@ class ClearTimerBot(commands.Bot):
                 logger.error(LogArea.STARTUP, f"Failed to load owner commands. Error ID: {error_id}")
 
     async def close(self) -> None:
+        # Stop scheduler first (prevents new jobs from running)
         await self.scheduler_service.shutdown()
+        logger.info(LogArea.STARTUP, "Scheduler service shut down")
+        
+        # Disconnect from database
         await db_manager.disconnect()
+        logger.info(LogArea.DATABASE, "Disconnected from MongoDB")
+        
+        # Close Discord connection last
         await super().close()
 
     def is_owner(self, user: discord.User) -> bool:

@@ -16,28 +16,30 @@ from src.utils.logger import logger, LogArea  # noqa: E402
 
 
 async def main():
-    # Load configuration
+    # Load configuration first
     config_manager = ConfigManager()
     config = config_manager.load_config()
 
-    # Create bot instance
+    # Create bot instance with configuration
     bot = ClearTimerBot(config)
 
     # Run the bot
     try:
+        logger.info(LogArea.STARTUP, "Starting bot...")
         await bot.start(config.token)
     except KeyboardInterrupt:
-        logger.info(LogArea.STARTUP, "Received shutdown signal...")
+        logger.info(LogArea.STARTUP, "Received shutdown signal (Ctrl+C)")
     except Exception as e:
         error_id = await logger.log_error(
             LogArea.STARTUP,
-            "Fatal error occurred",
+            "Fatal error occurred during bot operation",
             exception=e
         )
         logger.critical(LogArea.STARTUP, f"Fatal error: {e}. Error ID: {error_id}")
     finally:
-        logger.info(LogArea.STARTUP, "Shutting down bot...")
+        logger.info(LogArea.STARTUP, "Beginning shutdown sequence...")
         await bot.close()
+        logger.info(LogArea.STARTUP, "Shutdown complete")
 
 
 if __name__ == "__main__":
