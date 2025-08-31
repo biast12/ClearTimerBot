@@ -390,11 +390,16 @@ class OwnerCommands(
             timestamp=error_doc["timestamp"]
         )
         
-        embed.add_field(name="Level", value=error_doc["level"], inline=True)
-        embed.add_field(name="Area", value=error_doc["area"], inline=True)
+        embed.add_field(name="Level", value=str(error_doc["level"]), inline=True)
+        embed.add_field(name="Area", value=str(error_doc["area"]), inline=True)
+        
         embed.add_field(name="Time", value=f"<t:{int(error_doc['timestamp'].timestamp())}:F>", inline=True)
         
-        embed.add_field(name="Message", value=error_doc["message"][:1024], inline=False)
+        # Truncate message field to Discord's limit
+        message = error_doc["message"]
+        if len(message) > 1024:
+            message = message[:1021] + "..."
+        embed.add_field(name="Message", value=message, inline=False)
         
         # Add context fields if present
         if error_doc.get("server_id"):
@@ -408,9 +413,7 @@ class OwnerCommands(
             embed.add_field(name="Channel", value=f"{channel_name} ({error_doc['channel_id']})", inline=True)
         
         if error_doc.get("user_id"):
-            user = self.bot.get_user(int(error_doc["user_id"]))
-            user_name = str(user) if user else "Unknown"
-            embed.add_field(name="User", value=f"{user_name} ({error_doc['user_id']})", inline=True)
+            embed.add_field(name="User", value=f"<@{error_doc['user_id']}> ({error_doc['user_id']})", inline=True)
         
         if error_doc.get("command"):
             embed.add_field(name="Command", value=error_doc["command"], inline=True)
@@ -418,9 +421,14 @@ class OwnerCommands(
         # Add traceback if present (truncate if too long)
         if error_doc.get("traceback"):
             tb = error_doc["traceback"]
-            if len(tb) > 1024:
-                tb = tb[:1021] + "..."
-            embed.add_field(name="Traceback", value=f"```python\n{tb}```", inline=False)
+            # Account for code block formatting when truncating
+            formatted_tb = f"```python\n{tb}```"
+            if len(formatted_tb) > 1024:
+                # Subtract length of formatting characters
+                max_tb_length = 1024 - len("```python\n```") - 3  # -3 for "..."
+                tb = tb[:max_tb_length] + "..."
+                formatted_tb = f"```python\n{tb}```"
+            embed.add_field(name="Traceback", value=formatted_tb, inline=False)
         
         # Add additional data if present
         if error_doc.get("additional_data"):
