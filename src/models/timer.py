@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 
 @dataclass
@@ -8,9 +8,14 @@ class ChannelTimer:
     channel_id: str
     timer: str
     next_run_time: datetime
+    ignored_messages: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict:
-        return {"timer": self.timer, "next_run_time": self.next_run_time.isoformat()}
+        return {
+            "timer": self.timer, 
+            "next_run_time": self.next_run_time.isoformat(),
+            "ignored_messages": self.ignored_messages
+        }
 
     @classmethod
     def from_dict(cls, channel_id: str, data: Dict) -> "ChannelTimer":
@@ -18,7 +23,20 @@ class ChannelTimer:
             channel_id=channel_id,
             timer=data["timer"],
             next_run_time=datetime.fromisoformat(data["next_run_time"]),
+            ignored_messages=data.get("ignored_messages", [])
         )
+    
+    def add_ignored_message(self, message_id: str) -> bool:
+        if message_id not in self.ignored_messages:
+            self.ignored_messages.append(message_id)
+            return True
+        return False
+    
+    def remove_ignored_message(self, message_id: str) -> bool:
+        if message_id in self.ignored_messages:
+            self.ignored_messages.remove(message_id)
+            return True
+        return False
 
 
 @dataclass

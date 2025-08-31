@@ -19,11 +19,23 @@ class MessageService:
         if not await self._check_permissions(channel):
             return
 
+        # Get ignored messages for this channel
+        ignored_messages = await self._get_ignored_messages(channel)
+
         # Perform the clear
-        deleted_count = await self._delete_messages(channel)
+        deleted_count = await self._delete_messages(channel, ignored_messages)
 
         # Update next run time
         await self._update_next_run_time(channel)
+    
+    async def _get_ignored_messages(self, channel: discord.TextChannel) -> set:
+        server_id = str(channel.guild.id)
+        channel_id = str(channel.id)
+        
+        server = await self.data_service.get_server(server_id)
+        if server and channel_id in server.channels:
+            return set(server.channels[channel_id].ignored_messages)
+        return set()
 
     async def _check_permissions(self, channel: discord.TextChannel) -> bool:
         permissions = channel.permissions_for(channel.guild.me)
@@ -46,8 +58,9 @@ class MessageService:
 
         return True
 
-    async def _delete_messages(self, channel: discord.TextChannel) -> int:
+    async def _delete_messages(self, channel: discord.TextChannel, ignored_messages: set = None) -> int:
         deleted_count = 0
+        ignored_messages = ignored_messages or set()
 
         try:
             # Try bulk delete first (for messages < 14 days old)
@@ -59,6 +72,10 @@ class MessageService:
 
             try:
                 async for message in channel.history(limit=None):
+                    # Skip ignored messages
+                    if str(message.id) in ignored_messages:
+                        continue
+                    
                     if message.created_at > two_weeks_ago:
                         messages_to_delete.append(message)
                     else:

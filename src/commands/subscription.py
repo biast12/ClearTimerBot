@@ -20,12 +20,14 @@ class SubscriptionCommands(commands.Cog):
     @app_commands.describe(
         timer="Timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to clear (defaults to current channel)",
+        ignored_message="Message ID or link to ignore during clearing (optional)",
     )
     async def subscribe(
         self,
         interaction: discord.Interaction,
         timer: str,
         target_channel: Optional[discord.TextChannel] = None,
+        ignored_message: Optional[str] = None,
     ):
         # Check permissions
         if not await self._check_permissions(interaction, target_channel):
@@ -73,6 +75,14 @@ class SubscriptionCommands(commands.Cog):
             )
 
         server.add_channel(channel_id, timer, next_run_time)
+        
+        # Add ignored message if provided
+        message_id = None
+        if ignored_message:
+            message_id = self._extract_message_id(ignored_message)
+            if message_id:
+                server.channels[channel_id].add_ignored_message(message_id)
+        
         await self.data_service.save_servers()
 
         # Send success message
@@ -85,8 +95,109 @@ class SubscriptionCommands(commands.Cog):
         embed.add_field(name="Timer", value=timer, inline=True)
         embed.add_field(name="Next Clear", value=f"<t:{timestamp}:f>", inline=True)
         embed.add_field(name="Time Until", value=f"<t:{timestamp}:R>", inline=True)
+        
+        if message_id:
+            embed.add_field(name="Ignored Message", value=f"Message ID: {message_id}", inline=False)
 
         await interaction.response.send_message(embed=embed)
+
+    @app_commands.command(
+        name="ignoremsg",
+        description="Toggle a message to be ignored during channel clearing"
+    )
+    @app_commands.describe(
+        message="Message ID or link to toggle ignore status",
+        target_channel="Channel with the subscription (defaults to current channel)"
+    )
+    async def ignore_message(
+        self,
+        interaction: discord.Interaction,
+        message: str,
+        target_channel: Optional[discord.TextChannel] = None,
+    ):
+        # Check permissions
+        if not await self._check_permissions(interaction, target_channel):
+            return
+
+        # Check blacklist
+        if await self._is_blacklisted(interaction):
+            return
+
+        channel = target_channel or interaction.channel
+        server_id = str(interaction.guild.id)
+        channel_id = str(channel.id)
+
+        # Check if channel is subscribed
+        if not self.scheduler_service.job_exists(server_id, channel_id):
+            await interaction.response.send_message(
+                f"❌ {channel.mention} is not subscribed to message deletion. Use `/sub` first.",
+                ephemeral=True,
+            )
+            return
+
+        # Extract message ID
+        message_id = self._extract_message_id(message)
+        if not message_id:
+            await interaction.response.send_message(
+                "❌ Invalid message ID or link format. Please provide a valid message ID or Discord message link.",
+                ephemeral=True,
+            )
+            return
+
+        # Get server and channel data
+        server = await self.data_service.get_server(server_id)
+        if not server or channel_id not in server.channels:
+            await interaction.response.send_message(
+                f"❌ Could not find subscription data for {channel.mention}.",
+                ephemeral=True,
+            )
+            return
+
+        channel_timer = server.channels[channel_id]
+        
+        # Toggle logic - remove if exists, add if doesn't exist
+        if message_id in channel_timer.ignored_messages:
+            # Remove the message
+            channel_timer.remove_ignored_message(message_id)
+            await self.data_service.save_servers()
+            
+            embed = discord.Embed(
+                title="✅ Message Removed from Ignore List",
+                description=f"Message `{message_id}` will no longer be ignored in {channel.mention}.",
+                color=discord.Color.green(),
+            )
+            embed.add_field(
+                name="Action", 
+                value="Removed",
+                inline=True
+            )
+            embed.add_field(
+                name="Total Ignored Messages", 
+                value=len(channel_timer.ignored_messages),
+                inline=True
+            )
+            await interaction.response.send_message(embed=embed)
+        else:
+            # Add the message
+            channel_timer.add_ignored_message(message_id)
+            await self.data_service.save_servers()
+            
+            embed = discord.Embed(
+                title="✅ Message Added to Ignore List",
+                description=f"Message `{message_id}` will be ignored during clearing in {channel.mention}.",
+                color=discord.Color.green(),
+            )
+            embed.add_field(
+                name="Action", 
+                value="Added",
+                inline=True
+            )
+            embed.add_field(
+                name="Total Ignored Messages", 
+                value=len(channel_timer.ignored_messages),
+                inline=True
+            )
+            await interaction.response.send_message(embed=embed)
 
     @app_commands.command(
         name="unsub",
@@ -186,6 +297,22 @@ class SubscriptionCommands(commands.Cog):
             return True
 
         return False
+    
+    def _extract_message_id(self, message_input: str) -> Optional[str]:
+        """Extract message ID from either a message link or direct ID"""
+        import re
+        
+        # Check if it's a message link
+        link_pattern = r"https://discord(?:app)?\.com/channels/\d+/\d+/(\d+)"
+        match = re.match(link_pattern, message_input)
+        if match:
+            return match.group(1)
+        
+        # Check if it's a direct message ID (digits only)
+        if message_input.isdigit():
+            return message_input
+        
+        return None
 
 
 async def setup(bot):
