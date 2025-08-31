@@ -166,16 +166,6 @@ class SubscriptionCommands(commands.Cog):
                 description=f"Message `{message_id}` will no longer be ignored in {channel.mention}.",
                 color=discord.Color.green(),
             )
-            embed.add_field(
-                name="Action", 
-                value="Removed",
-                inline=True
-            )
-            embed.add_field(
-                name="Total Ignored Messages", 
-                value=len(channel_timer.ignored_messages),
-                inline=True
-            )
             await interaction.response.send_message(embed=embed)
         else:
             # Add the message
@@ -186,16 +176,6 @@ class SubscriptionCommands(commands.Cog):
                 title="✅ Message Added to Ignore List",
                 description=f"Message `{message_id}` will be ignored during clearing in {channel.mention}.",
                 color=discord.Color.green(),
-            )
-            embed.add_field(
-                name="Action", 
-                value="Added",
-                inline=True
-            )
-            embed.add_field(
-                name="Total Ignored Messages", 
-                value=len(channel_timer.ignored_messages),
-                inline=True
             )
             await interaction.response.send_message(embed=embed)
 
