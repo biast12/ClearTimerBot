@@ -28,7 +28,7 @@ class SubscriptionCommands(commands.Cog):
         target_channel: Optional[discord.TextChannel] = None,
     ):
         # Check permissions
-        if not await self._check_permissions(interaction):
+        if not await self._check_permissions(interaction, target_channel):
             return
 
         # Check blacklist
@@ -101,7 +101,7 @@ class SubscriptionCommands(commands.Cog):
         target_channel: Optional[discord.TextChannel] = None,
     ):
         # Check permissions
-        if not await self._check_permissions(interaction):
+        if not await self._check_permissions(interaction, target_channel):
             return
 
         # Check blacklist
@@ -138,17 +138,37 @@ class SubscriptionCommands(commands.Cog):
 
         await interaction.response.send_message(embed=embed)
 
-    async def _check_permissions(self, interaction: discord.Interaction) -> bool:
+    async def _check_permissions(self, interaction: discord.Interaction, target_channel: discord.TextChannel = None) -> bool:
         member = interaction.guild.get_member(interaction.user.id)
 
-        # Bot owner bypasses permission checks
-        if self.bot.is_owner(interaction.user):
-            return True
+        # Bot owner bypasses user permission checks
+        if not self.bot.is_owner(interaction.user):
+            # Check if user has manage_messages permission
+            if not member.guild_permissions.manage_messages:
+                await interaction.response.send_message(
+                    "❌ You need the `Manage Messages` permission to use this command.",
+                    ephemeral=True,
+                )
+                return False
 
-        # Check if user has manage_messages permission
-        if not member.guild_permissions.manage_messages:
+        # Check bot permissions in the target channel
+        channel = target_channel or interaction.channel
+        bot_permissions = channel.permissions_for(interaction.guild.me)
+        
+        required_perms = {
+            'view_channel': bot_permissions.view_channel,
+            'send_messages': bot_permissions.send_messages,
+            'read_message_history': bot_permissions.read_message_history,
+            'manage_messages': bot_permissions.manage_messages,
+            'embed_links': bot_permissions.embed_links,
+            'use_application_commands': bot_permissions.use_application_commands
+        }
+        
+        missing_perms = [perm.replace('_', ' ').title() for perm, has_perm in required_perms.items() if not has_perm]
+        
+        if missing_perms:
             await interaction.response.send_message(
-                "❌ You need the `Manage Messages` permission to use this command.",
+                f"❌ I'm missing the following permissions in {channel.mention}: {', '.join(missing_perms)}",
                 ephemeral=True,
             )
             return False

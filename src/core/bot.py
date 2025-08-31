@@ -166,7 +166,7 @@ class ClearTimerBot(commands.Bot):
 
         logger.info(
             LogArea.DISCORD,
-            f"Bot removed from server: {guild.name} (ID: {server_id}) - Added to removal tracking"
+            f"Bot removed from server: {guild.name} (ID: {server_id})"
         )
 
     async def _update_server_names(self) -> None:

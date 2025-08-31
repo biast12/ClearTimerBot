@@ -106,9 +106,10 @@ class InformationCommands(commands.Cog):
 
         # Links
         # Discord bot invite URL with required permissions
+        # Permissions: View Channels, Send Messages, Manage Messages, Embed Links, Read Message History, Use Slash Commands
         bot_invite_url = (
             "https://discord.com/oauth2/authorize?"
-            "client_id=1290353946308775987&permissions=76800&"
+            "client_id=1290353946308775987&permissions=2147576064&"
             "integration_type=0&scope=bot"
         )
 

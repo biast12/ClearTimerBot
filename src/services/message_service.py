@@ -27,17 +27,21 @@ class MessageService:
 
     async def _check_permissions(self, channel: discord.TextChannel) -> bool:
         permissions = channel.permissions_for(channel.guild.me)
-
-        if not permissions.manage_messages:
-            logger.warning(LogArea.PERMISSIONS, f"Missing 'Manage Messages' permission in channel {channel.id}")
-            return False
-
-        if not permissions.read_message_history:
-            logger.warning(LogArea.PERMISSIONS, f"Missing 'Read Message History' permission in channel {channel.id}")
-            return False
-
-        if not permissions.read_messages:
-            logger.warning(LogArea.PERMISSIONS, f"Missing 'Read Messages' permission in channel {channel.id}")
+        
+        # Check all required permissions
+        required_perms = {
+            'view_channel': permissions.view_channel,
+            'send_messages': permissions.send_messages,
+            'read_message_history': permissions.read_message_history,
+            'manage_messages': permissions.manage_messages,
+            'embed_links': permissions.embed_links,
+            'use_application_commands': permissions.use_application_commands
+        }
+        
+        # Log any missing permissions
+        missing_perms = [perm for perm, has_perm in required_perms.items() if not has_perm]
+        
+        if missing_perms:
             return False
 
         return True
@@ -53,11 +57,15 @@ class MessageService:
             messages_to_delete = []
             old_messages = []
 
-            async for message in channel.history(limit=None):
-                if message.created_at > two_weeks_ago:
-                    messages_to_delete.append(message)
-                else:
-                    old_messages.append(message)
+            try:
+                async for message in channel.history(limit=None):
+                    if message.created_at > two_weeks_ago:
+                        messages_to_delete.append(message)
+                    else:
+                        old_messages.append(message)
+            except discord.Forbidden:
+                logger.warning(LogArea.PERMISSIONS, f"No permission to access channel history for channel {channel.id}")
+                return 0
 
             # Bulk delete newer messages
             if messages_to_delete:
@@ -121,8 +129,7 @@ class MessageService:
     async def notify_missed_clear(
         self, channel: discord.TextChannel, job_id: str
     ) -> None:
-        try:
-            embed = discord.Embed(
+        embed = discord.Embed(
                 title="⚠️ Missed Clear Notification",
                 description=(
                     "A scheduled message clear was missed for this channel.\n"
@@ -132,6 +139,4 @@ class MessageService:
                 timestamp=discord.utils.utcnow(),
             )
 
-            await channel.send(embed=embed, delete_after=60)
-        except discord.HTTPException:
-            logger.warning(LogArea.SCHEDULER, f"Could not send missed clear notification to channel {channel.id}")
+        channel.send(embed=embed, delete_after=60)

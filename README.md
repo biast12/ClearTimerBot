@@ -4,7 +4,7 @@ ClearTimer is a powerful Discord bot that automatically clears messages in speci
 
 ## Adding the Bot to Your Server
 
-You can add the bot to your server using [this link](https://discord.com/oauth2/authorize?client_id=1290353946308775987&permissions=76800&integration_type=0&scope=bot). Alternatively, you can self-host the bot using the guide provided below.
+You can add the bot to your server using [this link](https://discord.com/oauth2/authorize?client_id=1290353946308775987&permissions=2147576064&integration_type=0&scope=bot). Alternatively, you can self-host the bot using the guide provided below.
 
 ## Features
 
