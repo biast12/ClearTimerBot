@@ -68,7 +68,6 @@ class ClearTimerBot(commands.Bot):
 
             # Clean up old removed servers on startup
             await self.data_service.cleanup_old_removed_servers()
-            logger.info(LogArea.CLEANUP, "Old removed servers cleanup completed")
 
             logger.info(LogArea.STARTUP, "Bot initialization complete!")
         except Exception as e:

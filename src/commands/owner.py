@@ -288,23 +288,6 @@ class OwnerCommands(
 
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.command(name="reload", description="Reload all bot commands")
-    async def reload_commands(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
-
-        try:
-            # Reload all extensions
-            extensions = list(self.bot.extensions.keys())
-            for ext in extensions:
-                await self.bot.reload_extension(ext)
-
-            # Register commands with Discord
-            await self.bot.tree.sync()
-
-            await interaction.followup.send("✅ Successfully reloaded and registered all commands.")
-        except Exception as e:
-            await interaction.followup.send(f"❌ Error reloading commands: {e}")
-
     @app_commands.command(name="reload_cache", description="Reload all caches from database")
     async def reload_cache(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
@@ -385,86 +368,6 @@ class OwnerCommands(
         )
 
         await interaction.response.send_message(embed=embed)
-
-    @app_commands.command(
-        name="removed_servers", description="Show servers the bot has been removed from"
-    )
-    async def removed_servers(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
-
-        from src.services.database import db_manager
-
-        removed_servers_collection = db_manager.removed_servers
-        removed_servers = await removed_servers_collection.find().to_list(None)
-
-        if not removed_servers:
-            await interaction.followup.send("No servers in removal tracking.")
-            return
-
-        embed = discord.Embed(
-            title="📤 Removed Servers",
-            description="Servers the bot has been removed from",
-            color=discord.Color.orange(),
-        )
-
-        server_list = []
-        now = datetime.now(timezone.utc)
-
-        for server_doc in removed_servers:
-            server_id = server_doc["_id"]
-            server_name = server_doc.get("server_name", "Unknown")
-            removed_at = server_doc.get("removed_at")
-            member_count = server_doc.get("member_count", 0)
-
-            if removed_at:
-                days_ago = (now - removed_at).days
-                if days_ago == 0:
-                    time_str = "Today"
-                elif days_ago == 1:
-                    time_str = "1 day ago"
-                else:
-                    time_str = f"{days_ago} days ago"
-            else:
-                time_str = "Unknown"
-
-            server_list.append(
-                f"• {server_name} ({server_id})\n  Removed: {time_str} | Members: {member_count}"
-            )
-
-        # Split into chunks if needed
-        chunk_size = 10
-        for i in range(0, len(server_list), chunk_size):
-            chunk = server_list[i : i + chunk_size]
-            field_name = "Servers" if i == 0 else "Servers (continued)"
-            embed.add_field(name=field_name, value="\n".join(chunk), inline=False)
-
-        embed.set_footer(
-            text=f"Total: {len(removed_servers)} servers | "
-            f"Servers removed >30 days ago will be auto-cleaned"
-        )
-
-        await interaction.followup.send(embed=embed)
-
-    @app_commands.command(
-        name="cleanup_removed",
-        description="Manually cleanup servers removed >30 days ago",
-    )
-    async def cleanup_removed(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
-
-        try:
-            cleaned_count = await self.data_service.cleanup_old_removed_servers()
-
-            if cleaned_count > 0:
-                await interaction.followup.send(
-                    f"✅ Successfully cleaned up {cleaned_count} server(s) that were removed more than 30 days ago."
-                )
-            else:
-                await interaction.followup.send(
-                    "No servers needed cleanup. All removed servers are less than 30 days old."
-                )
-        except Exception as e:
-            await interaction.followup.send(f"❌ Error during cleanup: {e}")
 
     @app_commands.command(
         name="error_lookup", description="Look up an error by its ID"
