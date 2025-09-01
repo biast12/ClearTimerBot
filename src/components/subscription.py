@@ -177,7 +177,7 @@ class SubscriptionListView(discord.ui.LayoutView):
                     
                     content += "\n"
         
-        content += f"\n💡 Use `/sub info` to view details for a specific channel"
+        content += f"\n💡 Use `/subscription info` to view details for a specific channel"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
