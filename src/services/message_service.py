@@ -47,7 +47,8 @@ class MessageService:
             'read_message_history': permissions.read_message_history,
             'manage_messages': permissions.manage_messages,
             'embed_links': permissions.embed_links,
-            'use_application_commands': permissions.use_application_commands
+            'use_application_commands': permissions.use_application_commands,
+            'send_messages_in_threads': permissions.send_messages_in_threads
         }
         
         # Log any missing permissions

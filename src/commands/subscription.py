@@ -510,7 +510,8 @@ class SubscriptionCommands(commands.Cog):
             'read_message_history': bot_permissions.read_message_history,
             'manage_messages': bot_permissions.manage_messages,
             'embed_links': bot_permissions.embed_links,
-            'use_application_commands': bot_permissions.use_application_commands
+            'use_application_commands': bot_permissions.use_application_commands,
+            'send_messages_in_threads': bot_permissions.send_messages_in_threads
         }
         
         missing_perms = [perm.replace('_', ' ').title() for perm, has_perm in required_perms.items() if not has_perm]

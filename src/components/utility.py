@@ -38,7 +38,7 @@ class HelpView(discord.ui.LayoutView):
             "**Examples:** `24h`, `1d`, `30m`, `09:00 PST`\n\n"
             "**🔒 Required Permissions**\n"
             "**For You:** Manage Messages\n"
-            "**For Bot:** Read Messages, Manage Messages, Read Message History\n\n"
+            "**For Bot:** View Channel, Send Messages, Send Messages in Threads, Read Message History, Manage Messages, Embed Links, Use Application Commands\n\n"
             "**🔗 Links**\n"
             f"[Support Server](https://discord.com/invite/ERFffj9Qs7) | "
             f"[Add Bot]({bot_invite_url}) | "

@@ -15,6 +15,21 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 - 📊 **Comprehensive Management**: Track all subscribed channels and schedules
 - 🔐 **Owner Controls**: Advanced administrative commands for bot management
 
+## Required Permissions
+
+### User Permissions
+- **Manage Messages**: Required to use subscription commands (`/sub add`, `/sub remove`, `/sub update`, etc.)
+
+### Bot Permissions
+The bot requires the following permissions to function properly:
+- **View Channel**: See and access channels
+- **Send Messages**: Send messages and responses
+- **Send Messages in Threads**: Send messages in thread channels
+- **Read Message History**: Read past messages for clearing
+- **Manage Messages**: Delete messages during clearing operations
+- **Embed Links**: Display rich embeds for command responses
+- **Use Application Commands**: Register and respond to slash commands
+
 ## Requirements
 
 - Python 3.8+
