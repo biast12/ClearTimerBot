@@ -105,13 +105,16 @@ class OwnerCommands(
     @app_commands.command(
         name="blacklist_add", description="Add a server to the blacklist"
     )
-    @app_commands.describe(server_id="Server ID to blacklist")
-    async def blacklist_add(self, interaction: discord.Interaction, server_id: str):
+    @app_commands.describe(
+        server_id="Server ID to blacklist",
+        reason="Reason for blacklisting (optional)"
+    )
+    async def blacklist_add(self, interaction: discord.Interaction, server_id: str, reason: str = "No reason provided"):
         # Try to get the server name if the bot is in the server
         guild = self.bot.get_guild(int(server_id))
         server_name = guild.name if guild else "Unknown"
         
-        if await self.data_service.add_to_blacklist(server_id, server_name):
+        if await self.data_service.add_to_blacklist(server_id, server_name, reason=reason):
             await self.data_service.save_blacklist()
 
             # Remove any existing subscriptions but keep server in database
@@ -124,7 +127,7 @@ class OwnerCommands(
                 await self.data_service.save_servers()
 
             from src.components.owner import BlacklistAddSuccessView
-            view = BlacklistAddSuccessView(server_name, server_id)
+            view = BlacklistAddSuccessView(server_name, server_id, reason)
             await interaction.response.send_message(view=view)
         else:
             from src.components.owner import BlacklistAddAlreadyView
@@ -147,21 +150,28 @@ class OwnerCommands(
             await interaction.response.send_message(view=view)
 
     @app_commands.command(
-        name="blacklist_list", description="List all blacklisted servers"
+        name="blacklist_check", description="Check if a server is blacklisted"
     )
-    async def blacklist_list(self, interaction: discord.Interaction):
-        blacklist_with_names = await self.data_service.get_blacklist_with_names()
-
-        if not blacklist_with_names:
-            from src.components.owner import NoBlacklistView
-            view = NoBlacklistView()
+    @app_commands.describe(server_id="Server ID to check blacklist status")
+    async def blacklist_check(self, interaction: discord.Interaction, server_id: str):
+        # Check if server is blacklisted
+        blacklist_entries = await self.data_service.get_blacklist_entries()
+        
+        if server_id not in blacklist_entries:
+            from src.components.owner import BlacklistCheckNotFoundView
+            view = BlacklistCheckNotFoundView(server_id)
             await interaction.response.send_message(view=view)
             return
-
-        # Blacklist display
-        from src.components.owner import BlacklistView
         
-        view = BlacklistView(blacklist_with_names, self.bot)
+        # Get the blacklist entry
+        entry = blacklist_entries[server_id]
+        
+        # Try to get current server name from bot's cache
+        guild = self.bot.get_guild(int(server_id))
+        server_name = guild.name if guild else (entry.server_name or "Unknown")
+        
+        from src.components.owner import BlacklistCheckFoundView
+        view = BlacklistCheckFoundView(server_id, server_name, entry)
         await interaction.response.send_message(view=view)
 
     @app_commands.command(name="reload_cache", description="Reload all caches from database")
@@ -176,6 +186,7 @@ class OwnerCommands(
             self.data_service._servers_cache.clear()
             self.data_service._blacklist_cache.clear()
             self.data_service._blacklist_names_cache.clear()
+            self.data_service._blacklist_entries_cache.clear()
             self.data_service._timezones_cache.clear()
             
             # Mark as uninitialized to force reload

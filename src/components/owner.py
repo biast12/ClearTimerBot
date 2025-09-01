@@ -55,35 +55,6 @@ class ServerListView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class BlacklistView(discord.ui.LayoutView):
-    """View for blacklist display"""
-    
-    def __init__(self, blacklist_with_names: dict, bot):
-        super().__init__()
-        
-        content = "🚫 **Blacklisted Servers**\n\n"
-        
-        server_list = []
-        for server_id, stored_name in blacklist_with_names.items():
-            # Try to get current name from bot's cache, fallback to stored name
-            guild = bot.get_guild(int(server_id))
-            guild_name = guild.name if guild else (stored_name or "Unknown")
-            server_list.append(f"• {guild_name} ({server_id})")
-        
-        # Show first 20
-        content += "\n".join(server_list[:20])
-        
-        if len(server_list) > 20:
-            content += f"\n... and {len(server_list) - 20} more\n"
-        
-        content += f"\n\n_Total: {len(blacklist_with_names)} servers_"
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
 
 class CacheReloadView(discord.ui.LayoutView):
     """View for cache reload confirmation"""
@@ -337,15 +308,15 @@ class ForceUnsubNotFoundView(discord.ui.LayoutView):
 class BlacklistAddSuccessView(discord.ui.LayoutView):
     """View for blacklist add success"""
     
-    def __init__(self, server_name: str, server_id: str):
+    def __init__(self, server_name: str, server_id: str, reason: str = "No reason provided"):
         super().__init__()
         
         content = (
             f"✅ **Server Blacklisted**\n\n"
             f"Added server **{server_name}** (`{server_id}`) to blacklist.\n\n"
+            f"📝 **Reason:** {reason}\n\n"
             f"• All subscriptions have been removed\n"
-            f"• The server cannot use bot commands\n\n"
-            f"_Use `/owner blacklist_remove {server_id}` to unblacklist_"
+            f"• The server cannot use bot commands"
         )
         
         container = discord.ui.Container(
@@ -363,8 +334,7 @@ class BlacklistAddAlreadyView(discord.ui.LayoutView):
         
         content = (
             f"❌ **Already Blacklisted**\n\n"
-            f"Server `{server_id}` is already blacklisted.\n\n"
-            f"_Use `/owner blacklist_list` to see all blacklisted servers_"
+            f"Server `{server_id}` is already blacklisted."
         )
         
         container = discord.ui.Container(
@@ -383,8 +353,7 @@ class BlacklistRemoveSuccessView(discord.ui.LayoutView):
         content = (
             f"✅ **Server Unblacklisted**\n\n"
             f"Removed server `{server_id}` from blacklist.\n\n"
-            f"The server can now use bot commands again.\n\n"
-            f"_Use `/owner blacklist_add {server_id}` to re-blacklist_"
+            f"The server can now use bot commands again."
         )
         
         container = discord.ui.Container(
@@ -402,13 +371,58 @@ class BlacklistRemoveNotFoundView(discord.ui.LayoutView):
         
         content = (
             f"❌ **Not Blacklisted**\n\n"
-            f"Server `{server_id}` is not blacklisted.\n\n"
-            f"_Use `/owner blacklist_list` to see all blacklisted servers_"
+            f"Server `{server_id}` is not blacklisted."
         )
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class BlacklistCheckFoundView(discord.ui.LayoutView):
+    """View for when a server is blacklisted"""
+    
+    def __init__(self, server_id: str, server_name: str, entry):
+        super().__init__()
+        
+        # Format the blacklisted date
+        blacklisted_date = "Unknown"
+        if entry.blacklisted_at:
+            blacklisted_date = f"<t:{int(entry.blacklisted_at.timestamp())}:F>"
+        
+        content = (
+            f"🚫 **Server is Blacklisted**\n\n"
+            f"**Server Name:** {server_name}\n"
+            f"**Server ID:** `{server_id}`\n"
+            f"**Reason:** {entry.reason or 'No reason provided'}\n"
+            f"**Blacklisted:** {blacklisted_date}\n\n"
+            f"This server cannot use bot commands."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class BlacklistCheckNotFoundView(discord.ui.LayoutView):
+    """View for when a server is not blacklisted"""
+    
+    def __init__(self, server_id: str):
+        super().__init__()
+        
+        content = (
+            f"✅ **Server is NOT Blacklisted**\n\n"
+            f"Server `{server_id}` is not on the blacklist.\n"
+            f"This server can use bot commands normally."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
         )
         self.add_item(container)
 
@@ -421,8 +435,7 @@ class NoBlacklistView(discord.ui.LayoutView):
         
         content = (
             "ℹ️ **No Blacklisted Servers**\n\n"
-            "No servers are currently blacklisted.\n\n"
-            "_Use `/owner blacklist_add <server_id>` to blacklist a server_"
+            "No servers are currently blacklisted."
         )
         
         container = discord.ui.Container(
@@ -460,8 +473,7 @@ class ErrorNotFoundView(discord.ui.LayoutView):
         
         content = (
             f"❌ **Error Not Found**\n\n"
-            f"No error found with ID: `{error_id}`\n\n"
-            f"_Use `/owner error_list` to see recent errors_"
+            f"No error found with ID: `{error_id}`"
         )
         
         container = discord.ui.Container(
@@ -479,8 +491,7 @@ class ErrorDeleteSuccessView(discord.ui.LayoutView):
         
         content = (
             f"✅ **Error Deleted**\n\n"
-            f"Error `{error_id}` has been deleted from the database.\n\n"
-            f"_Use `/owner error_list` to see remaining errors_"
+            f"Error `{error_id}` has been deleted from the database."
         )
         
         container = discord.ui.Container(
@@ -499,8 +510,7 @@ class ErrorDeleteFailedView(discord.ui.LayoutView):
         content = (
             f"❌ **Delete Failed**\n\n"
             f"Could not delete error `{error_id}`.\n"
-            f"It may not exist or has already been deleted.\n\n"
-            f"_Use `/owner error_list` to see available errors_"
+            f"It may not exist or has already been deleted."
         )
         
         container = discord.ui.Container(

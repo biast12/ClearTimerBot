@@ -18,6 +18,7 @@ class BlacklistEntry:
     server_id: str
     server_name: str = "Unknown"
     blacklisted_at: Optional[datetime] = None
+    reason: Optional[str] = None
 
     def __post_init__(self):
         if self.blacklisted_at is None:
@@ -27,7 +28,8 @@ class BlacklistEntry:
         return {
             "_id": self.server_id,
             "server_name": self.server_name,
-            "blacklisted_at": self.blacklisted_at.isoformat() if self.blacklisted_at else None
+            "blacklisted_at": self.blacklisted_at.isoformat() if self.blacklisted_at else None,
+            "reason": self.reason
         }
 
     @classmethod
@@ -41,7 +43,8 @@ class BlacklistEntry:
         return cls(
             server_id=str(data["_id"]),
             server_name=data.get("server_name", "Unknown"),
-            blacklisted_at=blacklisted_at
+            blacklisted_at=blacklisted_at,
+            reason=data.get("reason")
         )
 
 

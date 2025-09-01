@@ -19,6 +19,7 @@ class DataService:
         self._servers_cache: Dict[str, Server] = {}
         self._blacklist_cache: Set[str] = set()
         self._blacklist_names_cache: Dict[str, str] = {}  # Store server names
+        self._blacklist_entries_cache: Dict[str, BlacklistEntry] = {}  # Store full entries
         self._timezones_cache: Dict[str, str] = {}
         self._cache = MultiLevelCache()
         self._initialized = False
@@ -43,11 +44,13 @@ class DataService:
         blacklist_collection = db_manager.blacklist
         # Load all blacklist documents as BlacklistEntry models
         self._blacklist_names_cache: Dict[str, str] = {}  # Store server names
+        self._blacklist_entries_cache: Dict[str, BlacklistEntry] = {}  # Store full entries
         async for blacklist_doc in blacklist_collection.find():
             if "_id" in blacklist_doc:
                 entry = BlacklistEntry.from_dict(blacklist_doc)
                 self._blacklist_cache.add(entry.server_id)
                 self._blacklist_names_cache[entry.server_id] = entry.server_name
+                self._blacklist_entries_cache[entry.server_id] = entry
 
     async def _load_timezone_mappings_from_database(self) -> None:
         timezones_collection = db_manager.timezones
@@ -74,13 +77,10 @@ class DataService:
             await blacklist_collection.delete_many({})
             
             # Insert each blacklisted server as a BlacklistEntry document
-            if self._blacklist_cache:
+            if self._blacklist_entries_cache:
                 blacklist_entries = [
-                    BlacklistEntry(
-                        server_id=server_id, 
-                        server_name=self._blacklist_names_cache.get(server_id, "Unknown")
-                    ).to_dict()
-                    for server_id in self._blacklist_cache
+                    entry.to_dict()
+                    for entry in self._blacklist_entries_cache.values()
                 ]
                 await blacklist_collection.insert_many(blacklist_entries)
 
@@ -195,7 +195,7 @@ class DataService:
             await self._cache.set(cache_key, result, cache_level="warm", ttl=600)  # 10 minutes
             return result
 
-    async def add_to_blacklist(self, server_id: str, server_name: str = "Unknown") -> bool:
+    async def add_to_blacklist(self, server_id: str, server_name: str = "Unknown", reason: str = "No reason provided") -> bool:
         async with self._lock:
             # Check if already in cache
             if server_id in self._blacklist_cache:
@@ -212,9 +212,14 @@ class DataService:
                 return False
             
             # Add to cache and database
-            entry = BlacklistEntry(server_id=server_id, server_name=server_name)
+            entry = BlacklistEntry(
+                server_id=server_id, 
+                server_name=server_name,
+                reason=reason
+            )
             self._blacklist_cache.add(entry.server_id)
             self._blacklist_names_cache[entry.server_id] = entry.server_name
+            self._blacklist_entries_cache[entry.server_id] = entry
             
             await blacklist_collection.insert_one(entry.to_dict())
             
@@ -229,6 +234,8 @@ class DataService:
                 self._blacklist_cache.remove(server_id)
                 if server_id in self._blacklist_names_cache:
                     del self._blacklist_names_cache[server_id]
+                if server_id in self._blacklist_entries_cache:
+                    del self._blacklist_entries_cache[server_id]
 
                 # Delete the document with this _id
                 blacklist_collection = db_manager.blacklist
@@ -249,6 +256,11 @@ class DataService:
     async def get_blacklist_with_names(self) -> Dict[str, str]:
         async with self._lock:
             return self._blacklist_names_cache.copy()
+    
+    async def get_blacklist_entries(self) -> Dict[str, BlacklistEntry]:
+        """Get full blacklist entries with all data"""
+        async with self._lock:
+            return self._blacklist_entries_cache.copy()
 
     def get_timezone(self, timezone_abbr: str) -> Optional[str]:
         return self._timezones_cache.get(timezone_abbr)

@@ -69,6 +69,7 @@ class SchedulerConfig:
     retry_delay_seconds: int = 60
     cleanup_interval_seconds: int = 3600
     max_queue_size: int = 1000
+    max_retries: int = 3
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -76,7 +77,8 @@ class SchedulerConfig:
             "task_timeout_seconds": self.task_timeout_seconds,
             "retry_delay_seconds": self.retry_delay_seconds,
             "cleanup_interval_seconds": self.cleanup_interval_seconds,
-            "max_queue_size": self.max_queue_size
+            "max_queue_size": self.max_queue_size,
+            "max_retries": self.max_retries
         }
 
 
