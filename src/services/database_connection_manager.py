@@ -55,10 +55,6 @@ class DatabaseManager:
         return self.db[CollectionName.SERVERS.value]
 
     @property
-    def timezones(self):
-        return self.db[CollectionName.TIMEZONES.value]
-
-    @property
     def blacklist(self):
         return self.db[CollectionName.BLACKLIST.value]
 

@@ -8,7 +8,6 @@ import traceback
 class CollectionName(Enum):
     SERVERS = "servers"
     BLACKLIST = "blacklist"
-    TIMEZONES = "timezones"
     REMOVED_SERVERS = "removed_servers"
     ERRORS = "errors"
     CONFIG = "config"
@@ -88,48 +87,6 @@ class RemovedServer:
             removal_reason=data.get("removal_reason")
         )
 
-
-@dataclass
-class TimezoneMapping:
-    abbreviation: str
-    full_name: str
-    utc_offset: Optional[str] = None
-
-    def to_dict(self) -> Dict[str, str]:
-        result = {self.abbreviation: self.full_name}
-        if self.utc_offset:
-            result[f"{self.abbreviation}_offset"] = self.utc_offset
-        return result
-
-    @classmethod
-    def from_dict(cls, abbr: str, full_name: str, offset: Optional[str] = None) -> "TimezoneMapping":
-        return cls(
-            abbreviation=abbr,
-            full_name=full_name,
-            utc_offset=offset
-        )
-
-
-@dataclass 
-class TimezoneDocument:
-    timezones: Dict[str, str] = field(default_factory=dict)
-    
-    def add_timezone(self, abbreviation: str, full_name: str) -> None:
-        self.timezones[abbreviation] = full_name
-    
-    def get_timezone(self, abbreviation: str) -> Optional[str]:
-        return self.timezones.get(abbreviation)
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return self.timezones
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "TimezoneDocument":
-        tz_doc = cls()
-        for key, value in data.items():
-            if key != "_id":
-                tz_doc.timezones[key] = value
-        return tz_doc
 
 
 @dataclass
@@ -231,6 +188,7 @@ class BotConfigDocument:
     admins: List[str] = field(default_factory=list)  # Just store user IDs
     settings: Dict[str, Any] = field(default_factory=dict)
     feature_flags: Dict[str, bool] = field(default_factory=dict)
+    timezones: Dict[str, str] = field(default_factory=dict)
     updated_at: Optional[datetime] = None
     
     def __post_init__(self):
@@ -260,6 +218,7 @@ class BotConfigDocument:
             "admins": self.admins,
             "settings": self.settings,
             "feature_flags": self.feature_flags,
+            "timezones": self.timezones,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
     
@@ -283,6 +242,7 @@ class BotConfigDocument:
             admins=admins,
             settings=data.get("settings", {}),
             feature_flags=data.get("feature_flags", {}),
+            timezones=data.get("timezones", {}),
             updated_at=updated_at
         )
 

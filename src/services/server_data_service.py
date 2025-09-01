@@ -6,7 +6,6 @@ from src.models import (
     Server, 
     BlacklistEntry, 
     RemovedServer,
-    TimezoneDocument,
     BotConfigDocument
 )
 from src.services.database_connection_manager import db_manager
@@ -57,11 +56,12 @@ class DataService:
                 self._blacklist_entries_cache[entry.server_id] = entry
 
     async def _load_timezone_mappings_from_database(self) -> None:
-        timezones_collection = db_manager.timezones
-        tz_doc = await timezones_collection.find_one()
-        if tz_doc:
-            timezone_doc = TimezoneDocument.from_dict(tz_doc)
-            self._timezones_cache = timezone_doc.timezones
+        config_collection = db_manager.config
+        config_doc = await config_collection.find_one({"_id": "bot_config"})
+        if config_doc and "timezones" in config_doc:
+            self._timezones_cache = config_doc["timezones"]
+        else:
+            self._timezones_cache = {}
 
     async def save_servers(self) -> None:
         async with self._lock:

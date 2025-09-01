@@ -4,8 +4,6 @@ from .database_models import (
     CollectionName,
     BlacklistEntry,
     RemovedServer,
-    TimezoneMapping,
-    TimezoneDocument,
     ErrorDocument,
     BotConfigDocument,
     DatabaseStats
@@ -69,8 +67,6 @@ __all__ = [
     "CollectionName",
     "BlacklistEntry",
     "RemovedServer",
-    "TimezoneMapping",
-    "TimezoneDocument",
     "ErrorDocument",
     "BotConfigDocument",
     "DatabaseStats",
