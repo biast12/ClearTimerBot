@@ -4,8 +4,8 @@ from discord.ext import commands
 from src.utils.logger import logger, LogArea
 
 
-class OwnerCommands(
-    commands.GroupCog, group_name="owner", description="Owner-only management commands"
+class AdminCommands(
+    commands.GroupCog, group_name="admin", description="Admin-only management commands"
 ):
     def __init__(self, bot):
         self.bot = bot
@@ -14,8 +14,8 @@ class OwnerCommands(
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not self.bot.is_owner(interaction.user):
-            from src.components.owner import OwnerOnlyView
-            view = OwnerOnlyView()
+            from src.components.admin import AdminOnlyView
+            view = AdminOnlyView()
             await interaction.response.send_message(view=view, ephemeral=True)
             return False
         return True
@@ -54,7 +54,7 @@ class OwnerCommands(
             
             # Check if server exists in database
             if not server:
-                from src.components.owner import ServerNotFoundView
+                from src.components.admin import ServerNotFoundView
                 view = ServerNotFoundView(server_id)
                 await interaction.followup.send(view=view)
                 return
@@ -75,7 +75,7 @@ class OwnerCommands(
             # Get channel details
             channel_count = len(server.channels)
             
-            from src.components.owner import ServerStatsView
+            from src.components.admin import ServerStatsView
             view = ServerStatsView(
                 server_id=server_id,
                 server_name=server_name,
@@ -103,7 +103,7 @@ class OwnerCommands(
             error_count = await errors_collection.count_documents({})
             
             # Simple stats display
-            from src.components.owner import SimpleStatsView
+            from src.components.admin import SimpleStatsView
             
             view = SimpleStatsView(
                 total_servers=total_servers,
@@ -139,11 +139,11 @@ class OwnerCommands(
                 # Keep server in database even with no channels
                 await self.data_service.save_servers()
 
-            from src.components.owner import BlacklistAddSuccessView
+            from src.components.admin import BlacklistAddSuccessView
             view = BlacklistAddSuccessView(server_name, server_id, reason)
             await interaction.response.send_message(view=view)
         else:
-            from src.components.owner import BlacklistAddAlreadyView
+            from src.components.admin import BlacklistAddAlreadyView
             view = BlacklistAddAlreadyView(server_id)
             await interaction.response.send_message(view=view)
 
@@ -154,11 +154,11 @@ class OwnerCommands(
     async def blacklist_remove(self, interaction: discord.Interaction, server_id: str):
         if await self.data_service.remove_from_blacklist(server_id):
             await self.data_service.save_blacklist()
-            from src.components.owner import BlacklistRemoveSuccessView
+            from src.components.admin import BlacklistRemoveSuccessView
             view = BlacklistRemoveSuccessView(server_id)
             await interaction.response.send_message(view=view)
         else:
-            from src.components.owner import BlacklistRemoveNotFoundView
+            from src.components.admin import BlacklistRemoveNotFoundView
             view = BlacklistRemoveNotFoundView(server_id)
             await interaction.response.send_message(view=view)
 
@@ -171,7 +171,7 @@ class OwnerCommands(
         blacklist_entries = await self.data_service.get_blacklist_entries()
         
         if server_id not in blacklist_entries:
-            from src.components.owner import BlacklistCheckNotFoundView
+            from src.components.admin import BlacklistCheckNotFoundView
             view = BlacklistCheckNotFoundView(server_id)
             await interaction.response.send_message(view=view)
             return
@@ -183,7 +183,7 @@ class OwnerCommands(
         guild = self.bot.get_guild(int(server_id))
         server_name = guild.name if guild else (entry.server_name or "Unknown")
         
-        from src.components.owner import BlacklistCheckFoundView
+        from src.components.admin import BlacklistCheckFoundView
         view = BlacklistCheckFoundView(server_id, server_name, entry)
         await interaction.response.send_message(view=view)
 
@@ -214,13 +214,13 @@ class OwnerCommands(
             timezones_count = len(self.data_service._timezones_cache)
             
             # Cache reload display
-            from src.components.owner import CacheReloadView
+            from src.components.admin import CacheReloadView
             
             view = CacheReloadView(servers_count, blacklist_count, timezones_count)
             await interaction.followup.send(view=view)
             
         except Exception as e:
-            from src.components.owner import CacheReloadErrorView
+            from src.components.admin import CacheReloadErrorView
             view = CacheReloadErrorView(str(e))
             await interaction.followup.send(view=view)
 
@@ -235,13 +235,13 @@ class OwnerCommands(
         error_doc = await logger.get_error(error_id)
         
         if not error_doc:
-            from src.components.owner import ErrorNotFoundView
+            from src.components.admin import ErrorNotFoundView
             view = ErrorNotFoundView(error_id)
             await interaction.followup.send(view=view)
             return
         
         # Error details display
-        from src.components.owner import ErrorDetailsView
+        from src.components.admin import ErrorDetailsView
         
         view = ErrorDetailsView(error_doc, self.bot)
         await interaction.followup.send(view=view)
@@ -257,11 +257,11 @@ class OwnerCommands(
         success = await logger.delete_error(error_id)
         
         if success:
-            from src.components.owner import ErrorDeleteSuccessView
+            from src.components.admin import ErrorDeleteSuccessView
             view = ErrorDeleteSuccessView(error_id)
             await interaction.followup.send(view=view)
         else:
-            from src.components.owner import ErrorDeleteFailedView
+            from src.components.admin import ErrorDeleteFailedView
             view = ErrorDeleteFailedView(error_id)
             await interaction.followup.send(view=view)
 
@@ -279,13 +279,13 @@ class OwnerCommands(
         errors = await logger.get_recent_errors(limit)
         
         if not errors:
-            from src.components.owner import NoErrorsView
+            from src.components.admin import NoErrorsView
             view = NoErrorsView()
             await interaction.followup.send(view=view)
             return
         
         # Error list display
-        from src.components.owner import ErrorListView
+        from src.components.admin import ErrorListView
         
         view = ErrorListView(errors)
         await interaction.followup.send(view=view)
@@ -301,7 +301,7 @@ class OwnerCommands(
         try:
             errors_collection = db_manager.db.errors
             result = await errors_collection.delete_many({})
-            from src.components.owner import ErrorsClearedView
+            from src.components.admin import ErrorsClearedView
             view = ErrorsClearedView(result.deleted_count)
             await interaction.followup.send(view=view)
         except Exception as e:
@@ -310,7 +310,7 @@ class OwnerCommands(
                 "Failed to clear errors from database",
                 exception=e
             )
-            from src.components.owner import ErrorsClearFailedView
+            from src.components.admin import ErrorsClearFailedView
             view = ErrorsClearFailedView(error_id)
             await interaction.followup.send(view=view)
 
@@ -327,7 +327,7 @@ class OwnerCommands(
 
         # Check if server exists
         if id not in servers:
-            from src.components.owner import ForceUnsubNotFoundView
+            from src.components.admin import ForceUnsubNotFoundView
             view = ForceUnsubNotFoundView(id)
             await interaction.followup.send(view=view)
             return
@@ -343,7 +343,7 @@ class OwnerCommands(
         # Keep server in database even with no channels
         await self.data_service.save_servers()
 
-        from src.components.owner import ForceUnsubSuccessView
+        from src.components.admin import ForceUnsubSuccessView
         view = ForceUnsubSuccessView("server", id, channels_removed)
         await interaction.followup.send(view=view)
 
@@ -367,13 +367,13 @@ class OwnerCommands(
                 server.remove_channel(id)
                 await self.data_service.save_servers()
 
-                from src.components.owner import ForceUnsubSuccessView
+                from src.components.admin import ForceUnsubSuccessView
                 view = ForceUnsubSuccessView("channel", id, server_id=server_id)
                 await interaction.followup.send(view=view)
                 return
 
         # Channel not found in any server
-        from src.components.owner import ForceUnsubNotFoundView
+        from src.components.admin import ForceUnsubNotFoundView
         view = ForceUnsubNotFoundView(id)
         await interaction.followup.send(view=view)
 
@@ -381,5 +381,5 @@ class OwnerCommands(
 async def setup(bot):
     if bot.config.is_owner_mode and bot.config.guild_id:
         await bot.add_cog(
-            OwnerCommands(bot), guild=discord.Object(id=bot.config.guild_id)
+            AdminCommands(bot), guild=discord.Object(id=bot.config.guild_id)
         )

@@ -1,5 +1,5 @@
 """
-View Display for Owner Commands
+View Display for Admin Commands
 """
 
 import discord
@@ -223,7 +223,7 @@ class ErrorListView(discord.ui.LayoutView):
         if len(errors) > 10:
             content += f"\n... and {len(errors) - 10} more errors\n"
         
-        content += f"\n_Use `/owner error check <id>` to see full details_"
+        content += f"\n_Use `/admin error check <id>` to see full details_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -647,16 +647,16 @@ class ErrorsClearFailedView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class OwnerOnlyView(discord.ui.LayoutView):
-    """View for owner-only restriction message"""
+class AdminOnlyView(discord.ui.LayoutView):
+    """View for admin-only restriction message"""
     
     def __init__(self):
         super().__init__()
         
         content = (
-            "❌ **Owner Only**\n\n"
-            "This command is restricted to the bot owner.\n\n"
-            "_If you need assistance, please contact the bot owner_"
+            "❌ **Admin Only**\n\n"
+            "This command is restricted to the bot admin.\n\n"
+            "_If you need assistance, please contact the bot admin_"
         )
         
         container = discord.ui.Container(

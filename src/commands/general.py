@@ -5,7 +5,7 @@ import time
 from src.utils.command_validation import CommandValidator, ValidationCheck
 
 
-class UtilityCommands(commands.Cog):
+class GeneralCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.data_service = bot.data_service
@@ -18,13 +18,13 @@ class UtilityCommands(commands.Cog):
         # Check if server is blacklisted
         server_id = str(interaction.guild.id)
         if await self.data_service.is_blacklisted(server_id):
-            from src.components.utility import BlacklistedServerView
+            from src.components.general import BlacklistedServerView
             view = BlacklistedServerView()
             await interaction.response.send_message(view=view, ephemeral=True)
             return
         
         # Help display
-        from src.components.utility import HelpView
+        from src.components.general import HelpView
         
         view = HelpView()
         await interaction.response.send_message(view=view)
@@ -54,11 +54,11 @@ class UtilityCommands(commands.Cog):
         response_time = round((end_time - start_time) * 1000)
 
         # Ping display
-        from src.components.utility import PingView
+        from src.components.general import PingView
         
         view = PingView(ws_latency, response_time)
         await interaction.followup.send(view=view)
 
 
 async def setup(bot):
-    await bot.add_cog(UtilityCommands(bot))
+    await bot.add_cog(GeneralCommands(bot))

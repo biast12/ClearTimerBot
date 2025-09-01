@@ -62,7 +62,7 @@ class CommandRegisterBot(commands.Bot):
         # Load command cogs
         command_modules = [
             "src.commands.subscription",
-            "src.commands.utility",
+            "src.commands.general",
         ]
 
         for module in command_modules:
@@ -75,10 +75,10 @@ class CommandRegisterBot(commands.Bot):
         # Load owner commands if configured
         if self.config.is_owner_mode:
             try:
-                await self.load_extension("src.commands.owner")
-                logger.info(LogArea.NONE, "Loaded owner commands")
+                await self.load_extension("src.commands.admin")
+                logger.info(LogArea.NONE, "Loaded admin commands")
             except Exception as e:
-                logger.error(LogArea.NONE, f"Failed to load owner commands: {e}")
+                logger.error(LogArea.NONE, f"Failed to load admin commands: {e}")
 
     async def on_ready(self):
         logger.info(LogArea.NONE, f"Connected as: {self.user} (ID: {self.user.id})")

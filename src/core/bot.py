@@ -86,7 +86,7 @@ class ClearTimerBot(commands.Bot):
         # Load standard commands
         command_modules = [
             "src.commands.subscription",
-            "src.commands.utility",
+            "src.commands.general",
         ]
 
         for module in command_modules:
@@ -104,15 +104,15 @@ class ClearTimerBot(commands.Bot):
         # Load owner commands if configured
         if self.config.is_owner_mode:
             try:
-                await self.load_extension("src.commands.owner")
-                logger.info(LogArea.STARTUP, "Loaded owner commands")
+                await self.load_extension("src.commands.admin")
+                logger.info(LogArea.STARTUP, "Loaded admin commands")
             except Exception as e:
                 error_id = await logger.log_error(
                     LogArea.STARTUP,
-                    "Failed to load owner commands",
+                    "Failed to load admin commands",
                     exception=e
                 )
-                logger.error(LogArea.STARTUP, f"Failed to load owner commands. Error ID: {error_id}")
+                logger.error(LogArea.STARTUP, f"Failed to load admin commands. Error ID: {error_id}")
 
     async def close(self) -> None:
         # Stop scheduler first (prevents new jobs from running)
