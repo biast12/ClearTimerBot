@@ -72,9 +72,11 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 
 ## Commands
 
-### General Commands
+### Subscription Commands
 
-#### `/sub [timer] [target_channel] [ignored_message]`
+All subscription-related commands are grouped under `/sub`:
+
+#### `/sub add [timer] [target_channel] [ignored_message]`
 
 Subscribe a channel to automatic message deletion. Requires `Manage Messages` permission.
 
@@ -86,22 +88,37 @@ Subscribe a channel to automatic message deletion. Requires `Manage Messages` pe
   - **Intervals:** `24h`, `1d`, `30m`, `1d12h30m` (combine days, hours, minutes)
   - **Daily schedule:** `15:30 EST`, `09:00 PST` (specific time with timezone)
 - **Examples:**
-  - `/sub 12h` - Clear current channel every 12 hours
-  - `/sub 1d #announcements` - Clear #announcements daily
-  - `/sub 09:00 EST #general` - Clear #general every day at 9 AM EST
-  - `/sub 24h #general 123456789` - Clear #general daily, ignoring message 123456789
+  - `/sub add 12h` - Clear current channel every 12 hours
+  - `/sub add 1d #announcements` - Clear #announcements daily
+  - `/sub add 09:00 EST #general` - Clear #general every day at 9 AM EST
+  - `/sub add 24h #general 123456789` - Clear #general daily, ignoring message 123456789
 
-#### `/unsub [target_channel]`
+#### `/sub remove [target_channel]`
 
 Unsubscribe a channel from automatic message deletion. Requires `Manage Messages` permission.
 
 - **Parameters:**
   - `target_channel` (optional): Defaults to current channel if not specified
 - **Examples:**
-  - `/unsub` - Stop clearing current channel
-  - `/unsub #general` - Stop clearing #general
+  - `/sub remove` - Stop clearing current channel
+  - `/sub remove #general` - Stop clearing #general
 
-#### `/ignoremsg [message] [target_channel]`
+#### `/sub info [target_channel]`
+
+View detailed subscription information for a channel.
+
+- **Parameters:**
+  - `target_channel` (optional): Defaults to current channel if not specified
+- **Shows:**
+  - Channel status and timer configuration
+  - Next scheduled clear time
+  - List of ignored messages
+  - Helpful tips for managing the subscription
+- **Examples:**
+  - `/sub info` - View info for current channel
+  - `/sub info #general` - View info for #general
+
+#### `/sub ignore [message] [target_channel]`
 
 Toggle a message to be ignored during channel clearing. Requires `Manage Messages` permission.
 
@@ -109,19 +126,62 @@ Toggle a message to be ignored during channel clearing. Requires `Manage Message
   - `message`: Message ID or Discord message link to toggle ignore status
   - `target_channel` (optional): Defaults to current channel if not specified
 - **Examples:**
-  - `/ignoremsg 123456789` - Toggle ignore status for message in current channel
-  - `/ignoremsg https://discord.com/channels/.../123456789` - Toggle using message link
-  - `/ignoremsg 123456789 #general` - Toggle ignore status in #general
+  - `/sub ignore 123456789` - Toggle ignore status for message in current channel
+  - `/sub ignore https://discord.com/channels/.../123456789` - Toggle using message link
+  - `/sub ignore 123456789 #general` - Toggle ignore status in #general
 
-#### `/next [target_channel]`
+#### `/sub list`
 
-Check when the next message clear is scheduled for a channel.
+List all active subscriptions in the current server.
+
+- **Shows:**
+  - All subscribed channels
+  - Timer configuration for each channel
+  - Next clear time for each channel
+  - Number of ignored messages per channel
+- **Example:**
+  - `/sub list` - Display all active subscriptions
+
+#### `/sub clear [target_channel]`
+
+Manually trigger a message clear for a subscribed channel. Requires `Manage Messages` permission.
 
 - **Parameters:**
   - `target_channel` (optional): Defaults to current channel if not specified
 - **Examples:**
-  - `/next` - Check next clear for current channel
-  - `/next #general` - Check next clear for #general
+  - `/sub clear` - Manually clear current channel
+  - `/sub clear #general` - Manually clear #general
+
+#### `/sub skip [target_channel]`
+
+Skip the next scheduled clear for a channel. Requires `Manage Messages` permission.
+
+- **Parameters:**
+  - `target_channel` (optional): Defaults to current channel if not specified
+- **Description:**
+  - Skips the next scheduled clear and reschedules to the following occurrence
+  - Useful when you want to keep messages temporarily without stopping the subscription
+- **Examples:**
+  - `/sub skip` - Skip next clear for current channel
+  - `/sub skip #general` - Skip next clear for #general
+
+#### `/sub update [timer] [target_channel] [ignored_message]`
+
+Update the timer for an existing subscription. Requires `Manage Messages` permission.
+
+- **Parameters:**
+  - `timer`: New timer format (e.g., `24h`, `1d12h30m`, or `15:30 EST`)
+  - `target_channel` (optional): Defaults to current channel if not specified
+  - `ignored_message` (optional): Message ID or link to add to ignore list
+- **Description:**
+  - Updates the timer while preserving existing ignored messages
+  - Can optionally add a new ignored message during the update
+- **Examples:**
+  - `/sub update 12h` - Change current channel's timer to 12 hours
+  - `/sub update 2d #general` - Change #general's timer to 2 days
+  - `/sub update 09:00 PST #announcements` - Update to daily at 9 AM PST
+
+### General Commands
 
 #### `/ping`
 

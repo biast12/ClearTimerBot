@@ -86,7 +86,6 @@ class ClearTimerBot(commands.Bot):
         # Load standard commands
         command_modules = [
             "src.commands.subscription",
-            "src.commands.information",
             "src.commands.utility",
         ]
 

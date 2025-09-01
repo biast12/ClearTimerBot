@@ -28,7 +28,7 @@ class SubscriptionSuccessView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value  # Green for success
+            accent_color=discord.Color.green().value
         )
         self.add_item(container)
 
@@ -52,7 +52,140 @@ class IgnoreMessageView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value  # Green for success
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class SubscriptionInfoView(discord.ui.LayoutView):
+    """View for comprehensive subscription information using Components v2"""
+    
+    def __init__(self, channel: discord.TextChannel, next_run_time: datetime, timer_info=None):
+        super().__init__()
+        
+        timestamp = int(next_run_time.timestamp())
+        
+        content = (
+            f"📊 **Subscription Information**\n\n"
+            f"**Channel:** {channel.mention}\n"
+            f"**Status:** ✅ Active\n\n"
+        )
+        
+        if timer_info:
+            content += f"**Timer Configuration:** {timer_info.timer}\n"
+            
+            # Show ignored messages if any
+            if hasattr(timer_info, 'ignored_messages') and timer_info.ignored_messages:
+                content += f"**Ignored Messages:** {len(timer_info.ignored_messages)} message(s)\n"
+                # List first 5 message IDs
+                for i, msg_id in enumerate(list(timer_info.ignored_messages)[:5]):
+                    content += f"  • `{msg_id}`\n"
+                if len(timer_info.ignored_messages) > 5:
+                    content += f"  • ... and {len(timer_info.ignored_messages) - 5} more\n"
+            else:
+                content += "**Ignored Messages:** None\n"
+        
+        content += (
+            f"\n**Schedule Details**\n"
+            f"**Next Clear:** <t:{timestamp}:f>\n"
+            f"**Time Until:** <t:{timestamp}:R>\n\n"
+            f"💡 **Available Commands**\n"
+            f"• `/sub update` - Change the timer schedule\n"
+            f"• `/sub ignore` - Toggle messages to exclude from clearing\n"
+            f"• `/sub skip` - Skip the next scheduled clear\n"
+            f"• `/sub clear` - Manually trigger a clear now\n"
+            f"• `/sub remove` - Stop automatic clearing"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.blue().value
+        )
+        self.add_item(container)
+
+
+class SubscriptionListView(discord.ui.LayoutView):
+    """View for listing all active subscriptions in a server"""
+    
+    def __init__(self, guild: discord.Guild, channels: dict, scheduler_service):
+        super().__init__()
+        
+        content = f"📋 **Active Subscriptions for {guild.name}**\n\n"
+        
+        if not channels:
+            content += "No active subscriptions found."
+        else:
+            for channel_id, timer_info in channels.items():
+                channel = guild.get_channel(int(channel_id))
+                if channel:
+                    # Get next run time from scheduler
+                    next_run_time = scheduler_service.get_next_run_time(str(guild.id), channel_id)
+                    
+                    content += f"**#{channel.name}**\n"
+                    content += f"  • Timer: {timer_info.timer}\n"
+                    
+                    if next_run_time:
+                        timestamp = int(next_run_time.timestamp())
+                        content += f"  • Next clear: <t:{timestamp}:R>\n"
+                    
+                    if hasattr(timer_info, 'ignored_messages') and timer_info.ignored_messages:
+                        content += f"  • Ignored messages: {len(timer_info.ignored_messages)}\n"
+                    
+                    content += "\n"
+        
+        content += f"\n💡 Use `/sub info` to view details for a specific channel"
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.blue().value
+        )
+        self.add_item(container)
+
+
+class SkipSuccessView(discord.ui.LayoutView):
+    """View for skip success using Components v2"""
+    
+    def __init__(self, channel: discord.TextChannel, next_run_time: datetime):
+        super().__init__()
+        
+        timestamp = int(next_run_time.timestamp())
+        
+        content = (
+            f"⏭️ **Next Clear Skipped**\n\n"
+            f"Skipped the next scheduled clear for {channel.mention}.\n\n"
+            f"**New Next Clear:** <t:{timestamp}:f>\n"
+            f"**Time Until:** <t:{timestamp}:R>"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.orange().value
+        )
+        self.add_item(container)
+
+
+class UpdateSuccessView(discord.ui.LayoutView):
+    """View for update success using Components v2"""
+    
+    def __init__(self, channel: discord.TextChannel, timer: str, next_run_time: datetime, message_id: Optional[str] = None):
+        super().__init__()
+        
+        timestamp = int(next_run_time.timestamp())
+        
+        content = (
+            f"🔄 **Subscription Updated**\n\n"
+            f"Successfully updated the timer for {channel.mention}.\n\n"
+            f"**New Timer:** {timer}\n"
+            f"**Next Clear:** <t:{timestamp}:f>\n"
+            f"**Time Until:** <t:{timestamp}:R>"
+        )
+        
+        if message_id:
+            content += f"\n\n**Added Ignored Message:** Message ID: {message_id}"
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.blue().value
         )
         self.add_item(container)
 
@@ -70,6 +203,6 @@ class UnsubscribeSuccessView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value  # Green for success
+            accent_color=discord.Color.green().value
         )
         self.add_item(container)

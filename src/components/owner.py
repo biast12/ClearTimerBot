@@ -52,7 +52,7 @@ class ServerListView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.blue().value  # Blue for info
+            accent_color=discord.Color.blue().value
         )
         self.add_item(container)
 
@@ -82,7 +82,7 @@ class BlacklistView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value  # Red for blacklist
+            accent_color=discord.Color.red().value
         )
         self.add_item(container)
 
@@ -105,7 +105,7 @@ class CacheReloadView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value  # Green for success
+            accent_color=discord.Color.green().value
         )
         self.add_item(container)
 
@@ -155,7 +155,7 @@ class ErrorDetailsView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value  # Red for error
+            accent_color=discord.Color.red().value
         )
         self.add_item(container)
 
@@ -189,7 +189,7 @@ class ErrorListView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.yellow().value  # Yellow for warning/list
+            accent_color=discord.Color.yellow().value
         )
         self.add_item(container)
 
@@ -217,7 +217,7 @@ class StatsView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.blue().value  # Blue for info
+            accent_color=discord.Color.blue().value
         )
         self.add_item(container)
 
@@ -267,6 +267,6 @@ class CacheStatsView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.blue().value  # Blue for info
+            accent_color=discord.Color.blue().value
         )
         self.add_item(container)

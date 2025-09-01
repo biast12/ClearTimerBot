@@ -62,7 +62,6 @@ class CommandRegisterBot(commands.Bot):
         # Load command cogs
         command_modules = [
             "src.commands.subscription",
-            "src.commands.information",
             "src.commands.utility",
         ]
 

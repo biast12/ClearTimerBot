@@ -8,6 +8,16 @@ class UtilityCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @app_commands.command(
+        name="help", description="Display help information about the bot"
+    )
+    async def help_command(self, interaction: discord.Interaction):
+        # Use Components v2 for help display
+        from src.components.utility import HelpView
+        
+        view = HelpView()
+        await interaction.response.send_message(view=view)
+
     @app_commands.command(name="ping", description="Check the bot's latency")
     async def ping(self, interaction: discord.Interaction):
         # Calculate latencies
@@ -24,7 +34,6 @@ class UtilityCommands(commands.Cog):
         
         view = PingView(ws_latency, response_time)
         await interaction.followup.send(view=view)
-
 
 
 async def setup(bot):

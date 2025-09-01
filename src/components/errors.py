@@ -19,7 +19,7 @@ class ErrorView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value  # Red for errors
+            accent_color=discord.Color.red().value
         )
         self.add_item(container)
 
@@ -38,6 +38,6 @@ class MissedClearView(discord.ui.LayoutView):
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.yellow().value  # Yellow for warning
+            accent_color=discord.Color.yellow().value
         )
         self.add_item(container)
