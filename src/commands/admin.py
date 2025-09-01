@@ -13,14 +13,18 @@ class AdminCommands(
         self.scheduler_service = bot.scheduler_service
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not self.bot.is_owner(interaction.user):
+        # Check if user is either the owner OR an admin
+        is_owner = self.bot.is_owner(interaction.user)
+        is_admin = await self.bot.is_admin(interaction.user)
+        
+        if not (is_owner or is_admin):
             from src.components.admin import AdminOnlyView
             view = AdminOnlyView()
             await interaction.response.send_message(view=view, ephemeral=True)
             return False
         return True
     
-    # Create subgroups for blacklist, error, and force commands
+    # Create subgroups for blacklist, error, force, and recache commands
     blacklist_group = app_commands.Group(
         name="blacklist",
         description="Manage server blacklist",
@@ -36,6 +40,12 @@ class AdminCommands(
     force_group = app_commands.Group(
         name="force",
         description="Force management actions",
+        parent=None
+    )
+    
+    recache_group = app_commands.Group(
+        name="recache",
+        description="Recache specific data from database",
         parent=None
     )
     
@@ -127,7 +137,10 @@ class AdminCommands(
         guild = self.bot.get_guild(int(server_id))
         server_name = guild.name if guild else "Unknown"
         
-        if await self.data_service.add_to_blacklist(server_id, server_name, reason=reason):
+        # Get the user who is blacklisting
+        blacklisted_by = str(interaction.user.id)
+        
+        if await self.data_service.add_to_blacklist(server_id, server_name, reason=reason, blacklisted_by=blacklisted_by):
             await self.data_service.save_blacklist()
 
             # Remove any existing subscriptions but keep server in database
@@ -187,41 +200,55 @@ class AdminCommands(
         view = BlacklistCheckFoundView(server_id, server_name, entry)
         await interaction.response.send_message(view=view)
 
-    @app_commands.command(name="reload_cache", description="Reload all caches from database")
-    async def reload_cache(self, interaction: discord.Interaction):
+    @recache_group.command(
+        name="all",
+        description="Recache everything except admins and timezones"
+    )
+    async def recache_all(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
         
         try:
-            # Clear all multi-level caches
-            await self.data_service._cache.clear_all()
-            
-            # Clear internal caches
-            self.data_service._servers_cache.clear()
-            self.data_service._blacklist_cache.clear()
-            self.data_service._blacklist_names_cache.clear()
-            self.data_service._blacklist_entries_cache.clear()
-            self.data_service._timezones_cache.clear()
-            
-            # Mark as uninitialized to force reload
-            self.data_service._initialized = False
-            
-            # Reinitialize to reload from database
-            await self.data_service.initialize()
+            await self.data_service.reload_all_caches()
             
             # Get stats after reload
             servers_count = len(self.data_service._servers_cache)
             blacklist_count = len(self.data_service._blacklist_cache)
-            timezones_count = len(self.data_service._timezones_cache)
+            channels_count = sum(len(s.channels) for s in self.data_service._servers_cache.values())
             
-            # Cache reload display
-            from src.components.admin import CacheReloadView
-            
-            view = CacheReloadView(servers_count, blacklist_count, timezones_count)
+            from src.components.admin import RecacheSuccessView
+            view = RecacheSuccessView(
+                cache_type="All (except admins/timezones)",
+                servers=servers_count,
+                blacklist=blacklist_count,
+                channels=channels_count
+            )
             await interaction.followup.send(view=view)
             
         except Exception as e:
-            from src.components.admin import CacheReloadErrorView
-            view = CacheReloadErrorView(str(e))
+            from src.components.admin import RecacheErrorView
+            view = RecacheErrorView("all", str(e))
+            await interaction.followup.send(view=view)
+    
+    @recache_group.command(
+        name="timezones",
+        description="Recache timezone mappings from database"
+    )
+    async def recache_timezones(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True)
+        
+        try:
+            await self.data_service.reload_timezones_cache()
+            
+            # Get timezone count
+            timezone_count = len(self.data_service._timezones_cache)
+            
+            from src.components.admin import RecacheTimezonesSuccessView
+            view = RecacheTimezonesSuccessView(timezone_count)
+            await interaction.followup.send(view=view)
+            
+        except Exception as e:
+            from src.components.admin import RecacheErrorView
+            view = RecacheErrorView("timezones", str(e))
             await interaction.followup.send(view=view)
 
     @error_group.command(
@@ -379,7 +406,6 @@ class AdminCommands(
 
 
 async def setup(bot):
-    if bot.config.is_owner_mode and bot.config.guild_id:
-        await bot.add_cog(
-            AdminCommands(bot), guild=discord.Object(id=bot.config.guild_id)
-        )
+    # Admin commands should only be available in the specified guild
+    if bot.config.guild_id:
+        await bot.add_cog(AdminCommands(bot), guild=discord.Object(id=bot.config.guild_id))

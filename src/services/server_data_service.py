@@ -6,7 +6,8 @@ from src.models import (
     Server, 
     BlacklistEntry, 
     RemovedServer,
-    TimezoneDocument
+    TimezoneDocument,
+    BotConfigDocument
 )
 from src.services.database_connection_manager import db_manager
 from src.services.cache_manager import MultiLevelCache
@@ -21,6 +22,8 @@ class DataService:
         self._blacklist_names_cache: Dict[str, str] = {}  # Store server names
         self._blacklist_entries_cache: Dict[str, BlacklistEntry] = {}  # Store full entries
         self._timezones_cache: Dict[str, str] = {}
+        self._admins_cache: Dict[str, AdminUser] = {}  # Cache for admin users
+        self._bot_config: Optional[BotConfigDocument] = None  # Bot config document
         self._cache = MultiLevelCache()
         self._initialized = False
 
@@ -32,6 +35,7 @@ class DataService:
             await self._load_all_servers_from_database()
             await self._load_blacklist_from_database()
             await self._load_timezone_mappings_from_database()
+            await self._load_bot_config_from_database()
             self._initialized = True
 
     async def _load_all_servers_from_database(self) -> None:
@@ -195,7 +199,7 @@ class DataService:
             await self._cache.set(cache_key, result, cache_level="warm", ttl=600)  # 10 minutes
             return result
 
-    async def add_to_blacklist(self, server_id: str, server_name: str = "Unknown", reason: str = "No reason provided") -> bool:
+    async def add_to_blacklist(self, server_id: str, server_name: str = "Unknown", reason: str = "No reason provided", blacklisted_by: Optional[str] = None) -> bool:
         async with self._lock:
             # Check if already in cache
             if server_id in self._blacklist_cache:
@@ -215,7 +219,8 @@ class DataService:
             entry = BlacklistEntry(
                 server_id=server_id, 
                 server_name=server_name,
-                reason=reason
+                reason=reason,
+                blacklisted_by=blacklisted_by
             )
             self._blacklist_cache.add(entry.server_id)
             self._blacklist_names_cache[entry.server_id] = entry.server_name
@@ -343,3 +348,125 @@ class DataService:
             logger.info(LogArea.CLEANUP, f"Total servers cleaned up: {cleaned_count}")
 
         return cleaned_count
+    
+    async def _load_bot_config_from_database(self) -> None:
+        """Load bot config including admins from database"""
+        config_collection = db_manager.config
+        config_doc = await config_collection.find_one({"_id": "bot_config"})
+        
+        if config_doc:
+            self._bot_config = BotConfigDocument.from_dict(config_doc)
+            # Cache all admin IDs
+            self._admins_cache = set(self._bot_config.admins)
+        else:
+            # Create default config if none exists
+            self._bot_config = BotConfigDocument()
+            await self.save_bot_config()
+        
+        logger.info(LogArea.DATABASE, f"Loaded {len(self._admins_cache)} admin(s) from database")
+    
+    async def save_bot_config(self) -> None:
+        """Save bot config to database"""
+        if not self._bot_config:
+            return
+        
+        # Don't acquire lock here - it should already be held by the caller
+        config_collection = db_manager.config
+        config_data = self._bot_config.to_dict()
+        
+        await config_collection.replace_one(
+            {"_id": "bot_config"},
+            config_data,
+            upsert=True
+        )
+    
+    async def is_admin(self, user_id: str) -> bool:
+        """Check if a user is an admin (uses cache)"""
+        return user_id in self._admins_cache
+    
+    async def get_admins(self) -> Set[str]:
+        """Get all admin IDs (from cache)"""
+        return self._admins_cache.copy()
+    
+    async def add_admin(self, user_id: str) -> bool:
+        """Add a new admin"""
+        async with self._lock:
+            # Ensure config is initialized
+            if not self._bot_config:
+                self._bot_config = BotConfigDocument()
+            
+            if user_id in self._admins_cache:
+                return False
+            
+            # Add to config document
+            if self._bot_config.add_admin(user_id):
+                # Update cache
+                self._admins_cache.add(user_id)
+                
+                # Save to database
+                await self.save_bot_config()
+                
+                logger.info(LogArea.DATABASE, f"Added admin: {user_id}")
+                return True
+            return False
+    
+    async def remove_admin(self, user_id: str) -> bool:
+        """Remove an admin"""
+        async with self._lock:
+            # Ensure config is initialized
+            if not self._bot_config:
+                self._bot_config = BotConfigDocument()
+            
+            if user_id not in self._admins_cache:
+                return False
+            
+            # Remove from config document
+            if self._bot_config.remove_admin(user_id):
+                # Update cache
+                self._admins_cache.discard(user_id)
+                
+                # Save to database
+                await self.save_bot_config()
+                
+                logger.info(LogArea.DATABASE, f"Removed admin: {user_id}")
+                return True
+            return False
+    
+    async def reload_admins_cache(self) -> None:
+        """Reload admins cache from database"""
+        async with self._lock:
+            config_collection = db_manager.config
+            config_doc = await config_collection.find_one({"_id": "bot_config"})
+            
+            if config_doc:
+                self._bot_config = BotConfigDocument.from_dict(config_doc)
+                self._admins_cache = set(self._bot_config.admins)
+                logger.info(LogArea.DATABASE, f"Reloaded {len(self._admins_cache)} admin(s) from database")
+            else:
+                self._bot_config = BotConfigDocument()
+                self._admins_cache = set()
+                logger.warning(LogArea.DATABASE, "No bot config found in database during reload")
+    
+    async def reload_timezones_cache(self) -> None:
+        """Reload timezones cache from database"""
+        async with self._lock:
+            await self._load_timezone_mappings_from_database()
+            logger.info(LogArea.DATABASE, f"Reloaded {len(self._timezones_cache)} timezone(s) from database")
+    
+    async def reload_all_caches(self) -> None:
+        """Reload all caches except admins and timezones"""
+        async with self._lock:
+            # Clear multi-level cache
+            await self._cache.clear_all()
+            
+            # Clear and reload servers
+            self._servers_cache.clear()
+            await self._load_all_servers_from_database()
+            
+            # Clear and reload blacklist
+            self._blacklist_cache.clear()
+            self._blacklist_names_cache.clear()
+            self._blacklist_entries_cache.clear()
+            await self._load_blacklist_from_database()
+            
+            logger.info(LogArea.DATABASE, "Reloaded all caches (except admins and timezones)")

@@ -7,6 +7,7 @@ from .database_models import (
     TimezoneMapping,
     TimezoneDocument,
     ErrorDocument,
+    BotConfigDocument,
     DatabaseStats
 )
 
@@ -71,6 +72,7 @@ __all__ = [
     "TimezoneMapping",
     "TimezoneDocument",
     "ErrorDocument",
+    "BotConfigDocument",
     "DatabaseStats",
     
     # Cache models

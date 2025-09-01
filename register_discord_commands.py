@@ -34,8 +34,7 @@ class MockSchedulerService:
 class MockDataService:
     """Mock data service for command registration"""
 
-    def get_timezone(self, tz):
-        return None
+    pass
 
 
 class MockMessageService:
@@ -72,13 +71,21 @@ class CommandRegisterBot(commands.Bot):
             except Exception as e:
                 logger.error(LogArea.NONE, f"Failed to load extension {module}: {e}")
 
-        # Load owner commands if configured
-        if self.config.is_owner_mode:
+        # Load admin commands if GUILD_ID is configured
+        if self.config.guild_id:
             try:
                 await self.load_extension("src.commands.admin")
-                logger.info(LogArea.NONE, "Loaded admin commands")
+                logger.info(LogArea.NONE, "Loaded extension: src.commands.admin")
             except Exception as e:
                 logger.error(LogArea.NONE, f"Failed to load admin commands: {e}")
+        
+        # Load owner commands if both OWNER_ID and GUILD_ID are configured
+        if self.config.owner_id and self.config.guild_id:
+            try:
+                await self.load_extension("src.commands.owner")
+                logger.info(LogArea.NONE, "Loaded extension: src.commands.owner")
+            except Exception as e:
+                logger.error(LogArea.NONE, f"Failed to load owner commands: {e}")
 
     async def on_ready(self):
         logger.info(LogArea.NONE, f"Connected as: {self.user} (ID: {self.user.id})")
@@ -101,22 +108,18 @@ class CommandRegisterBot(commands.Bot):
                             # Check if this option is a subgroup (has its own options)
                             if hasattr(option, "options") and option.options:
                                 logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
-                                for suboption in option.options:
-                                    logger.info(LogArea.NONE, f"          - {suboption.name}: {suboption.description}")
-                            else:
-                                logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
 
-            # Register owner commands to specific guild if configured
-            if self.config.is_owner_mode and self.config.guild_id:
+            # Register guild-specific commands (admin and owner) if configured
+            if self.config.guild_id:
                 logger.spacer()
-                logger.info(LogArea.NONE, f"Registering owner commands to guild {self.config.guild_id}...")
+                logger.info(LogArea.NONE, f"Registering guild-specific commands to guild {self.config.guild_id}...")
                 guild = discord.Object(id=self.config.guild_id)
                 registered_guild = await self.tree.sync(guild=guild)
-                logger.info(LogArea.NONE, f"Successfully registered {len(registered_guild)} commands to owner guild")
+                logger.info(LogArea.NONE, f"Successfully registered {len(registered_guild)} commands to guild")
 
                 # List guild-specific commands
                 if registered_guild:
-                    logger.info(LogArea.NONE, "Owner commands registered:")
+                    logger.info(LogArea.NONE, "Guild-specific commands registered:")
                     for cmd in registered_guild:
                         logger.info(LogArea.NONE, f"  - /{cmd.name}: {cmd.description}")
                         # Check if it's a group command with subcommands
@@ -146,7 +149,7 @@ class CommandRegisterBot(commands.Bot):
         await super().close()
 
 
-async def main(guild_id_override=None):
+async def main(guild_id_override=None, owner_id_override=None):
     logger.spacer()
     logger.info(LogArea.NONE, "ClearTimer Bot - Command Registration")
     logger.spacer()
@@ -164,6 +167,15 @@ async def main(guild_id_override=None):
         logger.info(LogArea.NONE, f"Using guild ID from .env: {config.guild_id}")
     else:
         logger.info(LogArea.NONE, "No guild ID specified (owner commands will be global)")
+
+    # Override owner_id if provided via command line
+    if owner_id_override:
+        config.owner_id = int(owner_id_override)
+        logger.info(LogArea.NONE, f"Using owner ID from command line: {config.owner_id}")
+    elif config.owner_id:
+        logger.info(LogArea.NONE, f"Using owner ID from .env: {config.owner_id}")
+    else:
+        logger.info(LogArea.NONE, "No owner ID specified")
 
     # Create bot instance
     bot = CommandRegisterBot(config)
@@ -189,6 +201,11 @@ if __name__ == "__main__":
         type=str,
         help="Guild ID to register owner commands to (overrides .env setting)",
     )
+    parser.add_argument(
+        "--owner-id",
+        type=str,
+        help="Owner ID for owner-only commands (overrides .env setting)",
+    )
     args = parser.parse_args()
 
     # Set up asyncio for Windows
@@ -196,4 +213,4 @@ if __name__ == "__main__":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     # Run the registration
-    asyncio.run(main(args.guild_id))
+    asyncio.run(main(args.guild_id, args.owner_id))

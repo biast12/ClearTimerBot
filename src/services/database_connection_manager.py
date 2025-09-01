@@ -69,6 +69,10 @@ class DatabaseManager:
     @property
     def errors(self):
         return self.db[CollectionName.ERRORS.value]
+    
+    @property
+    def config(self):
+        return self.db[CollectionName.CONFIG.value]
 
 
 db_manager = DatabaseManager()

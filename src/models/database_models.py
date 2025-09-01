@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, List
 from enum import Enum
 import traceback
 
@@ -11,6 +11,7 @@ class CollectionName(Enum):
     TIMEZONES = "timezones"
     REMOVED_SERVERS = "removed_servers"
     ERRORS = "errors"
+    CONFIG = "config"
 
 
 @dataclass
@@ -19,6 +20,7 @@ class BlacklistEntry:
     server_name: str = "Unknown"
     blacklisted_at: Optional[datetime] = None
     reason: Optional[str] = None
+    blacklisted_by: Optional[str] = None
 
     def __post_init__(self):
         if self.blacklisted_at is None:
@@ -29,7 +31,8 @@ class BlacklistEntry:
             "_id": self.server_id,
             "server_name": self.server_name,
             "blacklisted_at": self.blacklisted_at.isoformat() if self.blacklisted_at else None,
-            "reason": self.reason
+            "reason": self.reason,
+            "blacklisted_by": self.blacklisted_by
         }
 
     @classmethod
@@ -44,7 +47,8 @@ class BlacklistEntry:
             server_id=str(data["_id"]),
             server_name=data.get("server_name", "Unknown"),
             blacklisted_at=blacklisted_at,
-            reason=data.get("reason")
+            reason=data.get("reason"),
+            blacklisted_by=data.get("blacklisted_by")
         )
 
 
@@ -219,6 +223,67 @@ class ErrorDocument:
             channel_id=channel_id,
             user_id=user_id,
             command=command
+        )
+
+
+@dataclass
+class BotConfigDocument:
+    admins: List[str] = field(default_factory=list)  # Just store user IDs
+    settings: Dict[str, Any] = field(default_factory=dict)
+    feature_flags: Dict[str, bool] = field(default_factory=dict)
+    updated_at: Optional[datetime] = None
+    
+    def __post_init__(self):
+        if self.updated_at is None:
+            self.updated_at = datetime.now(timezone.utc)
+    
+    def add_admin(self, user_id: str) -> bool:
+        if user_id not in self.admins:
+            self.admins.append(user_id)
+            self.updated_at = datetime.now(timezone.utc)
+            return True
+        return False
+    
+    def remove_admin(self, user_id: str) -> bool:
+        if user_id in self.admins:
+            self.admins.remove(user_id)
+            self.updated_at = datetime.now(timezone.utc)
+            return True
+        return False
+    
+    def is_admin(self, user_id: str) -> bool:
+        return user_id in self.admins
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "_id": "bot_config",
+            "admins": self.admins,
+            "settings": self.settings,
+            "feature_flags": self.feature_flags,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "BotConfigDocument":
+        updated_at = data.get("updated_at")
+        if updated_at and isinstance(updated_at, str):
+            updated_at = datetime.fromisoformat(updated_at)
+        
+        # Handle both old format (dict) and new format (list)
+        admins_data = data.get("admins", [])
+        if isinstance(admins_data, dict):
+            # Convert old format (dict with user data) to new format (list of IDs)
+            admins = list(admins_data.keys())
+        elif isinstance(admins_data, list):
+            admins = admins_data
+        else:
+            admins = []
+        
+        return cls(
+            admins=admins,
+            settings=data.get("settings", {}),
+            feature_flags=data.get("feature_flags", {}),
+            updated_at=updated_at
         )
 
 

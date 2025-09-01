@@ -466,8 +466,9 @@ class BlacklistCheckFoundView(discord.ui.LayoutView):
             f"**Server Name:** {server_name}\n"
             f"**Server ID:** `{server_id}`\n"
             f"**Reason:** {entry.reason or 'No reason provided'}\n"
-            f"**Blacklisted:** {blacklisted_date}\n\n"
-            f"This server cannot use bot commands."
+            f"**Blacklisted:** {blacklisted_date}\n"
+            f"**Blacklisted By:** <@{entry.blacklisted_by}>\n\n"
+            "This server cannot use bot commands."
         )
         
         container = discord.ui.Container(
@@ -664,3 +665,68 @@ class AdminOnlyView(discord.ui.LayoutView):
             accent_color=discord.Color.red().value
         )
         self.add_item(container)
+
+
+class RecacheSuccessView(discord.ui.LayoutView):
+    """View for successful recache operation"""
+    
+    def __init__(self, cache_type: str, servers: int = 0, blacklist: int = 0, channels: int = 0):
+        super().__init__()
+        
+        content = f"✅ **Cache Reloaded**\n\n"
+        content += f"Successfully reloaded: **{cache_type}**\n\n"
+        
+        if servers > 0 or blacklist > 0 or channels > 0:
+            content += "**📊 Loaded Data**\n"
+            if servers > 0:
+                content += f"• Servers: {servers}\n"
+            if channels > 0:
+                content += f"• Channels: {channels}\n"
+            if blacklist > 0:
+                content += f"• Blacklisted: {blacklist}\n"
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+
+class RecacheTimezonesSuccessView(discord.ui.LayoutView):
+    """View for successful timezone cache reload"""
+    
+    def __init__(self, timezone_count: int):
+        super().__init__()
+        
+        content = (
+            "✅ **Timezone Cache Reloaded**\n\n"
+            f"Successfully reloaded timezone mappings from database.\n\n"
+            f"**🌍 Timezones:** {timezone_count}"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class RecacheErrorView(discord.ui.LayoutView):
+    """View for recache error"""
+    
+    def __init__(self, cache_type: str, error: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **Recache Failed**\n\n"
+            f"Failed to reload **{cache_type}** cache.\n\n"
+            f"**Error:** {error}"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+

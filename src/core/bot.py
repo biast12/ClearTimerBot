@@ -101,11 +101,11 @@ class ClearTimerBot(commands.Bot):
                 )
                 logger.error(LogArea.STARTUP, f"Failed to load extension {module}. Error ID: {error_id}")
 
-        # Load owner commands if configured
-        if self.config.is_owner_mode:
+        # Load admin commands if GUILD_ID is configured
+        if self.config.guild_id:
             try:
                 await self.load_extension("src.commands.admin")
-                logger.info(LogArea.STARTUP, "Loaded admin commands")
+                logger.info(LogArea.STARTUP, "Loading admin commands")
             except Exception as e:
                 error_id = await logger.log_error(
                     LogArea.STARTUP,
@@ -113,6 +113,19 @@ class ClearTimerBot(commands.Bot):
                     exception=e
                 )
                 logger.error(LogArea.STARTUP, f"Failed to load admin commands. Error ID: {error_id}")
+        
+        # Load owner commands if both OWNER_ID and GUILD_ID are configured
+        if self.config.owner_id and self.config.guild_id:
+            try:
+                await self.load_extension("src.commands.owner")
+                logger.info(LogArea.STARTUP, "Loading owner commands")
+            except Exception as e:
+                error_id = await logger.log_error(
+                    LogArea.STARTUP,
+                    "Failed to load owner commands",
+                    exception=e
+                )
+                logger.error(LogArea.STARTUP, f"Failed to load owner commands. Error ID: {error_id}")
 
     async def close(self) -> None:
         # Stop scheduler first (prevents new jobs from running)
@@ -126,7 +139,15 @@ class ClearTimerBot(commands.Bot):
         # Close Discord connection last
         await super().close()
 
+    async def is_admin(self, user: discord.User) -> bool:
+        """Check if user is an admin using database cache"""
+        user_id = str(user.id)
+        return await self.data_service.is_admin(user_id)
+    
     def is_owner(self, user: discord.User) -> bool:
+        """Legacy method for backward compatibility - now checks admin status"""
+        # This is a synchronous wrapper that needs to be replaced with async calls
+        # For now, we'll check the legacy owner_id for compatibility
         if self.config.owner_id:
             return user.id == self.config.owner_id
         return False
