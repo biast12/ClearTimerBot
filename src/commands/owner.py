@@ -129,7 +129,7 @@ class OwnerCommands(
         else:
             from src.components.owner import BlacklistAddAlreadyView
             view = BlacklistAddAlreadyView(server_id)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.response.send_message(view=view)
 
     @app_commands.command(
         name="blacklist_remove", description="Remove a server from the blacklist"
@@ -144,7 +144,7 @@ class OwnerCommands(
         else:
             from src.components.owner import BlacklistRemoveNotFoundView
             view = BlacklistRemoveNotFoundView(server_id)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.response.send_message(view=view)
 
     @app_commands.command(
         name="blacklist_list", description="List all blacklisted servers"
@@ -217,7 +217,7 @@ class OwnerCommands(
     )
     @app_commands.describe(error_id="The error ID to look up")
     async def error_lookup(self, interaction: discord.Interaction, error_id: str):
-        await interaction.response.defer(thinking=True, ephemeral=True)
+        await interaction.response.defer(thinking=True)
         
         # Get error from database
         error_doc = await logger.get_error(error_id)
@@ -239,7 +239,7 @@ class OwnerCommands(
     )
     @app_commands.describe(error_id="The error ID to delete")
     async def error_delete(self, interaction: discord.Interaction, error_id: str):
-        await interaction.response.defer(thinking=True, ephemeral=True)
+        await interaction.response.defer(thinking=True)
         
         # Delete error from database
         success = await logger.delete_error(error_id)
@@ -258,7 +258,7 @@ class OwnerCommands(
     )
     @app_commands.describe(limit="Number of errors to show (default: 10, max: 25)")
     async def error_list(self, interaction: discord.Interaction, limit: int = 10):
-        await interaction.response.defer(thinking=True, ephemeral=True)
+        await interaction.response.defer(thinking=True)
         
         # Validate limit
         limit = min(max(1, limit), 25)
@@ -282,7 +282,7 @@ class OwnerCommands(
         name="error_clear", description="Clear all errors from the database"
     )
     async def error_clear(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True, ephemeral=True)
+        await interaction.response.defer(thinking=True)
         
         from src.services.database_connection_manager import db_manager
         
