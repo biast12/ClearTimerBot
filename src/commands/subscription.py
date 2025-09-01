@@ -23,6 +23,7 @@ class SubscriptionCommands(commands.Cog):
         name="add",
         description="Subscribe a channel to automatic message deletion"
     )
+    @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
         timer="Timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to clear (defaults to current channel)",
@@ -98,6 +99,7 @@ class SubscriptionCommands(commands.Cog):
         name="remove",
         description="Unsubscribe a channel from automatic message deletion"
     )
+    @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
         target_channel="Channel to unsubscribe (defaults to current channel)"
     )
@@ -144,6 +146,7 @@ class SubscriptionCommands(commands.Cog):
         name="info",
         description="View detailed subscription information for a channel"
     )
+    @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
         target_channel="Channel to check (defaults to current channel)"
     )
@@ -191,6 +194,7 @@ class SubscriptionCommands(commands.Cog):
         name="ignore",
         description="Toggle a message or user to be ignored during channel clearing"
     )
+    @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
         target="Message ID/link or user mention/ID to toggle ignore status",
         target_channel="Channel with the subscription (defaults to current channel)"
@@ -308,6 +312,7 @@ class SubscriptionCommands(commands.Cog):
         name="list",
         description="List all active subscriptions in this server"
     )
+    @app_commands.default_permissions(manage_messages=True)
     async def subscription_list(
         self,
         interaction: discord.Interaction,
@@ -344,6 +349,7 @@ class SubscriptionCommands(commands.Cog):
         name="clear",
         description="Manually trigger a message clear for a subscribed channel"
     )
+    @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
         target_channel="Channel to clear (defaults to current channel)"
     )
@@ -397,6 +403,7 @@ class SubscriptionCommands(commands.Cog):
         name="skip",
         description="Skip the next scheduled clear for a channel"
     )
+    @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
         target_channel="Channel to skip next clear (defaults to current channel)"
     )
@@ -457,6 +464,7 @@ class SubscriptionCommands(commands.Cog):
         name="update",
         description="Update the timer for an existing subscription"
     )
+    @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
         timer="New timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to update (defaults to current channel)",
