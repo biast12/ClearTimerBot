@@ -4,6 +4,7 @@ View Display for Validation Errors
 
 import discord
 from typing import Optional
+from src.utils.footer import add_footer
 
 
 class ValidationErrorView(discord.ui.LayoutView):
@@ -35,7 +36,7 @@ class ValidationErrorView(discord.ui.LayoutView):
         # Clean up the message for better formatting
         clean_message = error_message.replace("❌ ", "")
         
-        content = f"❌ **{title}**\n\n{clean_message}"
+        content = add_footer(f"❌ **{title}**\n\n{clean_message}")
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -50,7 +51,7 @@ class BlacklistErrorView(discord.ui.LayoutView):
     def __init__(self):
         super().__init__()
         
-        content = (
+        content = add_footer(
             "❌ **Server Blacklisted**\n\n"
             "This server has been blacklisted and cannot use this bot.\n\n"
             "If you believe this is a mistake, please contact support."
@@ -70,14 +71,14 @@ class PermissionErrorView(discord.ui.LayoutView):
         super().__init__()
         
         if channel:
-            content = (
+            content = add_footer(
                 f"❌ **Bot Missing Permissions**\n\n"
                 f"I'm missing the following permissions in {channel.mention}:\n"
                 f"{missing_permissions}\n\n"
                 f"Please grant these permissions and try again."
             )
         else:
-            content = (
+            content = add_footer(
                 f"❌ **Insufficient Permissions**\n\n"
                 f"You need the following permission to use this command:\n"
                 f"{missing_permissions}\n\n"
@@ -98,13 +99,13 @@ class SubscriptionStatusErrorView(discord.ui.LayoutView):
         super().__init__()
         
         if is_subscribed:
-            content = (
+            content = add_footer(
                 f"❌ **Channel Already Subscribed**\n\n"
                 f"{channel.mention} already has a timer set.\n\n"
                 f"Use `/subscription update` to update the subscription instead."
             )
         else:
-            content = (
+            content = add_footer(
                 f"❌ **Channel Not Subscribed**\n\n"
                 f"{channel.mention} is not subscribed to message deletion.\n\n"
                 f"Use `/subscription add` to set up automatic clearing first."

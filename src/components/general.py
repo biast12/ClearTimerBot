@@ -3,6 +3,7 @@ View Display for Utility Commands
 """
 
 import discord
+from src.utils.footer import add_footer
 
 
 class HelpView(discord.ui.LayoutView):
@@ -17,7 +18,7 @@ class HelpView(discord.ui.LayoutView):
             "integration_type=0&scope=bot"
         )
 
-        content = (
+        content = add_footer(
             "**ClearTimer Bot Help**\n\n"
             "Automatically clear messages in Discord channels on a schedule.\n\n"
             "**📝 Subscription Commands**\n"
@@ -68,7 +69,7 @@ class PingView(discord.ui.LayoutView):
         else:
             status = "🔴 Poor"
 
-        content = (
+        content = add_footer(
             f"🏓 **Pong!**\n\n"
             f"**WebSocket Latency:** {ws_latency}ms\n"
             f"**Response Time:** {response_time}ms\n"
@@ -88,7 +89,7 @@ class BlacklistedServerView(discord.ui.LayoutView):
     def __init__(self):
         super().__init__()
         
-        content = (
+        content = add_footer(
             "❌ **Server Blacklisted**\n\n"
             "This server has been blacklisted and cannot use this bot.\n\n"
             "If you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/support)."

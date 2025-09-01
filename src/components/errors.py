@@ -4,6 +4,7 @@ View Display for Error Handling
 
 import discord
 from typing import Optional
+from src.utils.footer import add_footer
 
 
 class ErrorView(discord.ui.LayoutView):
@@ -16,6 +17,8 @@ class ErrorView(discord.ui.LayoutView):
         
         if error_id:
             content += f"\n\nError ID: `{error_id}`"
+        
+        content = add_footer(content)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -30,7 +33,7 @@ class MissedClearView(discord.ui.LayoutView):
     def __init__(self):
         super().__init__()
         
-        content = (
+        content = add_footer(
             "⚠️ **Missed Clear Notification**\n\n"
             "A scheduled message clear was missed for this channel.\n"
             "The timer has been rescheduled."

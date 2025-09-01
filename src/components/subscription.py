@@ -5,6 +5,7 @@ View Display for Subscription Commands
 import discord
 from typing import Optional
 from datetime import datetime
+from src.utils.footer import add_footer
 
 
 class SubscriptionSuccessView(discord.ui.LayoutView):
@@ -30,6 +31,8 @@ class SubscriptionSuccessView(discord.ui.LayoutView):
             else:
                 content += f"\n\n**Ignored Message:** Message ID: {ignored_entity_id}"
         
+        content = add_footer(content)
+        
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.green().value
@@ -43,7 +46,7 @@ class InvalidTimerView(discord.ui.LayoutView):
     def __init__(self, error_message: str):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"❌ **Invalid Timer**\n\n"
             f"{error_message}\n\n"
             f"**Valid Formats:**\n"
@@ -65,7 +68,7 @@ class UnsubscribeSuccessView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"✅ **Channel Unsubscribed**\n\n"
             f"{channel.mention} has been unsubscribed from automatic message deletion."
         )
@@ -83,7 +86,7 @@ class NoActiveSubscriptionsView(discord.ui.LayoutView):
     def __init__(self):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"❌ **No Active Subscriptions**\n\n"
             f"No active subscriptions found in this server.\n\n"
             f"Use `/subscription add` to set up automatic clearing."
@@ -149,6 +152,7 @@ class SubscriptionListView(discord.ui.LayoutView):
                     content += "\n"
         
         content += f"\n💡 Use `/subscription info` to view details for a specific channel"
+        content = add_footer(content)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -163,7 +167,7 @@ class ChannelNotSubscribedView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"❌ **Channel Not Subscribed**\n\n"
             f"{channel.mention} is not subscribed to message deletion.\n\n"
             f"Use `/subscription add` to set up automatic clearing first."
@@ -222,6 +226,7 @@ class SubscriptionInfoView(discord.ui.LayoutView):
             f"**Next Clear:** <t:{timestamp}:f>\n"
             f"**Time Until:** <t:{timestamp}:R>"
         )
+        content = add_footer(content)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -253,6 +258,8 @@ class UpdateSuccessView(discord.ui.LayoutView):
             else:
                 content += f"\n\n**Added Ignored Message:** Message ID: {ignored_entity_id}"
         
+        content = add_footer(content)
+        
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.blue().value
@@ -266,7 +273,7 @@ class InvalidTargetView(discord.ui.LayoutView):
     def __init__(self):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"❌ **Invalid Target Format**\n\n"
             f"Please provide a valid target:\n\n"
             f"**For messages:**\n"
@@ -290,7 +297,7 @@ class NoSubscriptionDataView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"❌ **No Subscription Data**\n\n"
             f"Could not find subscription data for {channel.mention}.\n\n"
             f"The channel may not be subscribed or data may be corrupted.\n\n"
@@ -310,7 +317,7 @@ class UserNotFoundView(discord.ui.LayoutView):
     def __init__(self, user_id: str):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"❌ **User Not Found**\n\n"
             f"User with ID `{user_id}` not found in this server.\n\n"
             f"Please make sure the user is a member of this server."
@@ -329,7 +336,7 @@ class MessageNotFoundView(discord.ui.LayoutView):
     def __init__(self, message_id: str, channel: discord.TextChannel):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"❌ **Message Not Found**\n\n"
             f"Message with ID `{message_id}` not found in {channel.mention}.\n\n"
             f"Please make sure the message exists in the specified channel."
@@ -351,12 +358,12 @@ class IgnoreEntityView(discord.ui.LayoutView):
         entity_name = entity_type.lower()
         
         if added:
-            content = (
+            content = add_footer(
                 f"✅ **{entity_type} Added to Ignore List**\n\n"
                 f"{entity_type} `{entity_id}` will be ignored during clearing in {channel.mention}."
             )
         else:
-            content = (
+            content = add_footer(
                 f"✅ **{entity_type} Removed from Ignore List**\n\n"
                 f"{entity_type} `{entity_id}` will no longer be ignored in {channel.mention}."
             )
@@ -382,7 +389,7 @@ class ManualClearSuccessView(discord.ui.LayoutView):
     def __init__(self, deleted_count: int, channel: discord.TextChannel):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"✅ **Messages Cleared**\n\n"
             f"Manually cleared {deleted_count} message{'s' if deleted_count != 1 else ''} from {channel.mention}."
         )
@@ -400,7 +407,7 @@ class JobNotFoundView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"❌ **Scheduled Job Not Found**\n\n"
             f"Could not find the scheduled job for {channel.mention}.\n\n"
             f"The channel may not be subscribed or the scheduler may need to be refreshed.\n\n"
@@ -422,7 +429,7 @@ class SkipSuccessView(discord.ui.LayoutView):
         
         timestamp = int(next_run_time.timestamp())
         
-        content = (
+        content = add_footer(
             f"⏭️ **Next Clear Skipped**\n\n"
             f"Skipped the next scheduled clear for {channel.mention}.\n\n"
             f"**New Next Clear:** <t:{timestamp}:f>\n"
@@ -442,7 +449,7 @@ class NextTimeNotFoundView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel):
         super().__init__()
         
-        content = (
+        content = add_footer(
             f"❌ **Schedule Error**\n\n"
             f"Could not determine the next scheduled time for {channel.mention}.\n\n"
             f"This may be a temporary issue with the scheduler.\n\n"
