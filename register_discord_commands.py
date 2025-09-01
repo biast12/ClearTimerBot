@@ -108,6 +108,7 @@ class CommandRegisterBot(commands.Bot):
 
             # Register owner commands to specific guild if configured
             if self.config.is_owner_mode and self.config.guild_id:
+                logger.spacer()
                 logger.info(LogArea.NONE, f"Registering owner commands to guild {self.config.guild_id}...")
                 guild = discord.Object(id=self.config.guild_id)
                 registered_guild = await self.tree.sync(guild=guild)
@@ -129,7 +130,6 @@ class CommandRegisterBot(commands.Bot):
                                 else:
                                     logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
 
-            logger.info(LogArea.NONE, "Command registration complete!")
             logger.spacer()
 
         except Exception as e:
