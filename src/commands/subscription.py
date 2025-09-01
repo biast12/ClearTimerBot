@@ -58,9 +58,9 @@ class SubscriptionCommands(commands.Cog):
         try:
             trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer)
         except ScheduleParseError as e:
-            await interaction.response.send_message(
-                f"❌ Invalid timer: {e}", ephemeral=True
-            )
+            from src.components.subscription import InvalidTimerView
+            view = InvalidTimerView(str(e))
+            await interaction.response.send_message(view=view, ephemeral=True)
             return
 
         # Add to scheduler
@@ -172,18 +172,16 @@ class SubscriptionCommands(commands.Cog):
         next_run_time = self.scheduler_service.get_channel_next_clear_time(server_id, channel_id)
 
         if not next_run_time:
-            await interaction.response.send_message(
-                f"❌ {channel.mention} is not subscribed to message deletion.\n"
-                f"Use `/subscription add` to set up automatic clearing first.",
-                ephemeral=True,
-            )
+            from src.components.subscription import ChannelNotSubscribedView
+            view = ChannelNotSubscribedView(channel)
+            await interaction.response.send_message(view=view, ephemeral=True)
             return
 
         # Get detailed subscription info from data service
         server = await self.data_service.get_server(server_id)
         timer_info = server.get_channel(channel_id) if server else None
 
-        # Use Components v2 for subscription info display
+        # Subscription info display
         from src.components.subscription import SubscriptionInfoView
         
         view = SubscriptionInfoView(channel, next_run_time, timer_info)
@@ -226,19 +224,17 @@ class SubscriptionCommands(commands.Cog):
         entity_id, entity_type = await identify_and_validate_ignore_target(target, channel, interaction.guild)
         
         if not entity_id:
-            await interaction.response.send_message(
-                "❌ Invalid target format. Please provide a valid message ID, message link, user mention, or user ID.",
-                ephemeral=True,
-            )
+            from src.components.subscription import InvalidTargetView
+            view = InvalidTargetView()
+            await interaction.response.send_message(view=view, ephemeral=True)
             return
 
         # Get server and channel data
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
-            await interaction.response.send_message(
-                f"❌ Could not find subscription data for {channel.mention}.",
-                ephemeral=True,
-            )
+            from src.components.subscription import NoSubscriptionDataView
+            view = NoSubscriptionDataView(channel)
+            await interaction.response.send_message(view=view, ephemeral=True)
             return
 
         channel_timer = server.channels[channel_id]
@@ -258,16 +254,14 @@ class SubscriptionCommands(commands.Cog):
                 try:
                     member = await interaction.guild.fetch_member(int(entity_id))
                     if not member:
-                        await interaction.response.send_message(
-                            f"❌ User with ID `{entity_id}` not found in this server.",
-                            ephemeral=True,
-                        )
+                        from src.components.subscription import UserNotFoundView
+                        view = UserNotFoundView(entity_id)
+                        await interaction.response.send_message(view=view, ephemeral=True)
                         return
                 except (discord.NotFound, discord.HTTPException, ValueError):
-                    await interaction.response.send_message(
-                        f"❌ User with ID `{entity_id}` not found in this server.",
-                        ephemeral=True,
-                    )
+                    from src.components.subscription import UserNotFoundView
+                    view = UserNotFoundView(entity_id)
+                    await interaction.response.send_message(view=view, ephemeral=True)
                     return
                 
                 # Add the user
@@ -292,16 +286,14 @@ class SubscriptionCommands(commands.Cog):
                 try:
                     message = await channel.fetch_message(int(entity_id))
                     if not message:
-                        await interaction.response.send_message(
-                            f"❌ Message with ID `{entity_id}` not found in {channel.mention}.",
-                            ephemeral=True,
-                        )
+                        from src.components.subscription import MessageNotFoundView
+                        view = MessageNotFoundView(entity_id, channel)
+                        await interaction.response.send_message(view=view, ephemeral=True)
                         return
                 except (discord.NotFound, discord.HTTPException, ValueError):
-                    await interaction.response.send_message(
-                        f"❌ Message with ID `{entity_id}` not found in {channel.mention}.",
-                        ephemeral=True,
-                    )
+                    from src.components.subscription import MessageNotFoundView
+                    view = MessageNotFoundView(entity_id, channel)
+                    await interaction.response.send_message(view=view, ephemeral=True)
                     return
                 
                 # Add the message
@@ -337,11 +329,9 @@ class SubscriptionCommands(commands.Cog):
         server = await self.data_service.get_server(server_id)
         
         if not server or not server.channels:
-            await interaction.response.send_message(
-                "❌ No active subscriptions found in this server.\n"
-                "Use `/subscription add` to set up automatic clearing first.",
-                ephemeral=True,
-            )
+            from src.components.subscription import NoActiveSubscriptionsView
+            view = NoActiveSubscriptionsView()
+            await interaction.response.send_message(view=view, ephemeral=True)
             return
 
         # Build list of subscriptions
@@ -399,10 +389,9 @@ class SubscriptionCommands(commands.Cog):
         deleted_count = await message_service._perform_message_deletion(channel, set(ignored_messages), set(ignored_users))
 
         # Send result
-        await interaction.followup.send(
-            f"✅ Manually cleared {deleted_count} message(s) from {channel.mention}.",
-            ephemeral=True,
-        )
+        from src.components.subscription import ManualClearSuccessView
+        view = ManualClearSuccessView(deleted_count, channel)
+        await interaction.followup.send(view=view, ephemeral=True)
 
     @subscription_group.command(
         name="skip",
@@ -438,10 +427,9 @@ class SubscriptionCommands(commands.Cog):
         # Get the current job to retrieve its trigger
         job = self.scheduler_service.get_channel_clear_job(server_id, channel_id)
         if not job:
-            await interaction.response.send_message(
-                f"❌ Could not find the scheduled job for {channel.mention}.",
-                ephemeral=True,
-            )
+            from src.components.subscription import JobNotFoundView
+            view = JobNotFoundView(channel)
+            await interaction.response.send_message(view=view, ephemeral=True)
             return
 
         # Calculate the next run time after the current one
@@ -461,10 +449,9 @@ class SubscriptionCommands(commands.Cog):
             view = SkipSuccessView(channel, job.next_run_time)
             await interaction.response.send_message(view=view)
         else:
-            await interaction.response.send_message(
-                f"❌ Could not determine the next scheduled time for {channel.mention}.",
-                ephemeral=True,
-            )
+            from src.components.subscription import NextTimeNotFoundView
+            view = NextTimeNotFoundView(channel)
+            await interaction.response.send_message(view=view, ephemeral=True)
 
     @subscription_group.command(
         name="update",
@@ -505,9 +492,9 @@ class SubscriptionCommands(commands.Cog):
         try:
             trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer)
         except ScheduleParseError as e:
-            await interaction.response.send_message(
-                f"❌ Invalid timer: {e}", ephemeral=True
-            )
+            from src.components.subscription import InvalidTimerView
+            view = InvalidTimerView(str(e))
+            await interaction.response.send_message(view=view, ephemeral=True)
             return
 
         # Get current ignored messages

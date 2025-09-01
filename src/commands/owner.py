@@ -14,9 +14,9 @@ class OwnerCommands(
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if not self.bot.is_owner(interaction.user):
-            await interaction.response.send_message(
-                "❌ This command is restricted to the bot owner.", ephemeral=True
-            )
+            from src.components.owner import OwnerOnlyView
+            view = OwnerOnlyView()
+            await interaction.response.send_message(view=view, ephemeral=True)
             return False
         return True
     
@@ -29,7 +29,7 @@ class OwnerCommands(
         # Get cache statistics
         cache_stats = self.data_service.get_cache_stats()
         
-        # Use Components v2 for cache stats display
+        # Cache stats display
         from src.components.owner import CacheStatsView
         
         view = CacheStatsView(cache_stats)
@@ -44,10 +44,12 @@ class OwnerCommands(
         servers = await self.data_service.get_all_servers()
 
         if not servers:
-            await interaction.followup.send("No servers have subscribed channels.")
+            from src.components.owner import NoServersView
+            view = NoServersView()
+            await interaction.followup.send(view=view)
             return
 
-        # Use Components v2 for server list display
+        # Server list display
         from src.components.owner import ServerListView
         
         view = ServerListView(servers, self.bot)
@@ -76,9 +78,9 @@ class OwnerCommands(
             # Keep server in database even with no channels
             await self.data_service.save_servers()
 
-            await interaction.followup.send(
-                f"✅ Cleared {channels_removed} subscribed channels from server {target_id}."
-            )
+            from src.components.owner import ForceUnsubSuccessView
+            view = ForceUnsubSuccessView("server", target_id, channels_removed)
+            await interaction.followup.send(view=view)
             return
 
         # Check if it's a channel ID in any server
@@ -91,14 +93,14 @@ class OwnerCommands(
                 server.remove_channel(target_id)
                 await self.data_service.save_servers()
 
-                await interaction.followup.send(
-                    f"✅ Removed channel {target_id} from server {server_id}."
-                )
+                from src.components.owner import ForceUnsubSuccessView
+                view = ForceUnsubSuccessView("channel", target_id, server_id=server_id)
+                await interaction.followup.send(view=view)
                 return
 
-        await interaction.followup.send(
-            f"❌ No server or channel found with ID: {target_id}"
-        )
+        from src.components.owner import ForceUnsubNotFoundView
+        view = ForceUnsubNotFoundView(target_id)
+        await interaction.followup.send(view=view)
 
     @app_commands.command(
         name="blacklist_add", description="Add a server to the blacklist"
@@ -121,13 +123,13 @@ class OwnerCommands(
                 # Keep server in database even with no channels
                 await self.data_service.save_servers()
 
-            await interaction.response.send_message(
-                f"✅ Added server {server_name} ({server_id}) to blacklist and removed all subscriptions."
-            )
+            from src.components.owner import BlacklistAddSuccessView
+            view = BlacklistAddSuccessView(server_name, server_id)
+            await interaction.response.send_message(view=view)
         else:
-            await interaction.response.send_message(
-                f"❌ Server {server_id} is already blacklisted.", ephemeral=True
-            )
+            from src.components.owner import BlacklistAddAlreadyView
+            view = BlacklistAddAlreadyView(server_id)
+            await interaction.response.send_message(view=view, ephemeral=True)
 
     @app_commands.command(
         name="blacklist_remove", description="Remove a server from the blacklist"
@@ -136,13 +138,13 @@ class OwnerCommands(
     async def blacklist_remove(self, interaction: discord.Interaction, server_id: str):
         if await self.data_service.remove_from_blacklist(server_id):
             await self.data_service.save_blacklist()
-            await interaction.response.send_message(
-                f"✅ Removed server {server_id} from blacklist."
-            )
+            from src.components.owner import BlacklistRemoveSuccessView
+            view = BlacklistRemoveSuccessView(server_id)
+            await interaction.response.send_message(view=view)
         else:
-            await interaction.response.send_message(
-                f"❌ Server {server_id} is not blacklisted.", ephemeral=True
-            )
+            from src.components.owner import BlacklistRemoveNotFoundView
+            view = BlacklistRemoveNotFoundView(server_id)
+            await interaction.response.send_message(view=view, ephemeral=True)
 
     @app_commands.command(
         name="blacklist_list", description="List all blacklisted servers"
@@ -151,12 +153,12 @@ class OwnerCommands(
         blacklist_with_names = await self.data_service.get_blacklist_with_names()
 
         if not blacklist_with_names:
-            await interaction.response.send_message(
-                "No servers are currently blacklisted."
-            )
+            from src.components.owner import NoBlacklistView
+            view = NoBlacklistView()
+            await interaction.response.send_message(view=view)
             return
 
-        # Use Components v2 for blacklist display
+        # Blacklist display
         from src.components.owner import BlacklistView
         
         view = BlacklistView(blacklist_with_names, self.bot)
@@ -187,14 +189,16 @@ class OwnerCommands(
             blacklist_count = len(self.data_service._blacklist_cache)
             timezones_count = len(self.data_service._timezones_cache)
             
-            # Use Components v2 for cache reload display
+            # Cache reload display
             from src.components.owner import CacheReloadView
             
             view = CacheReloadView(servers_count, blacklist_count, timezones_count)
             await interaction.followup.send(view=view)
             
         except Exception as e:
-            await interaction.followup.send(f"❌ Error reloading cache: {e}")
+            from src.components.owner import CacheReloadErrorView
+            view = CacheReloadErrorView(str(e))
+            await interaction.followup.send(view=view)
 
     @app_commands.command(name="stats", description="Show bot statistics")
     async def stats(self, interaction: discord.Interaction):
@@ -202,7 +206,7 @@ class OwnerCommands(
         blacklist = await self.data_service.get_blacklist()
         jobs = self.scheduler_service.get_all_jobs()
 
-        # Use Components v2 for stats display
+        # Stats display
         from src.components.owner import StatsView
         
         view = StatsView(self.bot, servers, blacklist, jobs)
@@ -219,10 +223,12 @@ class OwnerCommands(
         error_doc = await logger.get_error(error_id)
         
         if not error_doc:
-            await interaction.followup.send(f"❌ No error found with ID: `{error_id}`")
+            from src.components.owner import ErrorNotFoundView
+            view = ErrorNotFoundView(error_id)
+            await interaction.followup.send(view=view)
             return
         
-        # Use Components v2 for error details display
+        # Error details display
         from src.components.owner import ErrorDetailsView
         
         view = ErrorDetailsView(error_doc, self.bot)
@@ -239,9 +245,13 @@ class OwnerCommands(
         success = await logger.delete_error(error_id)
         
         if success:
-            await interaction.followup.send(f"✅ Error `{error_id}` has been deleted.")
+            from src.components.owner import ErrorDeleteSuccessView
+            view = ErrorDeleteSuccessView(error_id)
+            await interaction.followup.send(view=view)
         else:
-            await interaction.followup.send(f"❌ Could not delete error `{error_id}`. It may not exist.")
+            from src.components.owner import ErrorDeleteFailedView
+            view = ErrorDeleteFailedView(error_id)
+            await interaction.followup.send(view=view)
 
     @app_commands.command(
         name="error_list", description="List recent errors"
@@ -257,10 +267,12 @@ class OwnerCommands(
         errors = await logger.get_recent_errors(limit)
         
         if not errors:
-            await interaction.followup.send("No errors found in the database.")
+            from src.components.owner import NoErrorsView
+            view = NoErrorsView()
+            await interaction.followup.send(view=view)
             return
         
-        # Use Components v2 for error list display
+        # Error list display
         from src.components.owner import ErrorListView
         
         view = ErrorListView(errors)
@@ -277,14 +289,18 @@ class OwnerCommands(
         try:
             errors_collection = db_manager.db.errors
             result = await errors_collection.delete_many({})
-            await interaction.followup.send(f"✅ Cleared {result.deleted_count} errors from the database.")
+            from src.components.owner import ErrorsClearedView
+            view = ErrorsClearedView(result.deleted_count)
+            await interaction.followup.send(view=view)
         except Exception as e:
             error_id = await logger.log_error(
                 LogArea.DATABASE,
                 "Failed to clear errors from database",
                 exception=e
             )
-            await interaction.followup.send(f"❌ Failed to clear errors. Error ID: `{error_id}`")
+            from src.components.owner import ErrorsClearFailedView
+            view = ErrorsClearFailedView(error_id)
+            await interaction.followup.send(view=view)
 
 
 async def setup(bot):

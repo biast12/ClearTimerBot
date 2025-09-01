@@ -1,5 +1,5 @@
 """
-Discord Components v2 for Subscription Commands
+View Display for Subscription Commands
 """
 
 import discord
@@ -8,7 +8,7 @@ from datetime import datetime
 
 
 class SubscriptionSuccessView(discord.ui.LayoutView):
-    """View for subscription success message using Components v2"""
+    """View for subscription success message"""
     
     def __init__(self, channel: discord.TextChannel, timer: str, next_run_time: datetime, 
                  ignored_entity_id: Optional[str] = None, ignored_entity_type: Optional[str] = None):
@@ -38,7 +38,7 @@ class SubscriptionSuccessView(discord.ui.LayoutView):
 
 
 class IgnoreEntityView(discord.ui.LayoutView):
-    """View for ignore entity (message or user) add/remove using Components v2"""
+    """View for ignore entity (message or user) add/remove"""
     
     def __init__(self, entity_type: str, entity_id: str, channel: discord.TextChannel, added: bool):
         super().__init__()
@@ -72,7 +72,7 @@ class IgnoreMessageView(IgnoreEntityView):
 
 
 class SubscriptionInfoView(discord.ui.LayoutView):
-    """View for comprehensive subscription information using Components v2"""
+    """View for comprehensive subscription information"""
     
     def __init__(self, channel: discord.TextChannel, next_run_time: datetime, timer_info=None):
         super().__init__()
@@ -187,7 +187,7 @@ class SubscriptionListView(discord.ui.LayoutView):
 
 
 class SkipSuccessView(discord.ui.LayoutView):
-    """View for skip success using Components v2"""
+    """View for skip success"""
     
     def __init__(self, channel: discord.TextChannel, next_run_time: datetime):
         super().__init__()
@@ -209,7 +209,7 @@ class SkipSuccessView(discord.ui.LayoutView):
 
 
 class UpdateSuccessView(discord.ui.LayoutView):
-    """View for update success using Components v2"""
+    """View for update success"""
     
     def __init__(self, channel: discord.TextChannel, timer: str, next_run_time: datetime, 
                  ignored_entity_id: Optional[str] = None, ignored_entity_type: Optional[str] = None):
@@ -239,7 +239,7 @@ class UpdateSuccessView(discord.ui.LayoutView):
 
 
 class UnsubscribeSuccessView(discord.ui.LayoutView):
-    """View for unsubscribe success using Components v2"""
+    """View for unsubscribe success"""
     
     def __init__(self, channel: discord.TextChannel):
         super().__init__()
@@ -252,5 +252,205 @@ class UnsubscribeSuccessView(discord.ui.LayoutView):
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class InvalidTimerView(discord.ui.LayoutView):
+    """View for invalid timer error"""
+    
+    def __init__(self, error_message: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **Invalid Timer**\n\n"
+            f"{error_message}\n\n"
+            f"**Valid Formats:**\n"
+            f"• Intervals: `24h`, `1d12h`, `30m`\n"
+            f"• Daily Schedule: `15:30 EST`, `09:00 PST`\n\n"
+            f"_Use `/help` for more timer format examples_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class ChannelNotSubscribedView(discord.ui.LayoutView):
+    """View for channel not subscribed error"""
+    
+    def __init__(self, channel: discord.TextChannel):
+        super().__init__()
+        
+        content = (
+            f"❌ **Channel Not Subscribed**\n\n"
+            f"{channel.mention} is not subscribed to message deletion.\n\n"
+            f"Use `/subscription add` to set up automatic clearing first."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class InvalidTargetView(discord.ui.LayoutView):
+    """View for invalid target format error"""
+    
+    def __init__(self):
+        super().__init__()
+        
+        content = (
+            f"❌ **Invalid Target Format**\n\n"
+            f"Please provide a valid target:\n\n"
+            f"**For messages:**\n"
+            f"• Message ID: `123456789012345678`\n"
+            f"• Message link: Discord message URL\n\n"
+            f"**For users:**\n"
+            f"• User mention: @username\n"
+            f"• User ID: `123456789012345678`"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class NoSubscriptionDataView(discord.ui.LayoutView):
+    """View for no subscription data error"""
+    
+    def __init__(self, channel: discord.TextChannel):
+        super().__init__()
+        
+        content = (
+            f"❌ **No Subscription Data**\n\n"
+            f"Could not find subscription data for {channel.mention}.\n\n"
+            f"The channel may not be subscribed or data may be corrupted.\n\n"
+            f"_Try using `/subscription add` to re-subscribe the channel_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class UserNotFoundView(discord.ui.LayoutView):
+    """View for user not found error"""
+    
+    def __init__(self, user_id: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **User Not Found**\n\n"
+            f"User with ID `{user_id}` not found in this server.\n\n"
+            f"Please make sure the user is a member of this server."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class MessageNotFoundView(discord.ui.LayoutView):
+    """View for message not found error"""
+    
+    def __init__(self, message_id: str, channel: discord.TextChannel):
+        super().__init__()
+        
+        content = (
+            f"❌ **Message Not Found**\n\n"
+            f"Message with ID `{message_id}` not found in {channel.mention}.\n\n"
+            f"Please make sure the message exists in the specified channel."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class NoActiveSubscriptionsView(discord.ui.LayoutView):
+    """View for no active subscriptions error"""
+    
+    def __init__(self):
+        super().__init__()
+        
+        content = (
+            f"❌ **No Active Subscriptions**\n\n"
+            f"No active subscriptions found in this server.\n\n"
+            f"Use `/subscription add` to set up automatic clearing."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class ManualClearSuccessView(discord.ui.LayoutView):
+    """View for manual clear success"""
+    
+    def __init__(self, deleted_count: int, channel: discord.TextChannel):
+        super().__init__()
+        
+        content = (
+            f"✅ **Messages Cleared**\n\n"
+            f"Manually cleared {deleted_count} message{'s' if deleted_count != 1 else ''} from {channel.mention}."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class JobNotFoundView(discord.ui.LayoutView):
+    """View for scheduled job not found error"""
+    
+    def __init__(self, channel: discord.TextChannel):
+        super().__init__()
+        
+        content = (
+            f"❌ **Scheduled Job Not Found**\n\n"
+            f"Could not find the scheduled job for {channel.mention}.\n\n"
+            f"The channel may not be subscribed or the scheduler may need to be refreshed.\n\n"
+            f"_Try using `/subscription info` to check the subscription status_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class NextTimeNotFoundView(discord.ui.LayoutView):
+    """View for next scheduled time not found error"""
+    
+    def __init__(self, channel: discord.TextChannel):
+        super().__init__()
+        
+        content = (
+            f"❌ **Schedule Error**\n\n"
+            f"Could not determine the next scheduled time for {channel.mention}.\n\n"
+            f"This may be a temporary issue with the scheduler.\n\n"
+            f"_Try again in a few moments or contact support if the issue persists_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
         )
         self.add_item(container)

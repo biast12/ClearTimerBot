@@ -1,5 +1,5 @@
 """
-Discord Components v2 for Error Handling
+View Display for Error Handling
 """
 
 import discord
@@ -7,7 +7,7 @@ from typing import Optional
 
 
 class ErrorView(discord.ui.LayoutView):
-    """View for error messages using Components v2"""
+    """View for error messages"""
     
     def __init__(self, title: str, description: str, error_id: Optional[str] = None):
         super().__init__()
@@ -25,7 +25,7 @@ class ErrorView(discord.ui.LayoutView):
 
 
 class MissedClearView(discord.ui.LayoutView):
-    """View for missed clear notification using Components v2"""
+    """View for missed clear notification"""
     
     def __init__(self):
         super().__init__()

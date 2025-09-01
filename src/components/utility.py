@@ -1,12 +1,12 @@
 """
-Discord Components v2 for Utility Commands
+View Display for Utility Commands
 """
 
 import discord
 
 
 class HelpView(discord.ui.LayoutView):
-    """View for help command using Components v2"""
+    """View for help command"""
 
     def __init__(self):
         super().__init__()
@@ -53,7 +53,7 @@ class HelpView(discord.ui.LayoutView):
 
 
 class PingView(discord.ui.LayoutView):
-    """View for ping command using Components v2"""
+    """View for ping command"""
 
     def __init__(self, ws_latency: int, response_time: int):
         super().__init__()
@@ -78,5 +78,24 @@ class PingView(discord.ui.LayoutView):
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.green().value,
+        )
+        self.add_item(container)
+
+
+class BlacklistedServerView(discord.ui.LayoutView):
+    """View for blacklisted server error"""
+    
+    def __init__(self):
+        super().__init__()
+        
+        content = (
+            "❌ **Server Blacklisted**\n\n"
+            "This server has been blacklisted and cannot use this bot.\n\n"
+            "If you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/support)."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value,
         )
         self.add_item(container)

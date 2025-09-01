@@ -175,7 +175,11 @@ class CommandValidator:
         ephemeral: bool = True
     ):
         """Send validation error message to the user."""
+        from src.components.validation import ValidationErrorView
+        
+        view = ValidationErrorView(error_message)
+        
         if interaction.response.is_done():
-            await interaction.followup.send(error_message, ephemeral=ephemeral)
+            await interaction.followup.send(view=view, ephemeral=ephemeral)
         else:
-            await interaction.response.send_message(error_message, ephemeral=ephemeral)
+            await interaction.response.send_message(view=view, ephemeral=ephemeral)

@@ -18,15 +18,12 @@ class UtilityCommands(commands.Cog):
         # Check if server is blacklisted
         server_id = str(interaction.guild.id)
         if await self.data_service.is_blacklisted(server_id):
-            await interaction.response.send_message(
-                "❌ This server has been blacklisted and cannot use this bot.\n\n"
-                "If you believe this is a mistake, you can appeal the blacklist on our support server: "
-                "[Support Server](https://biast12.com/support)",
-                ephemeral=True
-            )
+            from src.components.utility import BlacklistedServerView
+            view = BlacklistedServerView()
+            await interaction.response.send_message(view=view, ephemeral=True)
             return
         
-        # Use Components v2 for help display
+        # Help display
         from src.components.utility import HelpView
         
         view = HelpView()
@@ -56,7 +53,7 @@ class UtilityCommands(commands.Cog):
         end_time = time.perf_counter()
         response_time = round((end_time - start_time) * 1000)
 
-        # Use Components v2 for ping display
+        # Ping display
         from src.components.utility import PingView
         
         view = PingView(ws_latency, response_time)

@@ -69,7 +69,7 @@ class ErrorHandler:
             error_title = "❌ An Error Occurred"
             error_description = "An unexpected error occurred. Please report this to the bot owner."
 
-        # Use Components v2 for error display
+        # Error display
         from src.components.errors import ErrorView
         
         view = ErrorView(error_title, error_description, error_id)
