@@ -43,11 +43,7 @@ class AdminCommands(
         parent=None
     )
     
-    recache_group = app_commands.Group(
-        name="recache",
-        description="Recache specific data from database",
-        parent=None
-    )
+    # Removed recache group - now using direct command
     
     @app_commands.command(
         name="stats", description="View bot statistics"
@@ -200,55 +196,37 @@ class AdminCommands(
         view = BlacklistCheckFoundView(server_id, server_name, entry)
         await interaction.response.send_message(view=view)
 
-    @recache_group.command(
-        name="all",
-        description="Recache everything except admins and timezones"
+    @app_commands.command(
+        name="recache",
+        description="Recache all data from database (except config)"
     )
-    async def recache_all(self, interaction: discord.Interaction):
+    async def recache(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
         
         try:
+            # Reload all caches including timezones but not config/admins
             await self.data_service.reload_all_caches()
+            await self.data_service.reload_timezones_cache()
             
             # Get stats after reload
             servers_count = len(self.data_service._servers_cache)
             blacklist_count = len(self.data_service._blacklist_cache)
             channels_count = sum(len(s.channels) for s in self.data_service._servers_cache.values())
+            timezone_count = len(self.data_service._timezones_cache)
             
             from src.components.admin import RecacheSuccessView
             view = RecacheSuccessView(
-                cache_type="All (except admins/timezones)",
+                cache_type="All data (except config)",
                 servers=servers_count,
                 blacklist=blacklist_count,
-                channels=channels_count
+                channels=channels_count,
+                timezones=timezone_count
             )
             await interaction.followup.send(view=view)
             
         except Exception as e:
             from src.components.admin import RecacheErrorView
             view = RecacheErrorView("all", str(e))
-            await interaction.followup.send(view=view)
-    
-    @recache_group.command(
-        name="timezones",
-        description="Recache timezone mappings from database"
-    )
-    async def recache_timezones(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
-        
-        try:
-            await self.data_service.reload_timezones_cache()
-            
-            # Get timezone count
-            timezone_count = len(self.data_service._timezones_cache)
-            
-            from src.components.admin import RecacheTimezonesSuccessView
-            view = RecacheTimezonesSuccessView(timezone_count)
-            await interaction.followup.send(view=view)
-            
-        except Exception as e:
-            from src.components.admin import RecacheErrorView
-            view = RecacheErrorView("timezones", str(e))
             await interaction.followup.send(view=view)
 
     @error_group.command(

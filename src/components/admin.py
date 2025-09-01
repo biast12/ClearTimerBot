@@ -6,6 +6,29 @@ import discord
 from discord.ext import commands
 
 
+# ==================== COMMON VIEWS ====================
+
+class AdminOnlyView(discord.ui.LayoutView):
+    """View for admin-only restriction message"""
+    
+    def __init__(self):
+        super().__init__()
+        
+        content = (
+            "❌ **Admin Only**\n\n"
+            "This command is restricted to the bot admin.\n\n"
+            "_If you need assistance, please contact the bot admin_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+# ==================== STATS COMMAND VIEWS ====================
+
 class SimpleStatsView(discord.ui.LayoutView):
     """View for showing simple bot statistics"""
     
@@ -75,75 +98,147 @@ class ServerNotFoundView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class ServerListView(discord.ui.LayoutView):
-    """View for listing servers"""
+# ==================== BLACKLIST COMMAND VIEWS ====================
+
+class BlacklistAddSuccessView(discord.ui.LayoutView):
+    """View for blacklist add success"""
     
-    def __init__(self, servers: dict, bot):
-        super().__init__()
-        
-        content = "📋 **Subscribed Servers and Channels**\n\n"
-        
-        field_count = 0
-        total_servers = len(servers)
-        total_channels = sum(len(s.channels) for s in servers.values())
-        
-        for server_id, server in list(servers.items())[:10]:  # Show first 10
-            if not server.channels:
-                continue
-            
-            # Get guild name
-            guild = bot.get_guild(int(server_id))
-            guild_name = guild.name if guild else f"Unknown ({server.server_name})"
-            
-            content += f"**{guild_name}** ({server_id})\n"
-            
-            # Build channel list
-            for channel_id, timer_data in list(server.channels.items())[:5]:
-                channel = bot.get_channel(int(channel_id))
-                channel_name = channel.name if channel else "Unknown"
-                content += f"• #{channel_name} ({timer_data.timer})\n"
-            
-            if len(server.channels) > 5:
-                content += f"... and {len(server.channels) - 5} more channels\n"
-            
-            content += "\n"
-            field_count += 1
-            
-            if field_count >= 10:
-                break
-        
-        if total_servers > 10:
-            content += f"... and {total_servers - 10} more servers\n\n"
-        
-        content += f"_Total: {total_servers} servers, {total_channels} channels_"
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.blue().value
-        )
-        self.add_item(container)
-
-
-
-class CacheReloadView(discord.ui.LayoutView):
-    """View for cache reload confirmation"""
-    
-    def __init__(self, servers_count: int, blacklist_count: int, timezones_count: int):
+    def __init__(self, server_name: str, server_id: str, reason: str = "No reason provided"):
         super().__init__()
         
         content = (
-            "🔄 **Cache Reloaded**\n\n"
-            "All caches have been cleared and reloaded from the database.\n\n"
-            "**📊 Loaded Data**\n"
-            f"• Servers: {servers_count}\n"
-            f"• Blacklisted: {blacklist_count}\n"
-            f"• Timezones: {timezones_count}\n\n"
-            "_Cache reload successful_"
+            f"✅ **Server Blacklisted**\n\n"
+            f"Added server **{server_name}** (`{server_id}`) to blacklist.\n\n"
+            f"📝 **Reason:** {reason}\n\n"
+            f"• All subscriptions have been removed\n"
+            f"• The server cannot use bot commands"
         )
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class BlacklistAddAlreadyView(discord.ui.LayoutView):
+    """View for server already blacklisted"""
+    
+    def __init__(self, server_id: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **Already Blacklisted**\n\n"
+            f"Server `{server_id}` is already blacklisted."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class BlacklistRemoveSuccessView(discord.ui.LayoutView):
+    """View for blacklist remove success"""
+    
+    def __init__(self, server_id: str):
+        super().__init__()
+        
+        content = (
+            f"✅ **Server Unblacklisted**\n\n"
+            f"Removed server `{server_id}` from blacklist.\n\n"
+            f"The server can now use bot commands again."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class BlacklistRemoveNotFoundView(discord.ui.LayoutView):
+    """View for server not blacklisted"""
+    
+    def __init__(self, server_id: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **Not Blacklisted**\n\n"
+            f"Server `{server_id}` is not blacklisted."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class BlacklistCheckNotFoundView(discord.ui.LayoutView):
+    """View for when a server is not blacklisted"""
+    
+    def __init__(self, server_id: str):
+        super().__init__()
+        
+        content = (
+            f"✅ **Server is NOT Blacklisted**\n\n"
+            f"Server `{server_id}` is not on the blacklist.\n"
+            f"This server can use bot commands normally."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class BlacklistCheckFoundView(discord.ui.LayoutView):
+    """View for when a server is blacklisted"""
+    
+    def __init__(self, server_id: str, server_name: str, entry):
+        super().__init__()
+        
+        # Format the blacklisted date
+        blacklisted_date = "Unknown"
+        if entry.blacklisted_at:
+            blacklisted_date = f"<t:{int(entry.blacklisted_at.timestamp())}:F>"
+        
+        content = (
+            f"🚫 **Server is Blacklisted**\n\n"
+            f"**Server Name:** {server_name}\n"
+            f"**Server ID:** `{server_id}`\n"
+            f"**Reason:** {entry.reason or 'No reason provided'}\n"
+            f"**Blacklisted:** {blacklisted_date}\n"
+            f"**Blacklisted By:** <@{entry.blacklisted_by}>\n\n"
+            "This server cannot use bot commands."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+# ==================== ERROR COMMAND VIEWS ====================
+
+class ErrorNotFoundView(discord.ui.LayoutView):
+    """View for error not found"""
+    
+    def __init__(self, error_id: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **Error Not Found**\n\n"
+            f"No error found with ID: `{error_id}`"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
         )
         self.add_item(container)
 
@@ -198,6 +293,62 @@ class ErrorDetailsView(discord.ui.LayoutView):
         self.add_item(container)
 
 
+class ErrorDeleteSuccessView(discord.ui.LayoutView):
+    """View for error delete success"""
+    
+    def __init__(self, error_id: str):
+        super().__init__()
+        
+        content = (
+            f"✅ **Error Deleted**\n\n"
+            f"Error `{error_id}` has been deleted from the database."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class ErrorDeleteFailedView(discord.ui.LayoutView):
+    """View for error delete failed"""
+    
+    def __init__(self, error_id: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **Delete Failed**\n\n"
+            f"Could not delete error `{error_id}`.\n"
+            f"It may not exist or has already been deleted."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class NoErrorsView(discord.ui.LayoutView):
+    """View for no errors found"""
+    
+    def __init__(self):
+        super().__init__()
+        
+        content = (
+            "ℹ️ **No Errors Found**\n\n"
+            "No errors found in the database.\n\n"
+            "_Errors will appear here when they occur_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.greyple().value
+        )
+        self.add_item(container)
+
+
 class ErrorListView(discord.ui.LayoutView):
     """View for error list"""
     
@@ -228,6 +379,217 @@ class ErrorListView(discord.ui.LayoutView):
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.yellow().value
+        )
+        self.add_item(container)
+
+
+class ErrorsClearedView(discord.ui.LayoutView):
+    """View for errors cleared"""
+    
+    def __init__(self, count: int):
+        super().__init__()
+        
+        content = (
+            f"✅ **Errors Cleared**\n\n"
+            f"Cleared {count} error{'s' if count != 1 else ''} from the database.\n\n"
+            f"_The error log is now empty_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class ErrorsClearFailedView(discord.ui.LayoutView):
+    """View for errors clear failed"""
+    
+    def __init__(self, error_id: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **Clear Failed**\n\n"
+            f"Failed to clear errors from database.\n\n"
+            f"Error ID: `{error_id}`\n\n"
+            f"_Please check the logs for more details_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+# ==================== FORCE COMMAND VIEWS ====================
+
+class ForceUnsubNotFoundView(discord.ui.LayoutView):
+    """View for force unsubscribe not found"""
+    
+    def __init__(self, target_id: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **Not Found**\n\n"
+            f"No server or channel found with ID: `{target_id}`\n\n"
+            f"_Please check the ID and try again_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class ForceUnsubSuccessView(discord.ui.LayoutView):
+    """View for force unsubscribe success"""
+    
+    def __init__(self, target_type: str, target_id: str, count: int = None, server_id: str = None):
+        super().__init__()
+        
+        if target_type == "server":
+            content = (
+                f"✅ **Server Unsubscribed**\n\n"
+                f"Cleared {count} subscribed channel{'s' if count != 1 else ''} from server `{target_id}`.\n\n"
+                f"_The server can subscribe channels again using `/subscription add`_"
+            )
+        else:  # channel
+            content = (
+                f"✅ **Channel Unsubscribed**\n\n"
+                f"Removed channel `{target_id}` from server `{server_id}`.\n\n"
+                f"_The channel can be subscribed again using `/subscription add`_"
+            )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+# ==================== RECACHE COMMAND VIEWS ====================
+
+class RecacheSuccessView(discord.ui.LayoutView):
+    """View for successful recache operation"""
+    
+    def __init__(self, cache_type: str, servers: int = 0, blacklist: int = 0, channels: int = 0, timezones: int = 0):
+        super().__init__()
+        
+        content = f"✅ **Cache Reloaded**\n\n"
+        content += f"Successfully reloaded: **{cache_type}**\n\n"
+        
+        if servers > 0 or blacklist > 0 or channels > 0 or timezones > 0:
+            content += "**📊 Loaded Data**\n"
+            if servers > 0:
+                content += f"• Servers: {servers}\n"
+            if channels > 0:
+                content += f"• Channels: {channels}\n"
+            if blacklist > 0:
+                content += f"• Blacklisted: {blacklist}\n"
+            if timezones > 0:
+                content += f"• Timezones: {timezones}\n"
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+# RecacheTimezonesSuccessView removed - no longer needed
+
+
+class RecacheErrorView(discord.ui.LayoutView):
+    """View for recache error"""
+    
+    def __init__(self, cache_type: str, error: str):
+        super().__init__()
+        
+        content = (
+            f"❌ **Recache Failed**\n\n"
+            f"Failed to reload **{cache_type}** cache.\n\n"
+            f"**Error:** {error}"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+# ==================== LEGACY/UTILITY VIEWS ====================
+
+class ServerListView(discord.ui.LayoutView):
+    """View for listing servers"""
+    
+    def __init__(self, servers: dict, bot):
+        super().__init__()
+        
+        content = "📋 **Subscribed Servers and Channels**\n\n"
+        
+        field_count = 0
+        total_servers = len(servers)
+        total_channels = sum(len(s.channels) for s in servers.values())
+        
+        for server_id, server in list(servers.items())[:10]:  # Show first 10
+            if not server.channels:
+                continue
+            
+            # Get guild name
+            guild = bot.get_guild(int(server_id))
+            guild_name = guild.name if guild else f"Unknown ({server.server_name})"
+            
+            content += f"**{guild_name}** ({server_id})\n"
+            
+            # Build channel list
+            for channel_id, timer_data in list(server.channels.items())[:5]:
+                channel = bot.get_channel(int(channel_id))
+                channel_name = channel.name if channel else "Unknown"
+                content += f"• #{channel_name} ({timer_data.timer})\n"
+            
+            if len(server.channels) > 5:
+                content += f"... and {len(server.channels) - 5} more channels\n"
+            
+            content += "\n"
+            field_count += 1
+            
+            if field_count >= 10:
+                break
+        
+        if total_servers > 10:
+            content += f"... and {total_servers - 10} more servers\n\n"
+        
+        content += f"_Total: {total_servers} servers, {total_channels} channels_"
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.blue().value
+        )
+        self.add_item(container)
+
+
+class CacheReloadView(discord.ui.LayoutView):
+    """View for cache reload confirmation"""
+    
+    def __init__(self, servers_count: int, blacklist_count: int, timezones_count: int):
+        super().__init__()
+        
+        content = (
+            "🔄 **Cache Reloaded**\n\n"
+            "All caches have been cleared and reloaded from the database.\n\n"
+            "**📊 Loaded Data**\n"
+            f"• Servers: {servers_count}\n"
+            f"• Blacklisted: {blacklist_count}\n"
+            f"• Timezones: {timezones_count}\n\n"
+            "_Cache reload successful_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
         )
         self.add_item(container)
 
@@ -329,174 +691,6 @@ class NoServersView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class ForceUnsubSuccessView(discord.ui.LayoutView):
-    """View for force unsubscribe success"""
-    
-    def __init__(self, target_type: str, target_id: str, count: int = None, server_id: str = None):
-        super().__init__()
-        
-        if target_type == "server":
-            content = (
-                f"✅ **Server Unsubscribed**\n\n"
-                f"Cleared {count} subscribed channel{'s' if count != 1 else ''} from server `{target_id}`.\n\n"
-                f"_The server can subscribe channels again using `/subscription add`_"
-            )
-        else:  # channel
-            content = (
-                f"✅ **Channel Unsubscribed**\n\n"
-                f"Removed channel `{target_id}` from server `{server_id}`.\n\n"
-                f"_The channel can be subscribed again using `/subscription add`_"
-            )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
-class ForceUnsubNotFoundView(discord.ui.LayoutView):
-    """View for force unsubscribe not found"""
-    
-    def __init__(self, target_id: str):
-        super().__init__()
-        
-        content = (
-            f"❌ **Not Found**\n\n"
-            f"No server or channel found with ID: `{target_id}`\n\n"
-            f"_Please check the ID and try again_"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
-
-class BlacklistAddSuccessView(discord.ui.LayoutView):
-    """View for blacklist add success"""
-    
-    def __init__(self, server_name: str, server_id: str, reason: str = "No reason provided"):
-        super().__init__()
-        
-        content = (
-            f"✅ **Server Blacklisted**\n\n"
-            f"Added server **{server_name}** (`{server_id}`) to blacklist.\n\n"
-            f"📝 **Reason:** {reason}\n\n"
-            f"• All subscriptions have been removed\n"
-            f"• The server cannot use bot commands"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
-class BlacklistAddAlreadyView(discord.ui.LayoutView):
-    """View for server already blacklisted"""
-    
-    def __init__(self, server_id: str):
-        super().__init__()
-        
-        content = (
-            f"❌ **Already Blacklisted**\n\n"
-            f"Server `{server_id}` is already blacklisted."
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
-
-class BlacklistRemoveSuccessView(discord.ui.LayoutView):
-    """View for blacklist remove success"""
-    
-    def __init__(self, server_id: str):
-        super().__init__()
-        
-        content = (
-            f"✅ **Server Unblacklisted**\n\n"
-            f"Removed server `{server_id}` from blacklist.\n\n"
-            f"The server can now use bot commands again."
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
-class BlacklistRemoveNotFoundView(discord.ui.LayoutView):
-    """View for server not blacklisted"""
-    
-    def __init__(self, server_id: str):
-        super().__init__()
-        
-        content = (
-            f"❌ **Not Blacklisted**\n\n"
-            f"Server `{server_id}` is not blacklisted."
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
-
-class BlacklistCheckFoundView(discord.ui.LayoutView):
-    """View for when a server is blacklisted"""
-    
-    def __init__(self, server_id: str, server_name: str, entry):
-        super().__init__()
-        
-        # Format the blacklisted date
-        blacklisted_date = "Unknown"
-        if entry.blacklisted_at:
-            blacklisted_date = f"<t:{int(entry.blacklisted_at.timestamp())}:F>"
-        
-        content = (
-            f"🚫 **Server is Blacklisted**\n\n"
-            f"**Server Name:** {server_name}\n"
-            f"**Server ID:** `{server_id}`\n"
-            f"**Reason:** {entry.reason or 'No reason provided'}\n"
-            f"**Blacklisted:** {blacklisted_date}\n"
-            f"**Blacklisted By:** <@{entry.blacklisted_by}>\n\n"
-            "This server cannot use bot commands."
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
-
-class BlacklistCheckNotFoundView(discord.ui.LayoutView):
-    """View for when a server is not blacklisted"""
-    
-    def __init__(self, server_id: str):
-        super().__init__()
-        
-        content = (
-            f"✅ **Server is NOT Blacklisted**\n\n"
-            f"Server `{server_id}` is not on the blacklist.\n"
-            f"This server can use bot commands normally."
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
 class NoBlacklistView(discord.ui.LayoutView):
     """View for empty blacklist"""
     
@@ -533,200 +727,3 @@ class CacheReloadErrorView(discord.ui.LayoutView):
             accent_color=discord.Color.red().value
         )
         self.add_item(container)
-
-
-class ErrorNotFoundView(discord.ui.LayoutView):
-    """View for error not found"""
-    
-    def __init__(self, error_id: str):
-        super().__init__()
-        
-        content = (
-            f"❌ **Error Not Found**\n\n"
-            f"No error found with ID: `{error_id}`"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
-
-class ErrorDeleteSuccessView(discord.ui.LayoutView):
-    """View for error delete success"""
-    
-    def __init__(self, error_id: str):
-        super().__init__()
-        
-        content = (
-            f"✅ **Error Deleted**\n\n"
-            f"Error `{error_id}` has been deleted from the database."
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
-class ErrorDeleteFailedView(discord.ui.LayoutView):
-    """View for error delete failed"""
-    
-    def __init__(self, error_id: str):
-        super().__init__()
-        
-        content = (
-            f"❌ **Delete Failed**\n\n"
-            f"Could not delete error `{error_id}`.\n"
-            f"It may not exist or has already been deleted."
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
-
-class NoErrorsView(discord.ui.LayoutView):
-    """View for no errors found"""
-    
-    def __init__(self):
-        super().__init__()
-        
-        content = (
-            "ℹ️ **No Errors Found**\n\n"
-            "No errors found in the database.\n\n"
-            "_Errors will appear here when they occur_"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.greyple().value
-        )
-        self.add_item(container)
-
-
-class ErrorsClearedView(discord.ui.LayoutView):
-    """View for errors cleared"""
-    
-    def __init__(self, count: int):
-        super().__init__()
-        
-        content = (
-            f"✅ **Errors Cleared**\n\n"
-            f"Cleared {count} error{'s' if count != 1 else ''} from the database.\n\n"
-            f"_The error log is now empty_"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
-class ErrorsClearFailedView(discord.ui.LayoutView):
-    """View for errors clear failed"""
-    
-    def __init__(self, error_id: str):
-        super().__init__()
-        
-        content = (
-            f"❌ **Clear Failed**\n\n"
-            f"Failed to clear errors from database.\n\n"
-            f"Error ID: `{error_id}`\n\n"
-            f"_Please check the logs for more details_"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
-
-class AdminOnlyView(discord.ui.LayoutView):
-    """View for admin-only restriction message"""
-    
-    def __init__(self):
-        super().__init__()
-        
-        content = (
-            "❌ **Admin Only**\n\n"
-            "This command is restricted to the bot admin.\n\n"
-            "_If you need assistance, please contact the bot admin_"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
-
-class RecacheSuccessView(discord.ui.LayoutView):
-    """View for successful recache operation"""
-    
-    def __init__(self, cache_type: str, servers: int = 0, blacklist: int = 0, channels: int = 0):
-        super().__init__()
-        
-        content = f"✅ **Cache Reloaded**\n\n"
-        content += f"Successfully reloaded: **{cache_type}**\n\n"
-        
-        if servers > 0 or blacklist > 0 or channels > 0:
-            content += "**📊 Loaded Data**\n"
-            if servers > 0:
-                content += f"• Servers: {servers}\n"
-            if channels > 0:
-                content += f"• Channels: {channels}\n"
-            if blacklist > 0:
-                content += f"• Blacklisted: {blacklist}\n"
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
-
-class RecacheTimezonesSuccessView(discord.ui.LayoutView):
-    """View for successful timezone cache reload"""
-    
-    def __init__(self, timezone_count: int):
-        super().__init__()
-        
-        content = (
-            "✅ **Timezone Cache Reloaded**\n\n"
-            f"Successfully reloaded timezone mappings from database.\n\n"
-            f"**🌍 Timezones:** {timezone_count}"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
-class RecacheErrorView(discord.ui.LayoutView):
-    """View for recache error"""
-    
-    def __init__(self, cache_type: str, error: str):
-        super().__init__()
-        
-        content = (
-            f"❌ **Recache Failed**\n\n"
-            f"Failed to reload **{cache_type}** cache.\n\n"
-            f"**Error:** {error}"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-

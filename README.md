@@ -264,10 +264,7 @@ Commands for forcefully managing subscriptions under `/admin force`:
 
 #### Cache Management
 
-Commands for recaching data under `/admin recache`:
-
-- **`/admin recache all`**: Recache everything except admins and timezones
-- **`/admin recache timezones`**: Recache timezone mappings from database
+- **`/admin recache`**: Recache all data from database (except config/admins)
 
 </details>
 
