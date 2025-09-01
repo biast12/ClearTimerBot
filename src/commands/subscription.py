@@ -48,7 +48,7 @@ class SubscriptionCommands(commands.Cog):
         # Check if already subscribed
         if self.scheduler_service.channel_has_active_job(server_id, channel_id):
             await interaction.response.send_message(
-                f"❌ {channel.mention} already has a timer set. Use `/subscription remove` to remove it first.",
+                f"❌ {channel.mention} already has a timer set. Use `/subscription update` to update the subscription instead.",
                 ephemeral=True,
             )
             return
@@ -166,7 +166,7 @@ class SubscriptionCommands(commands.Cog):
         if not next_run_time:
             await interaction.response.send_message(
                 f"❌ {channel.mention} is not subscribed to message deletion.\n"
-                f"Use `/subscription add` to set up automatic clearing.",
+                f"Use `/subscription add` to set up automatic clearing first.",
                 ephemeral=True,
             )
             return
@@ -210,7 +210,7 @@ class SubscriptionCommands(commands.Cog):
         # Check if channel is subscribed
         if not self.scheduler_service.channel_has_active_job(server_id, channel_id):
             await interaction.response.send_message(
-                f"❌ {channel.mention} is not subscribed to message deletion. Use `/subscription add` first.",
+                f"❌ {channel.mention} is not subscribed to message deletion. Use `/subscription add` to subscribe first.",
                 ephemeral=True,
             )
             return
@@ -323,7 +323,7 @@ class SubscriptionCommands(commands.Cog):
         if not server or not server.channels:
             await interaction.response.send_message(
                 "❌ No active subscriptions found in this server.\n"
-                "Use `/subscription add` to subscribe a channel to automatic clearing.",
+                "Use `/subscription add` to set up automatic clearing first.",
                 ephemeral=True,
             )
             return

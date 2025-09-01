@@ -312,7 +312,7 @@ Contributions are welcome! Please:
 
 ## Troubleshooting
 
-- **Commands not showing**: Register the commands with `register_commands.py` / `register_commands.bat`
+- **Commands not showing**: Register the commands with `register_discord_commands.py` / `register_discord_commands.bat`
 - **Timezone issues**: Check supported timezones in the bot's timezone configuration
 
 ---

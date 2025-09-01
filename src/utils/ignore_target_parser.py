@@ -91,7 +91,7 @@ def extract_discord_message_id(message_input: str) -> Optional[str]:
         return match.group(1)
     
     # Check if it's a direct message ID (digits only, typically 17+ digits)
-    # Messages IDs are typically longer and we check length to distinguish from user IDs
+    # Message IDs are typically longer and we check length to distinguish from user IDs
     if message_input.isdigit() and len(message_input) >= 17:
         # If it could be either user or message, we'll let the validation step determine
         return message_input
