@@ -20,90 +20,103 @@ class OwnerCommands(
             return False
         return True
     
-    @app_commands.command(
-        name="cache_stats", description="View cache statistics and performance"
+    # Create subgroups for blacklist, error, and force commands
+    blacklist_group = app_commands.Group(
+        name="blacklist",
+        description="Manage server blacklist",
+        parent=None
     )
-    async def cache_stats(self, interaction: discord.Interaction):
+    
+    error_group = app_commands.Group(
+        name="error",
+        description="Manage error logs",
+        parent=None
+    )
+    
+    force_group = app_commands.Group(
+        name="force",
+        description="Force management actions",
+        parent=None
+    )
+    
+    @app_commands.command(
+        name="stats", description="View bot statistics"
+    )
+    @app_commands.describe(
+        server_id="Server ID to get specific stats for (optional)"
+    )
+    async def stats(self, interaction: discord.Interaction, server_id: str = None):
         await interaction.response.defer(thinking=True)
         
-        # Get cache statistics
-        cache_stats = self.data_service.get_cache_stats()
-        
-        # Cache stats display
-        from src.components.owner import CacheStatsView
-        
-        view = CacheStatsView(cache_stats)
-        await interaction.followup.send(view=view)
-
-    @app_commands.command(
-        name="list", description="List all servers and their subscribed channels"
-    )
-    async def list_servers(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
-
-        servers = await self.data_service.get_all_servers()
-
-        if not servers:
-            from src.components.owner import NoServersView
-            view = NoServersView()
-            await interaction.followup.send(view=view)
-            return
-
-        # Server list display
-        from src.components.owner import ServerListView
-        
-        view = ServerListView(servers, self.bot)
-        await interaction.followup.send(view=view)
-
-    @app_commands.command(
-        name="force_unsub", description="Force unsubscribe a server or channel"
-    )
-    @app_commands.describe(target_id="Server ID or Channel ID to unsubscribe")
-    async def force_unsub(self, interaction: discord.Interaction, target_id: str):
-        await interaction.response.defer(thinking=True)
-
-        # Try to determine if it's a server or channel
-        servers = await self.data_service.get_all_servers()
-
-        # Check if it's a server ID
-        if target_id in servers:
-            server = servers[target_id]
-            channels_removed = len(server.channels)
-
-            # Remove all jobs and channels for this server
-            for channel_id in list(server.channels.keys()):
-                self.scheduler_service.remove_channel_clear_job(target_id, channel_id)
-                server.remove_channel(channel_id)
-
-            # Keep server in database even with no channels
-            await self.data_service.save_servers()
-
-            from src.components.owner import ForceUnsubSuccessView
-            view = ForceUnsubSuccessView("server", target_id, channels_removed)
-            await interaction.followup.send(view=view)
-            return
-
-        # Check if it's a channel ID in any server
-        for server_id, server in servers.items():
-            if target_id in server.channels:
-                # Remove job
-                self.scheduler_service.remove_channel_clear_job(server_id, target_id)
-
-                # Remove from data service
-                server.remove_channel(target_id)
-                await self.data_service.save_servers()
-
-                from src.components.owner import ForceUnsubSuccessView
-                view = ForceUnsubSuccessView("channel", target_id, server_id=server_id)
+        # If server_id is provided, show server-specific stats
+        if server_id:
+            server = await self.data_service.get_server(server_id)
+            
+            # Check if server exists in database
+            if not server:
+                from src.components.owner import ServerNotFoundView
+                view = ServerNotFoundView(server_id)
                 await interaction.followup.send(view=view)
                 return
+            
+            # Get guild info
+            guild = self.bot.get_guild(int(server_id))
+            server_name = guild.name if guild else (server.server_name or "Unknown")
+            
+            # Check blacklist status
+            blacklist = await self.data_service.get_blacklist()
+            is_blacklisted = server_id in blacklist
+            
+            # Count server-specific errors
+            from src.services.database_connection_manager import db_manager
+            errors_collection = db_manager.db.errors
+            server_errors = await errors_collection.count_documents({"server_id": server_id})
+            
+            # Get channel details
+            channel_count = len(server.channels)
+            
+            from src.components.owner import ServerStatsView
+            view = ServerStatsView(
+                server_id=server_id,
+                server_name=server_name,
+                channel_count=channel_count,
+                is_blacklisted=is_blacklisted,
+                error_count=server_errors,
+                bot=self.bot,
+                channels=server.channels
+            )
+            await interaction.followup.send(view=view)
+        else:
+            # Show overall bot statistics
+            servers = await self.data_service.get_all_servers()
+            blacklist = await self.data_service.get_blacklist()
+            
+            # Count servers and channels
+            total_servers = len(self.bot.guilds)
+            total_channels = sum(len(server.channels) for server in servers.values())
+            removed_servers = len([s for s in servers.values() if not s.channels])
+            blacklisted_servers = len(blacklist)
+            
+            # Count errors
+            from src.services.database_connection_manager import db_manager
+            errors_collection = db_manager.db.errors
+            error_count = await errors_collection.count_documents({})
+            
+            # Simple stats display
+            from src.components.owner import SimpleStatsView
+            
+            view = SimpleStatsView(
+                total_servers=total_servers,
+                total_channels=total_channels,
+                removed_servers=removed_servers,
+                blacklisted_servers=blacklisted_servers,
+                error_count=error_count
+            )
+            await interaction.followup.send(view=view)
 
-        from src.components.owner import ForceUnsubNotFoundView
-        view = ForceUnsubNotFoundView(target_id)
-        await interaction.followup.send(view=view)
 
-    @app_commands.command(
-        name="blacklist_add", description="Add a server to the blacklist"
+    @blacklist_group.command(
+        name="add", description="Add a server to the blacklist"
     )
     @app_commands.describe(
         server_id="Server ID to blacklist",
@@ -134,8 +147,8 @@ class OwnerCommands(
             view = BlacklistAddAlreadyView(server_id)
             await interaction.response.send_message(view=view)
 
-    @app_commands.command(
-        name="blacklist_remove", description="Remove a server from the blacklist"
+    @blacklist_group.command(
+        name="remove", description="Remove a server from the blacklist"
     )
     @app_commands.describe(server_id="Server ID to remove from blacklist")
     async def blacklist_remove(self, interaction: discord.Interaction, server_id: str):
@@ -149,8 +162,8 @@ class OwnerCommands(
             view = BlacklistRemoveNotFoundView(server_id)
             await interaction.response.send_message(view=view)
 
-    @app_commands.command(
-        name="blacklist_check", description="Check if a server is blacklisted"
+    @blacklist_group.command(
+        name="check", description="Check if a server is blacklisted"
     )
     @app_commands.describe(server_id="Server ID to check blacklist status")
     async def blacklist_check(self, interaction: discord.Interaction, server_id: str):
@@ -211,23 +224,11 @@ class OwnerCommands(
             view = CacheReloadErrorView(str(e))
             await interaction.followup.send(view=view)
 
-    @app_commands.command(name="stats", description="Show bot statistics")
-    async def stats(self, interaction: discord.Interaction):
-        servers = await self.data_service.get_all_servers()
-        blacklist = await self.data_service.get_blacklist()
-        jobs = self.scheduler_service.get_all_jobs()
-
-        # Stats display
-        from src.components.owner import StatsView
-        
-        view = StatsView(self.bot, servers, blacklist, jobs)
-        await interaction.response.send_message(view=view)
-
-    @app_commands.command(
-        name="error_lookup", description="Look up an error by its ID"
+    @error_group.command(
+        name="check", description="Check an error by its ID"
     )
-    @app_commands.describe(error_id="The error ID to look up")
-    async def error_lookup(self, interaction: discord.Interaction, error_id: str):
+    @app_commands.describe(error_id="The error ID to check")
+    async def error_check(self, interaction: discord.Interaction, error_id: str):
         await interaction.response.defer(thinking=True)
         
         # Get error from database
@@ -245,8 +246,8 @@ class OwnerCommands(
         view = ErrorDetailsView(error_doc, self.bot)
         await interaction.followup.send(view=view)
 
-    @app_commands.command(
-        name="error_delete", description="Delete an error by its ID"
+    @error_group.command(
+        name="delete", description="Delete an error by its ID"
     )
     @app_commands.describe(error_id="The error ID to delete")
     async def error_delete(self, interaction: discord.Interaction, error_id: str):
@@ -264,8 +265,8 @@ class OwnerCommands(
             view = ErrorDeleteFailedView(error_id)
             await interaction.followup.send(view=view)
 
-    @app_commands.command(
-        name="error_list", description="List recent errors"
+    @error_group.command(
+        name="list", description="List recent errors"
     )
     @app_commands.describe(limit="Number of errors to show (default: 10, max: 25)")
     async def error_list(self, interaction: discord.Interaction, limit: int = 10):
@@ -289,8 +290,8 @@ class OwnerCommands(
         view = ErrorListView(errors)
         await interaction.followup.send(view=view)
 
-    @app_commands.command(
-        name="error_clear", description="Clear all errors from the database"
+    @error_group.command(
+        name="clear", description="Clear all errors from the database"
     )
     async def error_clear(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
@@ -312,6 +313,69 @@ class OwnerCommands(
             from src.components.owner import ErrorsClearFailedView
             view = ErrorsClearFailedView(error_id)
             await interaction.followup.send(view=view)
+
+
+    @force_group.command(
+        name="remove_server", description="Force remove all subscriptions for a server"
+    )
+    @app_commands.describe(id="Server ID to remove all subscriptions from")
+    async def force_remove_server(self, interaction: discord.Interaction, id: str):
+        await interaction.response.defer(thinking=True)
+
+        # Get all servers
+        servers = await self.data_service.get_all_servers()
+
+        # Check if server exists
+        if id not in servers:
+            from src.components.owner import ForceUnsubNotFoundView
+            view = ForceUnsubNotFoundView(id)
+            await interaction.followup.send(view=view)
+            return
+
+        server = servers[id]
+        channels_removed = len(server.channels)
+
+        # Remove all jobs and channels for this server
+        for channel_id in list(server.channels.keys()):
+            self.scheduler_service.remove_channel_clear_job(id, channel_id)
+            server.remove_channel(channel_id)
+
+        # Keep server in database even with no channels
+        await self.data_service.save_servers()
+
+        from src.components.owner import ForceUnsubSuccessView
+        view = ForceUnsubSuccessView("server", id, channels_removed)
+        await interaction.followup.send(view=view)
+
+    @force_group.command(
+        name="remove_channel", description="Force remove a specific channel subscription"
+    )
+    @app_commands.describe(id="Channel ID to unsubscribe")
+    async def force_remove_channel(self, interaction: discord.Interaction, id: str):
+        await interaction.response.defer(thinking=True)
+
+        # Get all servers to find which one has this channel
+        servers = await self.data_service.get_all_servers()
+
+        # Find which server has this channel
+        for server_id, server in servers.items():
+            if id in server.channels:
+                # Remove job
+                self.scheduler_service.remove_channel_clear_job(server_id, id)
+
+                # Remove from data service
+                server.remove_channel(id)
+                await self.data_service.save_servers()
+
+                from src.components.owner import ForceUnsubSuccessView
+                view = ForceUnsubSuccessView("channel", id, server_id=server_id)
+                await interaction.followup.send(view=view)
+                return
+
+        # Channel not found in any server
+        from src.components.owner import ForceUnsubNotFoundView
+        view = ForceUnsubNotFoundView(id)
+        await interaction.followup.send(view=view)
 
 
 async def setup(bot):

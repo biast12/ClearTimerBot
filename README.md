@@ -234,53 +234,38 @@ Display comprehensive help information including commands, timer formats, and us
 
 These commands are restricted to the bot owner for administrative purposes. All owner commands are under the `/owner` group:
 
-#### `/owner cache_stats`
+#### `/owner stats [server_id]`
 
-View cache statistics and performance metrics.
-
-#### `/owner stats`
-
-Display comprehensive bot statistics including server count, user count, and resource usage.
-
-#### `/owner list`
-
-Display all servers and channels with active subscriptions.
-
-#### `/owner force_unsub [target_id]`
-
-Force unsubscribe a server or channel from message deletion.
-
-#### `/owner blacklist_add [server_id]`
-
-Add a server to the blacklist, preventing it from using the bot.
-
-#### `/owner blacklist_remove [server_id]`
-
-Remove a server from the blacklist.
-
-#### `/owner blacklist_list`
-
-Display all blacklisted servers.
+Display bot statistics. Without server_id shows overall stats (total servers, channels, blacklisted servers, errors). With server_id shows specific server stats including channel count, blacklist status, and error count for that server.
 
 #### `/owner reload_cache`
 
 Reload all caches from database to sync with database changes.
 
-#### `/owner error_lookup [error_id]`
+#### Blacklist Management
 
-Look up detailed information about a specific error by its ID.
+Commands for managing server blacklist under `/owner blacklist`:
 
-#### `/owner error_delete [error_id]`
+- **`/owner blacklist add [server_id] [reason]`**: Add a server to the blacklist with optional reason
+- **`/owner blacklist remove [server_id]`**: Remove a server from the blacklist  
+- **`/owner blacklist check [server_id]`**: Check if a server is blacklisted and view details
 
-Delete a specific error from the database by its ID.
+#### Error Management
 
-#### `/owner error_list [limit]`
+Commands for managing error logs under `/owner error`:
 
-List recent errors from the database (default: 10, max: 25).
+- **`/owner error lookup [error_id]`**: Look up detailed information about a specific error
+- **`/owner error delete [error_id]`**: Delete a specific error from the database
+- **`/owner error list [limit]`**: List recent errors (default: 10, max: 25)
+- **`/owner error clear`**: Clear all errors from the database
+- **`/owner error check [error_id]`**: Check an error by its ID
 
-#### `/owner error_clear`
+#### Force Management
 
-Clear all errors from the database.
+Commands for forcefully managing subscriptions under `/owner force`:
+
+- **`/owner force remove_server [id]`**: Force remove all subscriptions for a server
+- **`/owner force remove_channel [id]`**: Force remove a specific channel subscription
 
 </details>
 

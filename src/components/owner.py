@@ -6,6 +6,75 @@ import discord
 from discord.ext import commands
 
 
+class SimpleStatsView(discord.ui.LayoutView):
+    """View for showing simple bot statistics"""
+    
+    def __init__(self, total_servers: int, total_channels: int, removed_servers: int, 
+                 blacklisted_servers: int, error_count: int):
+        super().__init__()
+        
+        content = "📊 **Bot Statistics**\n\n"
+        content += f"**Servers:** {total_servers}\n"
+        content += f"**Subscribed Channels:** {total_channels}\n"
+        content += f"**Removed Servers:** {removed_servers}\n"
+        content += f"**Blacklisted Servers:** {blacklisted_servers}\n"
+        content += f"**Saved Errors:** {error_count}"
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.blue().value
+        )
+        self.add_item(container)
+
+
+class ServerStatsView(discord.ui.LayoutView):
+    """View for showing server-specific statistics"""
+    
+    def __init__(self, server_id: str, server_name: str, channel_count: int,
+                 is_blacklisted: bool, error_count: int, bot, channels: dict):
+        super().__init__()
+        
+        content = f"📊 **Server Statistics**\n\n"
+        content += f"**Server:** {server_name}\n"
+        content += f"**Server ID:** {server_id}\n"
+        content += f"**Subscribed Channels:** {channel_count}\n"
+        content += f"**Blacklisted:** {'Yes ⛔' if is_blacklisted else 'No ✅'}\n"
+        content += f"**Errors:** {error_count}\n"
+        
+        if channels:
+            content += f"\n**Channels:**\n"
+            for channel_id, timer_data in list(channels.items())[:10]:
+                channel = bot.get_channel(int(channel_id))
+                channel_name = f"#{channel.name}" if channel else "Unknown Channel"
+                content += f"• {channel_name} - `{timer_data.timer}`\n"
+            
+            if len(channels) > 10:
+                content += f"_... and {len(channels) - 10} more channels_"
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value if is_blacklisted else discord.Color.blue().value
+        )
+        self.add_item(container)
+
+
+class ServerNotFoundView(discord.ui.LayoutView):
+    """View for when a server is not found in the database"""
+    
+    def __init__(self, server_id: str):
+        super().__init__()
+        
+        content = f"❌ **Server Not Found**\n\n"
+        content += f"Server ID `{server_id}` was not found in the database.\n"
+        content += f"This server has never been subscribed to the bot."
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
 class ServerListView(discord.ui.LayoutView):
     """View for listing servers"""
     
@@ -154,7 +223,7 @@ class ErrorListView(discord.ui.LayoutView):
         if len(errors) > 10:
             content += f"\n... and {len(errors) - 10} more errors\n"
         
-        content += f"\n_Use `/owner error_lookup <id>` to see full details_"
+        content += f"\n_Use `/owner error check <id>` to see full details_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
