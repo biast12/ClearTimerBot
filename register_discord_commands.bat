@@ -36,9 +36,6 @@ IF NOT EXIST "venv\Scripts\activate.bat" (
 )
 
 REM Run the command synchronization script
-ECHO [INFO] Synchronizing Discord slash commands...
-ECHO ============================================
-ECHO.
 python register_discord_commands.py
 
 ECHO.

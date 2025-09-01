@@ -98,7 +98,13 @@ class CommandRegisterBot(commands.Bot):
                     # Check if it's a group command with subcommands
                     if hasattr(cmd, "options"):
                         for option in cmd.options:
-                            logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
+                            # Check if this option is a subgroup (has its own options)
+                            if hasattr(option, "options") and option.options:
+                                logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
+                                for suboption in option.options:
+                                    logger.info(LogArea.NONE, f"          - {suboption.name}: {suboption.description}")
+                            else:
+                                logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
 
             # Register owner commands to specific guild if configured
             if self.config.is_owner_mode and self.config.guild_id:
@@ -115,7 +121,13 @@ class CommandRegisterBot(commands.Bot):
                         # Check if it's a group command with subcommands
                         if hasattr(cmd, "options"):
                             for option in cmd.options:
-                                logger.info(LogArea.NONE, f"      - /{cmd.name} {option.name}: {option.description}")
+                                # Check if this option is a subgroup (has its own options)
+                                if hasattr(option, "options") and option.options:
+                                    logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
+                                    for suboption in option.options:
+                                        logger.info(LogArea.NONE, f"          - {suboption.name}: {suboption.description}")
+                                else:
+                                    logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
 
             logger.info(LogArea.NONE, "Command registration complete!")
             logger.spacer()
