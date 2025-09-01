@@ -4,6 +4,7 @@ from discord.ext import commands
 from typing import Optional
 
 from src.utils.timer_parser import TimerParseError
+from src.utils.target_parser import parse_and_validate_target, validate_and_add_target
 
 
 class SubscriptionCommands(commands.Cog):
@@ -23,14 +24,14 @@ class SubscriptionCommands(commands.Cog):
     @app_commands.describe(
         timer="Timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to clear (defaults to current channel)",
-        ignored_message="Message ID or link to ignore during clearing (optional)",
+        ignored_target="Message ID/link or user mention/ID to ignore during clearing (optional)",
     )
     async def sub_add(
         self,
         interaction: discord.Interaction,
         timer: str,
         target_channel: Optional[discord.TextChannel] = None,
-        ignored_message: Optional[str] = None,
+        ignored_target: Optional[str] = None,
     ):
         # Check permissions
         if not await self._check_permissions(interaction, target_channel):
@@ -79,19 +80,17 @@ class SubscriptionCommands(commands.Cog):
 
         server.add_channel(channel_id, timer, next_run_time)
         
-        # Add ignored message if provided
-        message_id = None
-        if ignored_message:
-            message_id = self._extract_message_id(ignored_message)
-            if message_id:
-                server.channels[channel_id].add_ignored_message(message_id)
+        # Add ignored target if provided (message or user)
+        ignored_entity_id, ignored_entity_type = await validate_and_add_target(
+            ignored_target, channel, interaction.guild, server.channels[channel_id]
+        )
         
         await self.data_service.save_servers()
 
         # Send success message
         from src.components.subscription import SubscriptionSuccessView
         
-        view = SubscriptionSuccessView(channel, timer, next_run_time, message_id)
+        view = SubscriptionSuccessView(channel, timer, next_run_time, ignored_entity_id, ignored_entity_type)
         await interaction.response.send_message(view=view)
 
     @sub_group.command(
@@ -184,16 +183,16 @@ class SubscriptionCommands(commands.Cog):
 
     @sub_group.command(
         name="ignore",
-        description="Toggle a message to be ignored during channel clearing"
+        description="Toggle a message or user to be ignored during channel clearing"
     )
     @app_commands.describe(
-        message="Message ID or link to toggle ignore status",
+        target="Message ID/link or user mention/ID to toggle ignore status",
         target_channel="Channel with the subscription (defaults to current channel)"
     )
     async def sub_ignore(
         self,
         interaction: discord.Interaction,
-        message: str,
+        target: str,
         target_channel: Optional[discord.TextChannel] = None,
     ):
         # Check permissions
@@ -216,11 +215,12 @@ class SubscriptionCommands(commands.Cog):
             )
             return
 
-        # Extract message ID
-        message_id = self._extract_message_id(message)
-        if not message_id:
+        # Parse and validate the target
+        entity_id, entity_type = await parse_and_validate_target(target, channel, interaction.guild)
+        
+        if not entity_id:
             await interaction.response.send_message(
-                "❌ Invalid message ID or link format. Please provide a valid message ID or Discord message link.",
+                "❌ Invalid target format. Please provide a valid message ID, message link, user mention, or user ID.",
                 ephemeral=True,
             )
             return
@@ -236,23 +236,74 @@ class SubscriptionCommands(commands.Cog):
 
         channel_timer = server.channels[channel_id]
         
-        # Toggle logic - remove if exists, add if doesn't exist
-        if message_id in channel_timer.ignored_messages:
-            # Remove the message
-            channel_timer.remove_ignored_message(message_id)
-            await self.data_service.save_servers()
-            
-            from src.components.subscription import IgnoreMessageView
-            view = IgnoreMessageView("Message Removed from Ignore List", message_id, channel, added=False)
-            await interaction.response.send_message(view=view)
-        else:
-            # Add the message
-            channel_timer.add_ignored_message(message_id)
-            await self.data_service.save_servers()
-            
-            from src.components.subscription import IgnoreMessageView
-            view = IgnoreMessageView("Message Added to Ignore List", message_id, channel, added=True)
-            await interaction.response.send_message(view=view)
+        if entity_type == "user":
+            # Handle user toggle
+            if entity_id in channel_timer.ignored.users:
+                # Remove the user
+                channel_timer.remove_ignored_user(entity_id)
+                await self.data_service.save_servers()
+                
+                from src.components.subscription import IgnoreEntityView
+                view = IgnoreEntityView("User", entity_id, channel, added=False)
+                await interaction.response.send_message(view=view)
+            else:
+                # Verify user exists in the guild (double-check)
+                try:
+                    member = await interaction.guild.fetch_member(int(entity_id))
+                    if not member:
+                        await interaction.response.send_message(
+                            f"❌ User with ID `{entity_id}` not found in this server.",
+                            ephemeral=True,
+                        )
+                        return
+                except (discord.NotFound, discord.HTTPException, ValueError):
+                    await interaction.response.send_message(
+                        f"❌ User with ID `{entity_id}` not found in this server.",
+                        ephemeral=True,
+                    )
+                    return
+                
+                # Add the user
+                channel_timer.add_ignored_user(entity_id)
+                await self.data_service.save_servers()
+                
+                from src.components.subscription import IgnoreEntityView
+                view = IgnoreEntityView("User", entity_id, channel, added=True)
+                await interaction.response.send_message(view=view)
+        else:  # message
+            # Handle message toggle
+            if entity_id in channel_timer.ignored_messages:
+                # Remove the message
+                channel_timer.remove_ignored_message(entity_id)
+                await self.data_service.save_servers()
+                
+                from src.components.subscription import IgnoreEntityView
+                view = IgnoreEntityView("Message", entity_id, channel, added=False)
+                await interaction.response.send_message(view=view)
+            else:
+                # Check if message exists in the channel before adding
+                try:
+                    message = await channel.fetch_message(int(entity_id))
+                    if not message:
+                        await interaction.response.send_message(
+                            f"❌ Message with ID `{entity_id}` not found in {channel.mention}.",
+                            ephemeral=True,
+                        )
+                        return
+                except (discord.NotFound, discord.HTTPException, ValueError):
+                    await interaction.response.send_message(
+                        f"❌ Message with ID `{entity_id}` not found in {channel.mention}.",
+                        ephemeral=True,
+                    )
+                    return
+                
+                # Add the message
+                channel_timer.add_ignored_message(entity_id)
+                await self.data_service.save_servers()
+                
+                from src.components.subscription import IgnoreEntityView
+                view = IgnoreEntityView("Message", entity_id, channel, added=True)
+                await interaction.response.send_message(view=view)
 
     @sub_group.command(
         name="list",
@@ -319,16 +370,19 @@ class SubscriptionCommands(commands.Cog):
         # Defer the response as clearing might take time
         await interaction.response.defer(ephemeral=True)
 
-        # Get ignored messages
+        # Get ignored messages and users
         server = await self.data_service.get_server(server_id)
         ignored_messages = []
+        ignored_users = []
         if server and channel_id in server.channels:
-            ignored_messages = list(server.channels[channel_id].ignored_messages)
+            channel_timer = server.channels[channel_id]
+            ignored_messages = list(channel_timer.ignored.messages)
+            ignored_users = list(channel_timer.ignored.users)
 
-        # Trigger the clear
-        from src.services.clear_service import ClearService
-        clear_service = ClearService(self.bot)
-        deleted_count = await clear_service.clear_channel(channel, ignored_messages)
+        # Trigger the clear using MessageService directly
+        from src.services.message_service import MessageService
+        message_service = MessageService(self.bot.data_service, self.bot.scheduler_service)
+        deleted_count = await message_service._delete_messages(channel, set(ignored_messages), set(ignored_users))
 
         # Send result
         await interaction.followup.send(
@@ -407,14 +461,14 @@ class SubscriptionCommands(commands.Cog):
     @app_commands.describe(
         timer="New timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to update (defaults to current channel)",
-        ignored_message="Message ID or link to add to ignore list (optional)",
+        ignored_target="Message ID/link or user mention/ID to add to ignore list (optional)",
     )
     async def sub_update(
         self,
         interaction: discord.Interaction,
         timer: str,
         target_channel: Optional[discord.TextChannel] = None,
-        ignored_message: Optional[str] = None,
+        ignored_target: Optional[str] = None,
     ):
         # Check permissions
         if not await self._check_permissions(interaction, target_channel):
@@ -473,18 +527,16 @@ class SubscriptionCommands(commands.Cog):
             for msg_id in current_ignored_messages:
                 server.channels[channel_id].add_ignored_message(msg_id)
             
-            # Add new ignored message if provided
-            message_id = None
-            if ignored_message:
-                message_id = self._extract_message_id(ignored_message)
-                if message_id and message_id not in current_ignored_messages:
-                    server.channels[channel_id].add_ignored_message(message_id)
+            # Add new ignored target if provided (message or user)
+            ignored_entity_id, ignored_entity_type = await validate_and_add_target(
+                ignored_target, channel, interaction.guild, server.channels[channel_id]
+            )
             
             await self.data_service.save_servers()
 
         # Send success message
         from src.components.subscription import UpdateSuccessView
-        view = UpdateSuccessView(channel, timer, next_run_time, message_id)
+        view = UpdateSuccessView(channel, timer, next_run_time, ignored_entity_id, ignored_entity_type)
         await interaction.response.send_message(view=view)
 
     async def _check_permissions(self, interaction: discord.Interaction, target_channel: discord.TextChannel = None) -> bool:
@@ -537,21 +589,17 @@ class SubscriptionCommands(commands.Cog):
 
         return False
     
+    # These methods are now handled by target_parser utility
+    # Keeping for backward compatibility if needed elsewhere
     def _extract_message_id(self, message_input: str) -> Optional[str]:
         """Extract message ID from either a message link or direct ID"""
-        import re
-        
-        # Check if it's a message link
-        link_pattern = r"https://discord(?:app)?\.com/channels/\d+/\d+/(\d+)"
-        match = re.match(link_pattern, message_input)
-        if match:
-            return match.group(1)
-        
-        # Check if it's a direct message ID (digits only)
-        if message_input.isdigit():
-            return message_input
-        
-        return None
+        from src.utils.target_parser import extract_message_id
+        return extract_message_id(message_input)
+    
+    def _extract_user_id(self, user_input: str) -> Optional[str]:
+        """Extract user ID from mention or direct ID"""
+        from src.utils.target_parser import extract_user_id
+        return extract_user_id(user_input)
 
 
 async def setup(bot):

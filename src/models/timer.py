@@ -4,37 +4,85 @@ from typing import Dict, Optional, List
 
 
 @dataclass
+class IgnoredEntities:
+    """Container for ignored messages and users"""
+    messages: List[str] = field(default_factory=list)
+    users: List[str] = field(default_factory=list)
+    
+    def to_dict(self) -> Dict:
+        return {
+            "messages": self.messages,
+            "users": self.users
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict) -> "IgnoredEntities":
+        return cls(
+            messages=data.get("messages", []),
+            users=data.get("users", [])
+        )
+
+
+@dataclass
 class ChannelTimer:
     channel_id: str
     timer: str
     next_run_time: datetime
-    ignored_messages: List[str] = field(default_factory=list)
+    ignored: IgnoredEntities = field(default_factory=IgnoredEntities)
+    # Keep backward compatibility
+    _legacy_ignored_messages: Optional[List[str]] = field(default=None, init=False)
 
     def to_dict(self) -> Dict:
         return {
             "timer": self.timer, 
             "next_run_time": self.next_run_time.isoformat(),
-            "ignored_messages": self.ignored_messages
+            "ignored": self.ignored.to_dict()
         }
 
     @classmethod
     def from_dict(cls, channel_id: str, data: Dict) -> "ChannelTimer":
+        # Handle backward compatibility
+        if "ignored" in data:
+            ignored = IgnoredEntities.from_dict(data["ignored"])
+        elif "ignored_messages" in data:
+            # Migrate old format
+            ignored = IgnoredEntities(messages=data.get("ignored_messages", []))
+        else:
+            ignored = IgnoredEntities()
+        
         return cls(
             channel_id=channel_id,
             timer=data["timer"],
             next_run_time=datetime.fromisoformat(data["next_run_time"]),
-            ignored_messages=data.get("ignored_messages", [])
+            ignored=ignored
         )
     
+    # Backward compatibility properties
+    @property
+    def ignored_messages(self) -> List[str]:
+        return self.ignored.messages
+    
     def add_ignored_message(self, message_id: str) -> bool:
-        if message_id not in self.ignored_messages:
-            self.ignored_messages.append(message_id)
+        if message_id not in self.ignored.messages:
+            self.ignored.messages.append(message_id)
             return True
         return False
     
     def remove_ignored_message(self, message_id: str) -> bool:
-        if message_id in self.ignored_messages:
-            self.ignored_messages.remove(message_id)
+        if message_id in self.ignored.messages:
+            self.ignored.messages.remove(message_id)
+            return True
+        return False
+    
+    def add_ignored_user(self, user_id: str) -> bool:
+        if user_id not in self.ignored.users:
+            self.ignored.users.append(user_id)
+            return True
+        return False
+    
+    def remove_ignored_user(self, user_id: str) -> bool:
+        if user_id in self.ignored.users:
+            self.ignored.users.remove(user_id)
             return True
         return False
 

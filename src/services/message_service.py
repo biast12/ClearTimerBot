@@ -19,23 +19,27 @@ class MessageService:
         if not await self._check_permissions(channel):
             return
 
-        # Get ignored messages for this channel
-        ignored_messages = await self._get_ignored_messages(channel)
+        # Get ignored messages and users for this channel
+        ignored_messages, ignored_users = await self._get_ignored_entities(channel)
 
         # Perform the clear
-        deleted_count = await self._delete_messages(channel, ignored_messages)
+        deleted_count = await self._delete_messages(channel, ignored_messages, ignored_users)
 
         # Update next run time
         await self._update_next_run_time(channel)
     
-    async def _get_ignored_messages(self, channel: discord.TextChannel) -> set:
+    async def _get_ignored_entities(self, channel: discord.TextChannel) -> tuple[set, set]:
+        """Get both ignored messages and ignored users for a channel"""
         server_id = str(channel.guild.id)
         channel_id = str(channel.id)
         
         server = await self.data_service.get_server(server_id)
         if server and channel_id in server.channels:
-            return set(server.channels[channel_id].ignored_messages)
-        return set()
+            channel_timer = server.channels[channel_id]
+            ignored_messages = set(channel_timer.ignored.messages)
+            ignored_users = set(channel_timer.ignored.users)
+            return ignored_messages, ignored_users
+        return set(), set()
 
     async def _check_permissions(self, channel: discord.TextChannel) -> bool:
         permissions = channel.permissions_for(channel.guild.me)
@@ -59,9 +63,10 @@ class MessageService:
 
         return True
 
-    async def _delete_messages(self, channel: discord.TextChannel, ignored_messages: set = None) -> int:
+    async def _delete_messages(self, channel: discord.TextChannel, ignored_messages: set = None, ignored_users: set = None) -> int:
         deleted_count = 0
         ignored_messages = ignored_messages or set()
+        ignored_users = ignored_users or set()
 
         try:
             # Try bulk delete first (for messages < 14 days old)
@@ -75,6 +80,10 @@ class MessageService:
                 async for message in channel.history(limit=None):
                     # Skip ignored messages
                     if str(message.id) in ignored_messages:
+                        continue
+                    
+                    # Skip messages from ignored users
+                    if str(message.author.id) in ignored_users:
                         continue
                     
                     if message.created_at > two_weeks_ago:

@@ -10,7 +10,8 @@ from datetime import datetime
 class SubscriptionSuccessView(discord.ui.LayoutView):
     """View for subscription success message using Components v2"""
     
-    def __init__(self, channel: discord.TextChannel, timer: str, next_run_time: datetime, message_id: Optional[str] = None):
+    def __init__(self, channel: discord.TextChannel, timer: str, next_run_time: datetime, 
+                 ignored_entity_id: Optional[str] = None, ignored_entity_type: Optional[str] = None):
         super().__init__()
         
         timestamp = int(next_run_time.timestamp())
@@ -23,8 +24,11 @@ class SubscriptionSuccessView(discord.ui.LayoutView):
             f"**Time Until:** <t:{timestamp}:R>"
         )
         
-        if message_id:
-            content += f"\n\n**Ignored Message:** Message ID: {message_id}"
+        if ignored_entity_id and ignored_entity_type:
+            if ignored_entity_type == "user":
+                content += f"\n\n**Ignored User:** <@{ignored_entity_id}>"
+            else:
+                content += f"\n\n**Ignored Message:** Message ID: {ignored_entity_id}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -33,21 +37,23 @@ class SubscriptionSuccessView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class IgnoreMessageView(discord.ui.LayoutView):
-    """View for ignore message add/remove using Components v2"""
+class IgnoreEntityView(discord.ui.LayoutView):
+    """View for ignore entity (message or user) add/remove using Components v2"""
     
-    def __init__(self, title: str, message_id: str, channel: discord.TextChannel, added: bool):
+    def __init__(self, entity_type: str, entity_id: str, channel: discord.TextChannel, added: bool):
         super().__init__()
+        
+        entity_name = entity_type.lower()
         
         if added:
             content = (
-                f"✅ **Message Added to Ignore List**\n\n"
-                f"Message `{message_id}` will be ignored during clearing in {channel.mention}."
+                f"✅ **{entity_type} Added to Ignore List**\n\n"
+                f"{entity_type} `{entity_id}` will be ignored during clearing in {channel.mention}."
             )
         else:
             content = (
-                f"✅ **Message Removed from Ignore List**\n\n"
-                f"Message `{message_id}` will no longer be ignored in {channel.mention}."
+                f"✅ **{entity_type} Removed from Ignore List**\n\n"
+                f"{entity_type} `{entity_id}` will no longer be ignored in {channel.mention}."
             )
         
         container = discord.ui.Container(
@@ -55,6 +61,14 @@ class IgnoreMessageView(discord.ui.LayoutView):
             accent_color=discord.Color.green().value
         )
         self.add_item(container)
+
+
+# Keep backward compatibility
+class IgnoreMessageView(IgnoreEntityView):
+    """Backward compatibility for ignore message view"""
+    
+    def __init__(self, title: str, message_id: str, channel: discord.TextChannel, added: bool):
+        super().__init__("Message", message_id, channel, added)
 
 
 class SubscriptionInfoView(discord.ui.LayoutView):
@@ -75,15 +89,26 @@ class SubscriptionInfoView(discord.ui.LayoutView):
             content += f"**Timer Configuration:** {timer_info.timer}\n"
             
             # Show ignored messages if any
-            if hasattr(timer_info, 'ignored_messages') and timer_info.ignored_messages:
-                content += f"**Ignored Messages:** {len(timer_info.ignored_messages)} message(s)\n"
+            if hasattr(timer_info, 'ignored') and timer_info.ignored.messages:
+                content += f"**Ignored Messages:** {len(timer_info.ignored.messages)} message(s)\n"
                 # List first 5 message IDs
-                for i, msg_id in enumerate(list(timer_info.ignored_messages)[:5]):
+                for i, msg_id in enumerate(list(timer_info.ignored.messages)[:5]):
                     content += f"  • `{msg_id}`\n"
-                if len(timer_info.ignored_messages) > 5:
-                    content += f"  • ... and {len(timer_info.ignored_messages) - 5} more\n"
+                if len(timer_info.ignored.messages) > 5:
+                    content += f"  • ... and {len(timer_info.ignored.messages) - 5} more\n"
             else:
                 content += "**Ignored Messages:** None\n"
+            
+            # Show ignored users if any
+            if hasattr(timer_info, 'ignored') and timer_info.ignored.users:
+                content += f"**Ignored Users:** {len(timer_info.ignored.users)} user(s)\n"
+                # List first 5 user IDs
+                for i, user_id in enumerate(list(timer_info.ignored.users)[:5]):
+                    content += f"  • <@{user_id}>\n"
+                if len(timer_info.ignored.users) > 5:
+                    content += f"  • ... and {len(timer_info.ignored.users) - 5} more\n"
+            else:
+                content += "**Ignored Users:** None\n"
         
         content += (
             f"\n**Schedule Details**\n"
@@ -91,7 +116,7 @@ class SubscriptionInfoView(discord.ui.LayoutView):
             f"**Time Until:** <t:{timestamp}:R>\n\n"
             f"💡 **Available Commands**\n"
             f"• `/sub update` - Change the timer schedule\n"
-            f"• `/sub ignore` - Toggle messages to exclude from clearing\n"
+            f"• `/sub ignore` - Toggle messages or users to exclude from clearing\n"
             f"• `/sub skip` - Skip the next scheduled clear\n"
             f"• `/sub clear` - Manually trigger a clear now\n"
             f"• `/sub remove` - Stop automatic clearing"
@@ -128,8 +153,14 @@ class SubscriptionListView(discord.ui.LayoutView):
                         timestamp = int(next_run_time.timestamp())
                         content += f"  • Next clear: <t:{timestamp}:R>\n"
                     
-                    if hasattr(timer_info, 'ignored_messages') and timer_info.ignored_messages:
-                        content += f"  • Ignored messages: {len(timer_info.ignored_messages)}\n"
+                    ignored_count = 0
+                    if hasattr(timer_info, 'ignored'):
+                        if timer_info.ignored.messages:
+                            ignored_count += len(timer_info.ignored.messages)
+                        if timer_info.ignored.users:
+                            ignored_count += len(timer_info.ignored.users)
+                    if ignored_count > 0:
+                        content += f"  • Ignored entities: {ignored_count}\n"
                     
                     content += "\n"
         
@@ -167,7 +198,8 @@ class SkipSuccessView(discord.ui.LayoutView):
 class UpdateSuccessView(discord.ui.LayoutView):
     """View for update success using Components v2"""
     
-    def __init__(self, channel: discord.TextChannel, timer: str, next_run_time: datetime, message_id: Optional[str] = None):
+    def __init__(self, channel: discord.TextChannel, timer: str, next_run_time: datetime, 
+                 ignored_entity_id: Optional[str] = None, ignored_entity_type: Optional[str] = None):
         super().__init__()
         
         timestamp = int(next_run_time.timestamp())
@@ -180,8 +212,11 @@ class UpdateSuccessView(discord.ui.LayoutView):
             f"**Time Until:** <t:{timestamp}:R>"
         )
         
-        if message_id:
-            content += f"\n\n**Added Ignored Message:** Message ID: {message_id}"
+        if ignored_entity_id and ignored_entity_type:
+            if ignored_entity_type == "user":
+                content += f"\n\n**Added Ignored User:** <@{ignored_entity_id}>"
+            else:
+                content += f"\n\n**Added Ignored Message:** Message ID: {ignored_entity_id}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
