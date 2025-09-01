@@ -143,6 +143,43 @@ class SubscriptionCommands(commands.Cog):
         await interaction.response.send_message(view=view)
 
     @subscription_group.command(
+        name="list",
+        description="List all active subscriptions in this server"
+    )
+    @app_commands.default_permissions(manage_messages=True)
+    async def subscription_list(
+        self,
+        interaction: discord.Interaction,
+    ):
+        # Validate command - only blacklist check for list
+        checks = {
+            ValidationCheck.BLACKLIST: True,
+        }
+        
+        is_valid, error_msg, _ = await self.validator.validate_command(
+            interaction, None, checks
+        )
+        
+        if not is_valid:
+            await self.validator.send_validation_error(interaction, error_msg)
+            return
+
+        server_id = str(interaction.guild.id)
+        server = await self.data_service.get_server(server_id)
+        
+        if not server or not server.channels:
+            from src.components.subscription import NoActiveSubscriptionsView
+            view = NoActiveSubscriptionsView()
+            await interaction.response.send_message(view=view, ephemeral=True)
+            return
+
+        # Build list of subscriptions
+        from src.components.subscription import SubscriptionListView
+        
+        view = SubscriptionListView(interaction.guild, server.channels, self.scheduler_service)
+        await interaction.response.send_message(view=view)
+
+    @subscription_group.command(
         name="info",
         description="View detailed subscription information for a channel"
     )
@@ -188,6 +225,90 @@ class SubscriptionCommands(commands.Cog):
         from src.components.subscription import SubscriptionInfoView
         
         view = SubscriptionInfoView(channel, next_run_time, timer_info)
+        await interaction.response.send_message(view=view)
+
+    @subscription_group.command(
+        name="update",
+        description="Update the timer for an existing subscription"
+    )
+    @app_commands.default_permissions(manage_messages=True)
+    @app_commands.describe(
+        timer="New timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
+        target_channel="Channel to update (defaults to current channel)",
+        ignored_target="Message ID/link or user mention/ID to add to ignore list (optional)",
+    )
+    async def subscription_update(
+        self,
+        interaction: discord.Interaction,
+        timer: str,
+        target_channel: Optional[discord.TextChannel] = None,
+        ignored_target: Optional[str] = None,
+    ):
+        # Validate command with required checks
+        checks = {
+            ValidationCheck.BLACKLIST: True,
+            ValidationCheck.USER_PERMISSIONS: True,
+            ValidationCheck.BOT_PERMISSIONS: True,
+            ValidationCheck.CHANNEL_SUBSCRIBED: True,
+        }
+        
+        is_valid, error_msg, channel = await self.validator.validate_command(
+            interaction, target_channel, checks
+        )
+        
+        if not is_valid:
+            await self.validator.send_validation_error(interaction, error_msg)
+            return
+        
+        server_id = str(interaction.guild.id)
+        channel_id = str(channel.id)
+
+        # Parse new timer
+        try:
+            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer)
+        except ScheduleParseError as e:
+            from src.components.subscription import InvalidTimerView
+            view = InvalidTimerView(str(e))
+            await interaction.response.send_message(view=view, ephemeral=True)
+            return
+
+        # Get current ignored messages
+        server = await self.data_service.get_server(server_id)
+        current_ignored_messages = []
+        if server and channel_id in server.channels:
+            current_ignored_messages = list(server.channels[channel_id].ignored_messages)
+
+        # Remove old job
+        self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
+
+        # Add new job with updated timer
+        self.scheduler_service.create_channel_clear_job(
+            channel_id=channel_id,
+            server_id=server_id,
+            trigger=trigger,
+            channel=channel,
+            next_run_time=next_run_time,
+        )
+
+        # Update in data service
+        if server:
+            server.channels[channel_id].timer = timer
+            server.channels[channel_id].next_run_time = next_run_time
+            
+            # Restore ignored messages
+            for msg_id in current_ignored_messages:
+                server.channels[channel_id].add_ignored_message(msg_id)
+            
+            # Add new ignored target if provided (message or user)
+            ignored_entity_id, ignored_entity_type = await validate_and_add_ignore_target(
+                ignored_target, channel, interaction.guild, server.channels[channel_id]
+            )
+            
+            await self.data_service.save_servers()
+
+        # Send success message
+        from src.components.subscription import UpdateSuccessView
+        view = UpdateSuccessView(channel, timer, next_run_time, ignored_entity_id, ignored_entity_type)
         await interaction.response.send_message(view=view)
 
     @subscription_group.command(
@@ -309,43 +430,6 @@ class SubscriptionCommands(commands.Cog):
                 await interaction.response.send_message(view=view)
 
     @subscription_group.command(
-        name="list",
-        description="List all active subscriptions in this server"
-    )
-    @app_commands.default_permissions(manage_messages=True)
-    async def subscription_list(
-        self,
-        interaction: discord.Interaction,
-    ):
-        # Validate command - only blacklist check for list
-        checks = {
-            ValidationCheck.BLACKLIST: True,
-        }
-        
-        is_valid, error_msg, _ = await self.validator.validate_command(
-            interaction, None, checks
-        )
-        
-        if not is_valid:
-            await self.validator.send_validation_error(interaction, error_msg)
-            return
-
-        server_id = str(interaction.guild.id)
-        server = await self.data_service.get_server(server_id)
-        
-        if not server or not server.channels:
-            from src.components.subscription import NoActiveSubscriptionsView
-            view = NoActiveSubscriptionsView()
-            await interaction.response.send_message(view=view, ephemeral=True)
-            return
-
-        # Build list of subscriptions
-        from src.components.subscription import SubscriptionListView
-        
-        view = SubscriptionListView(interaction.guild, server.channels, self.scheduler_service)
-        await interaction.response.send_message(view=view)
-
-    @subscription_group.command(
         name="clear",
         description="Manually trigger a message clear for a subscribed channel"
     )
@@ -459,90 +543,6 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import NextTimeNotFoundView
             view = NextTimeNotFoundView(channel)
             await interaction.response.send_message(view=view, ephemeral=True)
-
-    @subscription_group.command(
-        name="update",
-        description="Update the timer for an existing subscription"
-    )
-    @app_commands.default_permissions(manage_messages=True)
-    @app_commands.describe(
-        timer="New timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
-        target_channel="Channel to update (defaults to current channel)",
-        ignored_target="Message ID/link or user mention/ID to add to ignore list (optional)",
-    )
-    async def subscription_update(
-        self,
-        interaction: discord.Interaction,
-        timer: str,
-        target_channel: Optional[discord.TextChannel] = None,
-        ignored_target: Optional[str] = None,
-    ):
-        # Validate command with required checks
-        checks = {
-            ValidationCheck.BLACKLIST: True,
-            ValidationCheck.USER_PERMISSIONS: True,
-            ValidationCheck.BOT_PERMISSIONS: True,
-            ValidationCheck.CHANNEL_SUBSCRIBED: True,
-        }
-        
-        is_valid, error_msg, channel = await self.validator.validate_command(
-            interaction, target_channel, checks
-        )
-        
-        if not is_valid:
-            await self.validator.send_validation_error(interaction, error_msg)
-            return
-        
-        server_id = str(interaction.guild.id)
-        channel_id = str(channel.id)
-
-        # Parse new timer
-        try:
-            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer)
-        except ScheduleParseError as e:
-            from src.components.subscription import InvalidTimerView
-            view = InvalidTimerView(str(e))
-            await interaction.response.send_message(view=view, ephemeral=True)
-            return
-
-        # Get current ignored messages
-        server = await self.data_service.get_server(server_id)
-        current_ignored_messages = []
-        if server and channel_id in server.channels:
-            current_ignored_messages = list(server.channels[channel_id].ignored_messages)
-
-        # Remove old job
-        self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
-
-        # Add new job with updated timer
-        self.scheduler_service.create_channel_clear_job(
-            channel_id=channel_id,
-            server_id=server_id,
-            trigger=trigger,
-            channel=channel,
-            next_run_time=next_run_time,
-        )
-
-        # Update in data service
-        if server:
-            server.channels[channel_id].timer = timer
-            server.channels[channel_id].next_run_time = next_run_time
-            
-            # Restore ignored messages
-            for msg_id in current_ignored_messages:
-                server.channels[channel_id].add_ignored_message(msg_id)
-            
-            # Add new ignored target if provided (message or user)
-            ignored_entity_id, ignored_entity_type = await validate_and_add_ignore_target(
-                ignored_target, channel, interaction.guild, server.channels[channel_id]
-            )
-            
-            await self.data_service.save_servers()
-
-        # Send success message
-        from src.components.subscription import UpdateSuccessView
-        view = UpdateSuccessView(channel, timer, next_run_time, ignored_entity_id, ignored_entity_type)
-        await interaction.response.send_message(view=view)
 
     # Legacy methods moved to command_validation.py and target_parser utility
     def _parse_message_id_from_input(self, message_input: str) -> Optional[str]:

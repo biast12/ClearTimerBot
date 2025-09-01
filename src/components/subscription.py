@@ -37,24 +37,38 @@ class SubscriptionSuccessView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class IgnoreEntityView(discord.ui.LayoutView):
-    """View for ignore entity (message or user) add/remove"""
+class InvalidTimerView(discord.ui.LayoutView):
+    """View for invalid timer error"""
     
-    def __init__(self, entity_type: str, entity_id: str, channel: discord.TextChannel, added: bool):
+    def __init__(self, error_message: str):
         super().__init__()
         
-        entity_name = entity_type.lower()
+        content = (
+            f"❌ **Invalid Timer**\n\n"
+            f"{error_message}\n\n"
+            f"**Valid Formats:**\n"
+            f"• Intervals: `24h`, `1d12h`, `30m`\n"
+            f"• Daily Schedule: `15:30 EST`, `09:00 PST`\n\n"
+            f"_Use `/help` for more timer format examples_"
+        )
         
-        if added:
-            content = (
-                f"✅ **{entity_type} Added to Ignore List**\n\n"
-                f"{entity_type} `{entity_id}` will be ignored during clearing in {channel.mention}."
-            )
-        else:
-            content = (
-                f"✅ **{entity_type} Removed from Ignore List**\n\n"
-                f"{entity_type} `{entity_id}` will no longer be ignored in {channel.mention}."
-            )
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class UnsubscribeSuccessView(discord.ui.LayoutView):
+    """View for unsubscribe success"""
+    
+    def __init__(self, channel: discord.TextChannel):
+        super().__init__()
+        
+        content = (
+            f"✅ **Channel Unsubscribed**\n\n"
+            f"{channel.mention} has been unsubscribed from automatic message deletion."
+        )
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -63,64 +77,21 @@ class IgnoreEntityView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-# Keep backward compatibility
-class IgnoreMessageView(IgnoreEntityView):
-    """Backward compatibility for ignore message view"""
+class NoActiveSubscriptionsView(discord.ui.LayoutView):
+    """View for no active subscriptions error"""
     
-    def __init__(self, title: str, message_id: str, channel: discord.TextChannel, added: bool):
-        super().__init__("Message", message_id, channel, added)
-
-
-class SubscriptionInfoView(discord.ui.LayoutView):
-    """View for comprehensive subscription information"""
-    
-    def __init__(self, channel: discord.TextChannel, next_run_time: datetime, timer_info=None):
+    def __init__(self):
         super().__init__()
         
-        timestamp = int(next_run_time.timestamp())
-        
         content = (
-            f"📊 **Subscription Information**\n\n"
-            f"**Channel:** {channel.mention}\n"
-            f"**Status:** ✅ Active\n\n"
-        )
-        
-        if timer_info:
-            content += f"**Timer Configuration:** {timer_info.timer}\n"
-            
-            # Show ignored messages if any
-            if hasattr(timer_info, 'ignored') and timer_info.ignored.messages:
-                content += f"**Ignored Messages:** {len(timer_info.ignored.messages)} message(s)\n"
-                # List first 5 message IDs with clickable links
-                for i, msg_id in enumerate(list(timer_info.ignored.messages)[:5]):
-                    # Create message link - need to get guild_id from channel
-                    msg_link = f"https://discord.com/channels/{channel.guild.id}/{channel.id}/{msg_id}"
-                    content += f"  • [`{msg_id}`]({msg_link})\n"
-                if len(timer_info.ignored.messages) > 5:
-                    content += f"  • ... and {len(timer_info.ignored.messages) - 5} more\n"
-            else:
-                content += "**Ignored Messages:** None\n"
-            
-            # Show ignored users if any
-            if hasattr(timer_info, 'ignored') and timer_info.ignored.users:
-                content += f"**Ignored Users:** {len(timer_info.ignored.users)} user(s)\n"
-                # List first 5 user mentions
-                for i, user_id in enumerate(list(timer_info.ignored.users)[:5]):
-                    content += f"  • <@{user_id}> (ID: `{user_id}`)\n"
-                if len(timer_info.ignored.users) > 5:
-                    content += f"  • ... and {len(timer_info.ignored.users) - 5} more\n"
-            else:
-                content += "**Ignored Users:** None\n"
-        
-        content += (
-            f"\n**Schedule Details**\n"
-            f"**Next Clear:** <t:{timestamp}:f>\n"
-            f"**Time Until:** <t:{timestamp}:R>"
+            f"❌ **No Active Subscriptions**\n\n"
+            f"No active subscriptions found in this server.\n\n"
+            f"Use `/subscription add` to set up automatic clearing."
         )
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.blue().value
+            accent_color=discord.Color.red().value
         )
         self.add_item(container)
 
@@ -186,24 +157,75 @@ class SubscriptionListView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class SkipSuccessView(discord.ui.LayoutView):
-    """View for skip success"""
+class ChannelNotSubscribedView(discord.ui.LayoutView):
+    """View for channel not subscribed error"""
     
-    def __init__(self, channel: discord.TextChannel, next_run_time: datetime):
+    def __init__(self, channel: discord.TextChannel):
+        super().__init__()
+        
+        content = (
+            f"❌ **Channel Not Subscribed**\n\n"
+            f"{channel.mention} is not subscribed to message deletion.\n\n"
+            f"Use `/subscription add` to set up automatic clearing first."
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class SubscriptionInfoView(discord.ui.LayoutView):
+    """View for comprehensive subscription information"""
+    
+    def __init__(self, channel: discord.TextChannel, next_run_time: datetime, timer_info=None):
         super().__init__()
         
         timestamp = int(next_run_time.timestamp())
         
         content = (
-            f"⏭️ **Next Clear Skipped**\n\n"
-            f"Skipped the next scheduled clear for {channel.mention}.\n\n"
-            f"**New Next Clear:** <t:{timestamp}:f>\n"
+            f"📊 **Subscription Information**\n\n"
+            f"**Channel:** {channel.mention}\n"
+            f"**Status:** ✅ Active\n\n"
+        )
+        
+        if timer_info:
+            content += f"**Timer Configuration:** {timer_info.timer}\n"
+            
+            # Show ignored messages if any
+            if hasattr(timer_info, 'ignored') and timer_info.ignored.messages:
+                content += f"**Ignored Messages:** {len(timer_info.ignored.messages)} message(s)\n"
+                # List first 5 message IDs with clickable links
+                for i, msg_id in enumerate(list(timer_info.ignored.messages)[:5]):
+                    # Create message link - need to get guild_id from channel
+                    msg_link = f"https://discord.com/channels/{channel.guild.id}/{channel.id}/{msg_id}"
+                    content += f"  • [`{msg_id}`]({msg_link})\n"
+                if len(timer_info.ignored.messages) > 5:
+                    content += f"  • ... and {len(timer_info.ignored.messages) - 5} more\n"
+            else:
+                content += "**Ignored Messages:** None\n"
+            
+            # Show ignored users if any
+            if hasattr(timer_info, 'ignored') and timer_info.ignored.users:
+                content += f"**Ignored Users:** {len(timer_info.ignored.users)} user(s)\n"
+                # List first 5 user mentions
+                for i, user_id in enumerate(list(timer_info.ignored.users)[:5]):
+                    content += f"  • <@{user_id}> (ID: `{user_id}`)\n"
+                if len(timer_info.ignored.users) > 5:
+                    content += f"  • ... and {len(timer_info.ignored.users) - 5} more\n"
+            else:
+                content += "**Ignored Users:** None\n"
+        
+        content += (
+            f"\n**Schedule Details**\n"
+            f"**Next Clear:** <t:{timestamp}:f>\n"
             f"**Time Until:** <t:{timestamp}:R>"
         )
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.orange().value
+            accent_color=discord.Color.blue().value
         )
         self.add_item(container)
 
@@ -234,65 +256,6 @@ class UpdateSuccessView(discord.ui.LayoutView):
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.blue().value
-        )
-        self.add_item(container)
-
-
-class UnsubscribeSuccessView(discord.ui.LayoutView):
-    """View for unsubscribe success"""
-    
-    def __init__(self, channel: discord.TextChannel):
-        super().__init__()
-        
-        content = (
-            f"✅ **Channel Unsubscribed**\n\n"
-            f"{channel.mention} has been unsubscribed from automatic message deletion."
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
-class InvalidTimerView(discord.ui.LayoutView):
-    """View for invalid timer error"""
-    
-    def __init__(self, error_message: str):
-        super().__init__()
-        
-        content = (
-            f"❌ **Invalid Timer**\n\n"
-            f"{error_message}\n\n"
-            f"**Valid Formats:**\n"
-            f"• Intervals: `24h`, `1d12h`, `30m`\n"
-            f"• Daily Schedule: `15:30 EST`, `09:00 PST`\n\n"
-            f"_Use `/help` for more timer format examples_"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
-
-class ChannelNotSubscribedView(discord.ui.LayoutView):
-    """View for channel not subscribed error"""
-    
-    def __init__(self, channel: discord.TextChannel):
-        super().__init__()
-        
-        content = (
-            f"❌ **Channel Not Subscribed**\n\n"
-            f"{channel.mention} is not subscribed to message deletion.\n\n"
-            f"Use `/subscription add` to set up automatic clearing first."
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
         )
         self.add_item(container)
 
@@ -379,23 +342,38 @@ class MessageNotFoundView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class NoActiveSubscriptionsView(discord.ui.LayoutView):
-    """View for no active subscriptions error"""
+class IgnoreEntityView(discord.ui.LayoutView):
+    """View for ignore entity (message or user) add/remove"""
     
-    def __init__(self):
+    def __init__(self, entity_type: str, entity_id: str, channel: discord.TextChannel, added: bool):
         super().__init__()
         
-        content = (
-            f"❌ **No Active Subscriptions**\n\n"
-            f"No active subscriptions found in this server.\n\n"
-            f"Use `/subscription add` to set up automatic clearing."
-        )
+        entity_name = entity_type.lower()
+        
+        if added:
+            content = (
+                f"✅ **{entity_type} Added to Ignore List**\n\n"
+                f"{entity_type} `{entity_id}` will be ignored during clearing in {channel.mention}."
+            )
+        else:
+            content = (
+                f"✅ **{entity_type} Removed from Ignore List**\n\n"
+                f"{entity_type} `{entity_id}` will no longer be ignored in {channel.mention}."
+            )
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
+            accent_color=discord.Color.green().value
         )
         self.add_item(container)
+
+
+# Keep backward compatibility
+class IgnoreMessageView(IgnoreEntityView):
+    """Backward compatibility for ignore message view"""
+    
+    def __init__(self, title: str, message_id: str, channel: discord.TextChannel, added: bool):
+        super().__init__("Message", message_id, channel, added)
 
 
 class ManualClearSuccessView(discord.ui.LayoutView):
@@ -432,6 +410,28 @@ class JobNotFoundView(discord.ui.LayoutView):
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class SkipSuccessView(discord.ui.LayoutView):
+    """View for skip success"""
+    
+    def __init__(self, channel: discord.TextChannel, next_run_time: datetime):
+        super().__init__()
+        
+        timestamp = int(next_run_time.timestamp())
+        
+        content = (
+            f"⏭️ **Next Clear Skipped**\n\n"
+            f"Skipped the next scheduled clear for {channel.mention}.\n\n"
+            f"**New Next Clear:** <t:{timestamp}:f>\n"
+            f"**Time Until:** <t:{timestamp}:R>"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.orange().value
         )
         self.add_item(container)
 

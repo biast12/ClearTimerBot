@@ -19,7 +19,7 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 
 ### User Permissions
 
-- **Manage Messages**: Required to use subscription commands (`/subscription add`, `/subscription remove`, `/subscription update`, etc.)
+- **Manage Messages**: Required to use subscription commands (`/subscription add`, `/subscription remove`, `/subscription list`, etc.)
 
 ### Bot Permissions
 
@@ -125,6 +125,19 @@ Unsubscribe a channel from automatic message deletion. Requires `Manage Messages
   - `/subscription remove` - Stop clearing current channel
   - `/subscription remove #general` - Stop clearing #general
 
+#### `/subscription list`
+
+List all active subscriptions in the current server.
+
+- **Shows:**
+  - All subscribed channels with their names
+  - Timer configuration for each channel
+  - Next clear time for each channel (with relative time)
+  - Total number of ignored entities (messages + users) per channel
+  - Helpful tip to use `/subscription info` for detailed channel information
+- **Example:**
+  - `/subscription list` - Display all active subscriptions in the server
+
 #### `/subscription info [target_channel]`
 
 View detailed subscription information for a channel.
@@ -142,6 +155,19 @@ View detailed subscription information for a channel.
   - `/subscription info` - View info for current channel
   - `/subscription info #general` - View info for #general
 
+#### `/subscription update [timer] [target_channel] [ignored_target]`
+
+Update the timer for an existing subscription. Requires `Manage Messages` permission.
+
+- **Parameters:**
+  - `timer`: New timer format (e.g., `24h`, `1d12h30m`, or `15:30 EST`)
+  - `target_channel` (optional): Channel to update - defaults to current channel if not specified
+  - `ignored_target` (optional): Message ID/link or user mention/ID to add to ignore list during update
+- **Examples:**
+  - `/subscription update 12h` - Change current channel's timer to 12 hours
+  - `/subscription update 2d #general` - Change #general's timer to 2 days
+  - `/subscription update 09:00 PST #announcements` - Update to daily at 9 AM PST
+
 #### `/subscription ignore [target] [target_channel]`
 
 Toggle a message or user to be ignored during channel clearing. Requires `Manage Messages` permission.
@@ -157,19 +183,6 @@ Toggle a message or user to be ignored during channel clearing. Requires `Manage
   - `/subscription ignore https://discord.com/channels/.../123456789` - Toggle using message link
   - `/subscription ignore @JohnDoe` - Toggle ignore status for a user's messages
   - `/subscription ignore 987654321 #general` - Toggle ignore status for user ID in #general
-
-#### `/subscription list`
-
-List all active subscriptions in the current server.
-
-- **Shows:**
-  - All subscribed channels with their names
-  - Timer configuration for each channel
-  - Next clear time for each channel (with relative time)
-  - Total number of ignored entities (messages + users) per channel
-  - Helpful tip to use `/subscription info` for detailed channel information
-- **Example:**
-  - `/subscription list` - Display all active subscriptions in the server
 
 #### `/subscription clear [target_channel]`
 
@@ -194,19 +207,6 @@ Skip the next scheduled clear for a channel. Requires `Manage Messages` permissi
 - **Examples:**
   - `/subscription skip` - Skip next clear for current channel
   - `/subscription skip #general` - Skip next clear for #general
-
-#### `/subscription update [timer] [target_channel] [ignored_target]`
-
-Update the timer for an existing subscription. Requires `Manage Messages` permission.
-
-- **Parameters:**
-  - `timer`: New timer format (e.g., `24h`, `1d12h30m`, or `15:30 EST`)
-  - `target_channel` (optional): Channel to update - defaults to current channel if not specified
-  - `ignored_target` (optional): Message ID/link or user mention/ID to add to ignore list during update
-- **Examples:**
-  - `/subscription update 12h` - Change current channel's timer to 12 hours
-  - `/subscription update 2d #general` - Change #general's timer to 2 days
-  - `/subscription update 09:00 PST #announcements` - Update to daily at 9 AM PST
   - `/subscription update 6h #general 123456789` - Update timer and add ignored message
   - `/subscription update 3h #general @JohnDoe` - Update timer and add ignored user
 
@@ -227,45 +227,70 @@ Display comprehensive help information including commands, timer formats, and us
 
 </details>
 
+### Admin Commands
+
+<details>
+<summary>Click to expand admin commands</summary>
+
+These commands are restricted to bot administrators and the owner. All admin commands are under the `/admin` group:
+
+#### `/admin stats [server_id]`
+
+Display bot statistics. Without server_id shows overall stats (total servers, channels, blacklisted servers, errors). With server_id shows specific server stats including channel count, blacklist status, and error count for that server.
+
+#### Blacklist Management
+
+Commands for managing server blacklist under `/admin blacklist`:
+
+- **`/admin blacklist add [server_id] [reason]`**: Add a server to the blacklist with optional reason
+- **`/admin blacklist remove [server_id]`**: Remove a server from the blacklist  
+- **`/admin blacklist check [server_id]`**: Check if a server is blacklisted and view details
+
+#### Error Management
+
+Commands for managing error logs under `/admin error`:
+
+- **`/admin error check [error_id]`**: Check an error by its ID
+- **`/admin error delete [error_id]`**: Delete a specific error from the database
+- **`/admin error list [limit]`**: List recent errors (default: 10, max: 25)
+- **`/admin error clear`**: Clear all errors from the database
+
+#### Force Management
+
+Commands for forcefully managing subscriptions under `/admin force`:
+
+- **`/admin force remove_server [id]`**: Force remove all subscriptions for a server
+- **`/admin force remove_channel [id]`**: Force remove a specific channel subscription
+
+#### Cache Management
+
+Commands for recaching data under `/admin recache`:
+
+- **`/admin recache all`**: Recache everything except admins and timezones
+- **`/admin recache timezones`**: Recache timezone mappings from database
+
+</details>
+
 ### Owner Commands
 
 <details>
 <summary>Click to expand owner commands</summary>
 
-These commands are restricted to the bot owner for administrative purposes. All owner commands are under the `/owner` group:
+These commands are restricted to the bot owner only. All owner commands are under the `/owner` group:
 
-#### `/owner stats [server_id]`
+#### Admin Management
 
-Display bot statistics. Without server_id shows overall stats (total servers, channels, blacklisted servers, errors). With server_id shows specific server stats including channel count, blacklist status, and error count for that server.
+Commands for managing bot administrators under `/owner admin`:
 
-#### `/owner reload_cache`
+- **`/owner admin list`**: List all bot administrators
+- **`/owner admin add [user_id]`**: Add a new bot administrator
+- **`/owner admin remove [user_id]`**: Remove a bot administrator
 
-Reload all caches from database to sync with database changes.
+#### Configuration Management
 
-#### Blacklist Management
+Commands for recaching configuration under `/owner recache`:
 
-Commands for managing server blacklist under `/owner blacklist`:
-
-- **`/owner blacklist add [server_id] [reason]`**: Add a server to the blacklist with optional reason
-- **`/owner blacklist remove [server_id]`**: Remove a server from the blacklist  
-- **`/owner blacklist check [server_id]`**: Check if a server is blacklisted and view details
-
-#### Error Management
-
-Commands for managing error logs under `/owner error`:
-
-- **`/owner error lookup [error_id]`**: Look up detailed information about a specific error
-- **`/owner error delete [error_id]`**: Delete a specific error from the database
-- **`/owner error list [limit]`**: List recent errors (default: 10, max: 25)
-- **`/owner error clear`**: Clear all errors from the database
-- **`/owner error check [error_id]`**: Check an error by its ID
-
-#### Force Management
-
-Commands for forcefully managing subscriptions under `/owner force`:
-
-- **`/owner force remove_server [id]`**: Force remove all subscriptions for a server
-- **`/owner force remove_channel [id]`**: Force remove a specific channel subscription
+- **`/owner recache config`**: Recache bot configuration from database
 
 </details>
 
