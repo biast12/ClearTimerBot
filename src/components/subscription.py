@@ -91,9 +91,11 @@ class SubscriptionInfoView(discord.ui.LayoutView):
             # Show ignored messages if any
             if hasattr(timer_info, 'ignored') and timer_info.ignored.messages:
                 content += f"**Ignored Messages:** {len(timer_info.ignored.messages)} message(s)\n"
-                # List first 5 message IDs
+                # List first 5 message IDs with clickable links
                 for i, msg_id in enumerate(list(timer_info.ignored.messages)[:5]):
-                    content += f"  • `{msg_id}`\n"
+                    # Create message link - need to get guild_id from channel
+                    msg_link = f"https://discord.com/channels/{channel.guild.id}/{channel.id}/{msg_id}"
+                    content += f"  • [`{msg_id}`]({msg_link})\n"
                 if len(timer_info.ignored.messages) > 5:
                     content += f"  • ... and {len(timer_info.ignored.messages) - 5} more\n"
             else:
@@ -102,9 +104,9 @@ class SubscriptionInfoView(discord.ui.LayoutView):
             # Show ignored users if any
             if hasattr(timer_info, 'ignored') and timer_info.ignored.users:
                 content += f"**Ignored Users:** {len(timer_info.ignored.users)} user(s)\n"
-                # List first 5 user IDs
+                # List first 5 user mentions
                 for i, user_id in enumerate(list(timer_info.ignored.users)[:5]):
-                    content += f"  • <@{user_id}>\n"
+                    content += f"  • <@{user_id}> (ID: `{user_id}`)\n"
                 if len(timer_info.ignored.users) > 5:
                     content += f"  • ... and {len(timer_info.ignored.users) - 5} more\n"
             else:
@@ -113,13 +115,7 @@ class SubscriptionInfoView(discord.ui.LayoutView):
         content += (
             f"\n**Schedule Details**\n"
             f"**Next Clear:** <t:{timestamp}:f>\n"
-            f"**Time Until:** <t:{timestamp}:R>\n\n"
-            f"💡 **Available Commands**\n"
-            f"• `/sub update` - Change the timer schedule\n"
-            f"• `/sub ignore` - Toggle messages or users to exclude from clearing\n"
-            f"• `/sub skip` - Skip the next scheduled clear\n"
-            f"• `/sub clear` - Manually trigger a clear now\n"
-            f"• `/sub remove` - Stop automatic clearing"
+            f"**Time Until:** <t:{timestamp}:R>"
         )
         
         container = discord.ui.Container(
@@ -144,7 +140,7 @@ class SubscriptionListView(discord.ui.LayoutView):
                 channel = guild.get_channel(int(channel_id))
                 if channel:
                     # Get next run time from scheduler
-                    next_run_time = scheduler_service.get_next_run_time(str(guild.id), channel_id)
+                    next_run_time = scheduler_service.get_channel_next_clear_time(str(guild.id), channel_id)
                     
                     content += f"**#{channel.name}**\n"
                     content += f"  • Timer: {timer_info.timer}\n"
@@ -153,14 +149,31 @@ class SubscriptionListView(discord.ui.LayoutView):
                         timestamp = int(next_run_time.timestamp())
                         content += f"  • Next clear: <t:{timestamp}:R>\n"
                     
-                    ignored_count = 0
+                    # Show ignored entities
                     if hasattr(timer_info, 'ignored'):
+                        ignored_msgs = []
+                        ignored_users = []
+                        
                         if timer_info.ignored.messages:
-                            ignored_count += len(timer_info.ignored.messages)
+                            for msg_id in timer_info.ignored.messages:
+                                # Create message link
+                                msg_link = f"https://discord.com/channels/{guild.id}/{channel_id}/{msg_id}"
+                                ignored_msgs.append(f"[Message]({msg_link})")
+                        
                         if timer_info.ignored.users:
-                            ignored_count += len(timer_info.ignored.users)
-                    if ignored_count > 0:
-                        content += f"  • Ignored entities: {ignored_count}\n"
+                            for user_id in timer_info.ignored.users:
+                                ignored_users.append(f"<@{user_id}>")
+                        
+                        if ignored_msgs or ignored_users:
+                            content += f"  • Ignored: "
+                            parts = []
+                            if ignored_msgs:
+                                parts.append(f"{len(ignored_msgs)} message{'s' if len(ignored_msgs) > 1 else ''}: {', '.join(ignored_msgs[:3])}" + 
+                                           (f" (+{len(ignored_msgs)-3} more)" if len(ignored_msgs) > 3 else ""))
+                            if ignored_users:
+                                parts.append(f"{len(ignored_users)} user{'s' if len(ignored_users) > 1 else ''}: {', '.join(ignored_users[:3])}" + 
+                                           (f" (+{len(ignored_users)-3} more)" if len(ignored_users) > 3 else ""))
+                            content += " | ".join(parts) + "\n"
                     
                     content += "\n"
         
