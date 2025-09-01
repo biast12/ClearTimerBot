@@ -6,22 +6,22 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 
-class TimerParseError(ValueError):
+class ScheduleParseError(ValueError):
     pass
 
 
-class TimerParser:
+class ScheduleExpressionParser:
     TIMEZONE_PATTERN = re.compile(r"^(\d{1,2}:\d{2})\s*([A-Z][\w+-]*)?\s*$")
     INTERVAL_PATTERN = re.compile(r"^(?:(\d+)d)?(?:(\d+)h(?:r)?)?(?:(\d+)m)?$")
 
     def __init__(self, timezone_resolver):
         self.timezone_resolver = timezone_resolver
 
-    def parse(
+    def parse_schedule_expression(
         self, timer_string: str
     ) -> Tuple[Union[CronTrigger, IntervalTrigger], datetime]:
         if not timer_string:
-            raise TimerParseError("Timer string cannot be empty")
+            raise ScheduleParseError("Timer string cannot be empty")
 
         timer_string = timer_string.strip()
 
@@ -29,7 +29,7 @@ class TimerParser:
         if timer_string.isdigit():
             hours = int(timer_string)
             if hours < 1:
-                raise TimerParseError("Hour value must be at least 1")
+                raise ScheduleParseError("Hour value must be at least 1")
             
             total_minutes = hours * 60
             delta = timedelta(hours=hours)
@@ -39,18 +39,18 @@ class TimerParser:
 
         # Try to parse as daily scheduled time
         if match := self.TIMEZONE_PATTERN.match(timer_string):
-            return self._parse_scheduled_time(match)
+            return self._parse_daily_cron_schedule(match)
 
         # Try to parse as interval
         if match := self.INTERVAL_PATTERN.match(timer_string):
-            return self._parse_interval(match)
+            return self._parse_interval_schedule(match)
 
-        raise TimerParseError(
+        raise ScheduleParseError(
             f"Invalid timer format: '{timer_string}'. "
             "Use '1d2h3m' for intervals, '24' for hours, or 'HH:MM TIMEZONE' for daily schedules."
         )
 
-    def _parse_scheduled_time(self, match: re.Match) -> Tuple[CronTrigger, datetime]:
+    def _parse_daily_cron_schedule(self, match: re.Match) -> Tuple[CronTrigger, datetime]:
         time_str = match.group(1)
         timezone_abbr = match.group(2) or "GMT"
 
@@ -59,18 +59,18 @@ class TimerParser:
             if not (0 <= hour <= 23 and 0 <= minute <= 59):
                 raise ValueError()
         except ValueError:
-            raise TimerParseError(
+            raise ScheduleParseError(
                 f"Invalid time format: '{time_str}'. Use HH:MM format."
             )
 
         timezone_str = self.timezone_resolver(timezone_abbr)
         if not timezone_str:
-            raise TimerParseError(f"Unknown timezone: '{timezone_abbr}'")
+            raise ScheduleParseError(f"Unknown timezone: '{timezone_abbr}'")
 
         try:
             timezone = pytz.timezone(timezone_str)
         except pytz.exceptions.UnknownTimeZoneError:
-            raise TimerParseError(f"Invalid timezone mapping for '{timezone_abbr}'")
+            raise ScheduleParseError(f"Invalid timezone mapping for '{timezone_abbr}'")
 
         # Calculate next run time
         now = datetime.now(timezone)
@@ -82,7 +82,7 @@ class TimerParser:
         trigger = CronTrigger(hour=hour, minute=minute, timezone=timezone)
         return trigger, next_run
 
-    def _parse_interval(self, match: re.Match) -> Tuple[IntervalTrigger, datetime]:
+    def _parse_interval_schedule(self, match: re.Match) -> Tuple[IntervalTrigger, datetime]:
         days = int(match.group(1) or 0)
         # Handle hours - group 2 might include 'hr' or just 'h'
         hours_str = match.group(2) or "0"
@@ -90,12 +90,12 @@ class TimerParser:
         minutes = int(match.group(3) or 0)
 
         if days == 0 and hours == 0 and minutes == 0:
-            raise TimerParseError("Timer interval cannot be zero.")
+            raise ScheduleParseError("Timer interval cannot be zero.")
 
         total_minutes = (days * 24 * 60) + (hours * 60) + minutes
 
         if total_minutes < 1:
-            raise TimerParseError("Timer interval must be at least 1 minute.")
+            raise ScheduleParseError("Timer interval must be at least 1 minute.")
 
         delta = timedelta(days=days, hours=hours, minutes=minutes)
         next_run = datetime.now(pytz.UTC) + delta

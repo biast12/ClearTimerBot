@@ -2,12 +2,13 @@
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 REM ============================================================================
-REM ClearTimerBot Discord Command Registration Script
-REM This script registers or updates slash commands with Discord for the ClearTimerBot.
+REM ClearTimerBot - Discord Command Synchronization Script
+REM Purpose: Registers and synchronizes slash commands with Discord API
+REM Usage: Run this after adding/modifying bot commands to update Discord
 REM ============================================================================
 
 REM Set console title for better identification
-TITLE ClearTimerBot - Command Registration
+TITLE ClearTimerBot - Syncing Discord Commands
 
 REM Check if Python is installed and accessible
 python --version >nul 2>&1
@@ -18,9 +19,9 @@ IF %errorlevel% NEQ 0 (
     EXIT /b 1
 )
 
-REM Check if register_commands.py exists
-IF NOT EXIST "register_commands.py" (
-    ECHO [ERROR] register_commands.py not found in current directory.
+REM Check if register_discord_commands.py exists
+IF NOT EXIST "register_discord_commands.py" (
+    ECHO [ERROR] register_discord_commands.py not found in current directory.
     ECHO Please ensure the script exists before running this batch file.
     PAUSE
     EXIT /b 1
@@ -29,16 +30,16 @@ IF NOT EXIST "register_commands.py" (
 REM Check if virtual environment exists and offer to activate it
 IF NOT EXIST "venv\Scripts\activate.bat" (
     ECHO [WARNING] No virtual environment found.
-    ECHO Please run setup_env.bat first to set up the environment.
+    ECHO Please run setup_python_environment.bat first to set up the environment.
     PAUSE
     EXIT /b 1
 )
 
-REM Run the command registration script
-ECHO [INFO] Starting command registration...
+REM Run the command synchronization script
+ECHO [INFO] Synchronizing Discord slash commands...
 ECHO ============================================
 ECHO.
-python register_commands.py
+python register_discord_commands.py
 
 ECHO.
 ECHO Press any key to exit...

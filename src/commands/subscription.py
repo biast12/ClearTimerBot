@@ -3,8 +3,8 @@ from discord import app_commands
 from discord.ext import commands
 from typing import Optional
 
-from src.utils.timer_parser import TimerParseError
-from src.utils.target_parser import parse_and_validate_target, validate_and_add_target
+from src.utils.schedule_parser import ScheduleParseError
+from src.utils.ignore_target_parser import identify_and_validate_ignore_target, validate_and_add_ignore_target
 
 
 class SubscriptionCommands(commands.Cog):
@@ -12,12 +12,12 @@ class SubscriptionCommands(commands.Cog):
         self.bot = bot
         self.data_service = bot.data_service
         self.scheduler_service = bot.scheduler_service
-        self.timer_parser = bot.scheduler_service.timer_parser
+        self.schedule_parser = bot.scheduler_service.schedule_parser
 
-    # Create the main /sub command group
-    sub_group = app_commands.Group(name="sub", description="Manage channel message clearing subscriptions")
+    # Create the main /subscription command group
+    subscription_group = app_commands.Group(name="subscription", description="Manage automatic message clearing for channels")
 
-    @sub_group.command(
+    @subscription_group.command(
         name="add",
         description="Subscribe a channel to automatic message deletion"
     )
@@ -26,7 +26,7 @@ class SubscriptionCommands(commands.Cog):
         target_channel="Channel to clear (defaults to current channel)",
         ignored_target="Message ID/link or user mention/ID to ignore during clearing (optional)",
     )
-    async def sub_add(
+    async def subscription_add(
         self,
         interaction: discord.Interaction,
         timer: str,
@@ -34,11 +34,11 @@ class SubscriptionCommands(commands.Cog):
         ignored_target: Optional[str] = None,
     ):
         # Check permissions
-        if not await self._check_permissions(interaction, target_channel):
+        if not await self._validate_user_and_bot_permissions(interaction, target_channel):
             return
 
         # Check blacklist
-        if await self._is_blacklisted(interaction):
+        if await self._check_server_blacklist_status(interaction):
             return
 
         channel = target_channel or interaction.channel
@@ -46,24 +46,24 @@ class SubscriptionCommands(commands.Cog):
         channel_id = str(channel.id)
 
         # Check if already subscribed
-        if self.scheduler_service.job_exists(server_id, channel_id):
+        if self.scheduler_service.channel_has_active_job(server_id, channel_id):
             await interaction.response.send_message(
-                f"❌ {channel.mention} already has a timer set. Use `/sub remove` to remove it first.",
+                f"❌ {channel.mention} already has a timer set. Use `/subscription remove` to remove it first.",
                 ephemeral=True,
             )
             return
 
         # Parse timer
         try:
-            trigger, next_run_time = self.timer_parser.parse(timer)
-        except TimerParseError as e:
+            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer)
+        except ScheduleParseError as e:
             await interaction.response.send_message(
                 f"❌ Invalid timer: {e}", ephemeral=True
             )
             return
 
         # Add to scheduler
-        self.scheduler_service.add_job(
+        self.scheduler_service.create_channel_clear_job(
             channel_id=channel_id,
             server_id=server_id,
             trigger=trigger,
@@ -93,24 +93,24 @@ class SubscriptionCommands(commands.Cog):
         view = SubscriptionSuccessView(channel, timer, next_run_time, ignored_entity_id, ignored_entity_type)
         await interaction.response.send_message(view=view)
 
-    @sub_group.command(
+    @subscription_group.command(
         name="remove",
         description="Unsubscribe a channel from automatic message deletion"
     )
     @app_commands.describe(
         target_channel="Channel to unsubscribe (defaults to current channel)"
     )
-    async def sub_remove(
+    async def subscription_remove(
         self,
         interaction: discord.Interaction,
         target_channel: Optional[discord.TextChannel] = None,
     ):
         # Check permissions
-        if not await self._check_permissions(interaction, target_channel):
+        if not await self._validate_user_and_bot_permissions(interaction, target_channel):
             return
 
         # Check blacklist
-        if await self._is_blacklisted(interaction):
+        if await self._check_server_blacklist_status(interaction):
             return
 
         channel = target_channel or interaction.channel
@@ -118,7 +118,7 @@ class SubscriptionCommands(commands.Cog):
         channel_id = str(channel.id)
 
         # Check if subscribed
-        if not self.scheduler_service.job_exists(server_id, channel_id):
+        if not self.scheduler_service.channel_has_active_job(server_id, channel_id):
             await interaction.response.send_message(
                 f"❌ {channel.mention} is not subscribed to message deletion.",
                 ephemeral=True,
@@ -126,7 +126,7 @@ class SubscriptionCommands(commands.Cog):
             return
 
         # Remove from scheduler
-        self.scheduler_service.remove_job(server_id, channel_id)
+        self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
 
         # Remove from data service
         server = await self.data_service.get_server(server_id)
@@ -140,20 +140,20 @@ class SubscriptionCommands(commands.Cog):
         view = UnsubscribeSuccessView(channel)
         await interaction.response.send_message(view=view)
 
-    @sub_group.command(
+    @subscription_group.command(
         name="info",
         description="View detailed subscription information for a channel"
     )
     @app_commands.describe(
         target_channel="Channel to check (defaults to current channel)"
     )
-    async def sub_info(
+    async def subscription_info(
         self,
         interaction: discord.Interaction,
         target_channel: Optional[discord.TextChannel] = None,
     ):
         # Check blacklist
-        if await self._is_blacklisted(interaction):
+        if await self._check_server_blacklist_status(interaction):
             return
 
         channel = target_channel or interaction.channel
@@ -161,12 +161,12 @@ class SubscriptionCommands(commands.Cog):
         channel_id = str(channel.id)
 
         # Get next run time
-        next_run_time = self.scheduler_service.get_next_run_time(server_id, channel_id)
+        next_run_time = self.scheduler_service.get_channel_next_clear_time(server_id, channel_id)
 
         if not next_run_time:
             await interaction.response.send_message(
                 f"❌ {channel.mention} is not subscribed to message deletion.\n"
-                f"Use `/sub add` to set up automatic clearing.",
+                f"Use `/subscription add` to set up automatic clearing.",
                 ephemeral=True,
             )
             return
@@ -181,7 +181,7 @@ class SubscriptionCommands(commands.Cog):
         view = SubscriptionInfoView(channel, next_run_time, timer_info)
         await interaction.response.send_message(view=view)
 
-    @sub_group.command(
+    @subscription_group.command(
         name="ignore",
         description="Toggle a message or user to be ignored during channel clearing"
     )
@@ -189,18 +189,18 @@ class SubscriptionCommands(commands.Cog):
         target="Message ID/link or user mention/ID to toggle ignore status",
         target_channel="Channel with the subscription (defaults to current channel)"
     )
-    async def sub_ignore(
+    async def subscription_ignore(
         self,
         interaction: discord.Interaction,
         target: str,
         target_channel: Optional[discord.TextChannel] = None,
     ):
         # Check permissions
-        if not await self._check_permissions(interaction, target_channel):
+        if not await self._validate_user_and_bot_permissions(interaction, target_channel):
             return
 
         # Check blacklist
-        if await self._is_blacklisted(interaction):
+        if await self._check_server_blacklist_status(interaction):
             return
 
         channel = target_channel or interaction.channel
@@ -208,15 +208,15 @@ class SubscriptionCommands(commands.Cog):
         channel_id = str(channel.id)
 
         # Check if channel is subscribed
-        if not self.scheduler_service.job_exists(server_id, channel_id):
+        if not self.scheduler_service.channel_has_active_job(server_id, channel_id):
             await interaction.response.send_message(
-                f"❌ {channel.mention} is not subscribed to message deletion. Use `/sub add` first.",
+                f"❌ {channel.mention} is not subscribed to message deletion. Use `/subscription add` first.",
                 ephemeral=True,
             )
             return
 
         # Parse and validate the target
-        entity_id, entity_type = await parse_and_validate_target(target, channel, interaction.guild)
+        entity_id, entity_type = await identify_and_validate_ignore_target(target, channel, interaction.guild)
         
         if not entity_id:
             await interaction.response.send_message(
@@ -305,16 +305,16 @@ class SubscriptionCommands(commands.Cog):
                 view = IgnoreEntityView("Message", entity_id, channel, added=True)
                 await interaction.response.send_message(view=view)
 
-    @sub_group.command(
+    @subscription_group.command(
         name="list",
         description="List all active subscriptions in this server"
     )
-    async def sub_list(
+    async def subscription_list(
         self,
         interaction: discord.Interaction,
     ):
         # Check blacklist
-        if await self._is_blacklisted(interaction):
+        if await self._check_server_blacklist_status(interaction):
             return
 
         server_id = str(interaction.guild.id)
@@ -323,7 +323,7 @@ class SubscriptionCommands(commands.Cog):
         if not server or not server.channels:
             await interaction.response.send_message(
                 "❌ No active subscriptions found in this server.\n"
-                "Use `/sub add` to subscribe a channel to automatic clearing.",
+                "Use `/subscription add` to subscribe a channel to automatic clearing.",
                 ephemeral=True,
             )
             return
@@ -334,24 +334,24 @@ class SubscriptionCommands(commands.Cog):
         view = SubscriptionListView(interaction.guild, server.channels, self.scheduler_service)
         await interaction.response.send_message(view=view)
 
-    @sub_group.command(
+    @subscription_group.command(
         name="clear",
         description="Manually trigger a message clear for a subscribed channel"
     )
     @app_commands.describe(
         target_channel="Channel to clear (defaults to current channel)"
     )
-    async def sub_clear(
+    async def subscription_clear_now(
         self,
         interaction: discord.Interaction,
         target_channel: Optional[discord.TextChannel] = None,
     ):
         # Check permissions
-        if not await self._check_permissions(interaction, target_channel):
+        if not await self._validate_user_and_bot_permissions(interaction, target_channel):
             return
 
         # Check blacklist
-        if await self._is_blacklisted(interaction):
+        if await self._check_server_blacklist_status(interaction):
             return
 
         channel = target_channel or interaction.channel
@@ -359,10 +359,10 @@ class SubscriptionCommands(commands.Cog):
         channel_id = str(channel.id)
 
         # Check if channel is subscribed
-        if not self.scheduler_service.job_exists(server_id, channel_id):
+        if not self.scheduler_service.channel_has_active_job(server_id, channel_id):
             await interaction.response.send_message(
                 f"❌ {channel.mention} is not subscribed to message deletion.\n"
-                f"Use `/sub add` to set up automatic clearing first.",
+                f"Use `/subscription add` to set up automatic clearing first.",
                 ephemeral=True,
             )
             return
@@ -380,9 +380,9 @@ class SubscriptionCommands(commands.Cog):
             ignored_users = list(channel_timer.ignored.users)
 
         # Trigger the clear using MessageService directly
-        from src.services.message_service import MessageService
+        from src.services.message_clearing_service import MessageService
         message_service = MessageService(self.bot.data_service, self.bot.scheduler_service)
-        deleted_count = await message_service._delete_messages(channel, set(ignored_messages), set(ignored_users))
+        deleted_count = await message_service._perform_message_deletion(channel, set(ignored_messages), set(ignored_users))
 
         # Send result
         await interaction.followup.send(
@@ -390,24 +390,24 @@ class SubscriptionCommands(commands.Cog):
             ephemeral=True,
         )
 
-    @sub_group.command(
+    @subscription_group.command(
         name="skip",
         description="Skip the next scheduled clear for a channel"
     )
     @app_commands.describe(
         target_channel="Channel to skip next clear (defaults to current channel)"
     )
-    async def sub_skip(
+    async def subscription_skip_next(
         self,
         interaction: discord.Interaction,
         target_channel: Optional[discord.TextChannel] = None,
     ):
         # Check permissions
-        if not await self._check_permissions(interaction, target_channel):
+        if not await self._validate_user_and_bot_permissions(interaction, target_channel):
             return
 
         # Check blacklist
-        if await self._is_blacklisted(interaction):
+        if await self._check_server_blacklist_status(interaction):
             return
 
         channel = target_channel or interaction.channel
@@ -415,16 +415,16 @@ class SubscriptionCommands(commands.Cog):
         channel_id = str(channel.id)
 
         # Check if channel is subscribed
-        if not self.scheduler_service.job_exists(server_id, channel_id):
+        if not self.scheduler_service.channel_has_active_job(server_id, channel_id):
             await interaction.response.send_message(
                 f"❌ {channel.mention} is not subscribed to message deletion.\n"
-                f"Use `/sub add` to set up automatic clearing first.",
+                f"Use `/subscription add` to set up automatic clearing first.",
                 ephemeral=True,
             )
             return
 
         # Get the current job to retrieve its trigger
-        job = self.scheduler_service.get_job(server_id, channel_id)
+        job = self.scheduler_service.get_channel_clear_job(server_id, channel_id)
         if not job:
             await interaction.response.send_message(
                 f"❌ Could not find the scheduled job for {channel.mention}.",
@@ -454,7 +454,7 @@ class SubscriptionCommands(commands.Cog):
                 ephemeral=True,
             )
 
-    @sub_group.command(
+    @subscription_group.command(
         name="update",
         description="Update the timer for an existing subscription"
     )
@@ -463,7 +463,7 @@ class SubscriptionCommands(commands.Cog):
         target_channel="Channel to update (defaults to current channel)",
         ignored_target="Message ID/link or user mention/ID to add to ignore list (optional)",
     )
-    async def sub_update(
+    async def subscription_update(
         self,
         interaction: discord.Interaction,
         timer: str,
@@ -471,11 +471,11 @@ class SubscriptionCommands(commands.Cog):
         ignored_target: Optional[str] = None,
     ):
         # Check permissions
-        if not await self._check_permissions(interaction, target_channel):
+        if not await self._validate_user_and_bot_permissions(interaction, target_channel):
             return
 
         # Check blacklist
-        if await self._is_blacklisted(interaction):
+        if await self._check_server_blacklist_status(interaction):
             return
 
         channel = target_channel or interaction.channel
@@ -483,18 +483,18 @@ class SubscriptionCommands(commands.Cog):
         channel_id = str(channel.id)
 
         # Check if channel is subscribed
-        if not self.scheduler_service.job_exists(server_id, channel_id):
+        if not self.scheduler_service.channel_has_active_job(server_id, channel_id):
             await interaction.response.send_message(
                 f"❌ {channel.mention} is not subscribed to message deletion.\n"
-                f"Use `/sub add` to set up automatic clearing first.",
+                f"Use `/subscription add` to set up automatic clearing first.",
                 ephemeral=True,
             )
             return
 
         # Parse new timer
         try:
-            trigger, next_run_time = self.timer_parser.parse(timer)
-        except TimerParseError as e:
+            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer)
+        except ScheduleParseError as e:
             await interaction.response.send_message(
                 f"❌ Invalid timer: {e}", ephemeral=True
             )
@@ -507,10 +507,10 @@ class SubscriptionCommands(commands.Cog):
             current_ignored_messages = list(server.channels[channel_id].ignored_messages)
 
         # Remove old job
-        self.scheduler_service.remove_job(server_id, channel_id)
+        self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
 
         # Add new job with updated timer
-        self.scheduler_service.add_job(
+        self.scheduler_service.create_channel_clear_job(
             channel_id=channel_id,
             server_id=server_id,
             trigger=trigger,
@@ -528,7 +528,7 @@ class SubscriptionCommands(commands.Cog):
                 server.channels[channel_id].add_ignored_message(msg_id)
             
             # Add new ignored target if provided (message or user)
-            ignored_entity_id, ignored_entity_type = await validate_and_add_target(
+            ignored_entity_id, ignored_entity_type = await validate_and_add_ignore_target(
                 ignored_target, channel, interaction.guild, server.channels[channel_id]
             )
             
@@ -539,7 +539,7 @@ class SubscriptionCommands(commands.Cog):
         view = UpdateSuccessView(channel, timer, next_run_time, ignored_entity_id, ignored_entity_type)
         await interaction.response.send_message(view=view)
 
-    async def _check_permissions(self, interaction: discord.Interaction, target_channel: discord.TextChannel = None) -> bool:
+    async def _validate_user_and_bot_permissions(self, interaction: discord.Interaction, target_channel: discord.TextChannel = None) -> bool:
         member = interaction.guild.get_member(interaction.user.id)
 
         # Bot owner bypasses user permission checks
@@ -577,7 +577,7 @@ class SubscriptionCommands(commands.Cog):
 
         return True
 
-    async def _is_blacklisted(self, interaction: discord.Interaction) -> bool:
+    async def _check_server_blacklist_status(self, interaction: discord.Interaction) -> bool:
         server_id = str(interaction.guild.id)
 
         if await self.data_service.is_blacklisted(server_id):
@@ -591,15 +591,15 @@ class SubscriptionCommands(commands.Cog):
     
     # These methods are now handled by target_parser utility
     # Keeping for backward compatibility if needed elsewhere
-    def _extract_message_id(self, message_input: str) -> Optional[str]:
+    def _parse_message_id_from_input(self, message_input: str) -> Optional[str]:
         """Extract message ID from either a message link or direct ID"""
-        from src.utils.target_parser import extract_message_id
-        return extract_message_id(message_input)
+        from src.utils.ignore_target_parser import extract_discord_message_id
+        return extract_discord_message_id(message_input)
     
-    def _extract_user_id(self, user_input: str) -> Optional[str]:
+    def _parse_user_id_from_input(self, user_input: str) -> Optional[str]:
         """Extract user ID from mention or direct ID"""
-        from src.utils.target_parser import extract_user_id
-        return extract_user_id(user_input)
+        from src.utils.ignore_target_parser import extract_discord_user_id
+        return extract_discord_user_id(user_input)
 
 
 async def setup(bot):

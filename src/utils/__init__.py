@@ -1,8 +1,8 @@
-from .timer_parser import TimerParser, TimerParseError
+from .schedule_parser import ScheduleExpressionParser, ScheduleParseError
 from .errors import ErrorHandler
 
 __all__ = [
-    "TimerParser",
-    "TimerParseError",
+    "ScheduleExpressionParser",
+    "ScheduleParseError",
     "ErrorHandler",
 ]

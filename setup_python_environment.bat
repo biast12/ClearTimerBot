@@ -2,16 +2,17 @@
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 REM ============================================================================
-REM ClearTimerBot Environment Setup Script
-REM This script creates a Python virtual environment and installs all required dependencies for the ClearTimerBot Discord bot.
+REM ClearTimerBot - Python Virtual Environment Setup
+REM Purpose: Creates isolated Python environment and installs bot dependencies
+REM Requirements: Python 3.8 or higher must be installed
 REM ============================================================================
 
 REM Set console title for better identification
-TITLE ClearTimerBot - Environment Setup
+TITLE ClearTimerBot - Python Environment Setup
 
 REM Display script header
 ECHO ============================================
-ECHO     ClearTimerBot Environment Setup
+ECHO   ClearTimerBot Python Environment Setup
 ECHO ============================================
 ECHO.
 
@@ -98,6 +99,6 @@ ECHO To activate the environment manually, run:
 ECHO   venv\Scripts\activate.bat
 ECHO.
 ECHO To run the bot, use:
-ECHO   run.bat
+ECHO   start_cleartimer_bot.bat
 ECHO.
 PAUSE

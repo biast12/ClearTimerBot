@@ -76,7 +76,7 @@ class BotLogger:
             return
             
         try:
-            from src.services.database import db_manager
+            from src.services.database_connection_manager import db_manager
             errors_collection = db_manager.errors
             error_doc = error_record.to_dict()
             await errors_collection.insert_one(error_doc)
@@ -190,7 +190,7 @@ class BotLogger:
     async def get_error(self, error_id: str) -> Optional[ErrorDocument]:
         """Retrieve an error from the database by ID"""
         try:
-            from src.services.database import db_manager
+            from src.services.database_connection_manager import db_manager
             errors_collection = db_manager.errors
             error_doc = await errors_collection.find_one({"_id": error_id})
             if error_doc:
@@ -202,7 +202,7 @@ class BotLogger:
     async def delete_error(self, error_id: str) -> bool:
         """Delete an error from the database by ID"""
         try:
-            from src.services.database import db_manager
+            from src.services.database_connection_manager import db_manager
             errors_collection = db_manager.errors
             result = await errors_collection.delete_one({"_id": error_id})
             return result.deleted_count > 0
@@ -212,7 +212,7 @@ class BotLogger:
     async def get_recent_errors(self, limit: int = 10) -> list[ErrorDocument]:
         """Get recent errors from the database"""
         try:
-            from src.services.database import db_manager
+            from src.services.database_connection_manager import db_manager
             errors_collection = db_manager.errors
             cursor = errors_collection.find().sort("timestamp", -1).limit(limit)
             error_docs = await cursor.to_list(length=limit)

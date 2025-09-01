@@ -10,8 +10,8 @@ from src.models import (
     ScheduledTask,
     SchedulerStats
 )
-from src.services.data_service import DataService
-from src.utils.timer_parser import TimerParser
+from src.services.server_data_service import DataService
+from src.utils.schedule_parser import ScheduleExpressionParser
 from src.utils.logger import logger, LogArea
 
 
@@ -19,18 +19,18 @@ class SchedulerService:
     def __init__(self, data_service: DataService):
         self.data_service = data_service
         self.scheduler = AsyncIOScheduler()
-        self.timer_parser = TimerParser(data_service.get_timezone)
+        self.schedule_parser = ScheduleExpressionParser(data_service.get_timezone)
         self._clear_callback: Optional[Callable] = None
         self._notify_callback: Optional[Callable] = None
         self._stats = SchedulerStats()
 
-    def set_clear_callback(self, callback: Callable) -> None:
+    def register_channel_clear_callback(self, callback: Callable) -> None:
         self._clear_callback = callback
 
-    def set_notify_callback(self, callback: Callable) -> None:
+    def register_missed_clear_notification_callback(self, callback: Callable) -> None:
         self._notify_callback = callback
     
-    async def _cleanup_cache(self) -> None:
+    async def _perform_periodic_cache_cleanup(self) -> None:
         """Cleanup expired cache entries from all cache levels"""
         cache = self.data_service._cache
         
@@ -51,7 +51,7 @@ class SchedulerService:
         if self.scheduler.running:
             self.scheduler.shutdown(wait=True)
 
-    async def initialize_jobs(self, bot) -> None:
+    async def initialize_all_scheduled_jobs(self, bot) -> None:
         servers = await self.data_service.get_all_servers()
         
         # Get current guild IDs the bot is in
@@ -63,7 +63,7 @@ class SchedulerService:
                 continue
             
             for channel_id, channel_timer in server.channels.items():
-                await self._schedule_job(
+                await self._create_scheduled_clear_job(
                     bot=bot,
                     server_id=server_id,
                     channel_id=channel_id,
@@ -82,29 +82,29 @@ class SchedulerService:
         
         # Schedule periodic cache cleanup (every 15 minutes)
         self.scheduler.add_job(
-            self._cleanup_cache,
+            self._perform_periodic_cache_cleanup,
             "interval",
             minutes=15,
             id="cleanup_cache",
             replace_existing=True,
         )
 
-    async def _schedule_job(
+    async def _create_scheduled_clear_job(
         self, bot, server_id: str, channel_id: str, channel_timer: ChannelTimer
     ) -> None:
-        job_id = self._make_job_id(server_id, channel_id)
+        job_id = self._create_job_identifier(server_id, channel_id)
         
         # Track scheduled task
         self._stats.total_tasks_scheduled += 1
 
         # Check if job needs rescheduling due to missed execution
         if channel_timer.next_run_time < datetime.now(pytz.UTC):
-            await self._handle_missed_job(bot, server_id, channel_id, channel_timer)
+            await self._reschedule_missed_clear_job(bot, server_id, channel_id, channel_timer)
             return
 
         # Parse the timer to get the trigger
         try:
-            trigger, _ = self.timer_parser.parse(channel_timer.timer)
+            trigger, _ = self.schedule_parser.parse_schedule_expression(channel_timer.timer)
         except Exception as e:
             logger.error(LogArea.SCHEDULER, f"Error parsing timer for job {job_id}: {e}")
             return
@@ -134,14 +134,14 @@ class SchedulerService:
             replace_existing=True,
         )
 
-    async def _handle_missed_job(
+    async def _reschedule_missed_clear_job(
         self, bot, server_id: str, channel_id: str, channel_timer: ChannelTimer
     ) -> None:
-        job_id = self._make_job_id(server_id, channel_id)
+        job_id = self._create_job_identifier(server_id, channel_id)
 
         # Parse timer to get new next_run_time
         try:
-            trigger, next_run_time = self.timer_parser.parse(channel_timer.timer)
+            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(channel_timer.timer)
         except Exception as e:
             logger.error(LogArea.SCHEDULER, f"Error parsing timer for missed job {job_id}: {e}")
             return
@@ -177,7 +177,7 @@ class SchedulerService:
                 replace_existing=True,
             )
 
-    def add_job(
+    def create_channel_clear_job(
         self,
         channel_id: str,
         server_id: str,
@@ -185,7 +185,7 @@ class SchedulerService:
         channel,
         next_run_time: Optional[datetime] = None,
     ) -> str:
-        job_id = self._make_job_id(server_id, channel_id)
+        job_id = self._create_job_identifier(server_id, channel_id)
 
         self.scheduler.add_job(
             self._clear_callback,
@@ -198,8 +198,8 @@ class SchedulerService:
 
         return job_id
 
-    def remove_job(self, server_id: str, channel_id: str) -> bool:
-        job_id = self._make_job_id(server_id, channel_id)
+    def remove_channel_clear_job(self, server_id: str, channel_id: str) -> bool:
+        job_id = self._create_job_identifier(server_id, channel_id)
 
         try:
             self.scheduler.remove_job(job_id)
@@ -207,7 +207,7 @@ class SchedulerService:
         except Exception:
             return False
     
-    async def cancel_job(self, job_id: str) -> bool:
+    async def cancel_job_by_id(self, job_id: str) -> bool:
         """Cancel a job by its job_id directly"""
         try:
             self.scheduler.remove_job(job_id)
@@ -215,18 +215,18 @@ class SchedulerService:
         except Exception:
             return False
 
-    def get_job(self, server_id: str, channel_id: str) -> Optional[Job]:
-        job_id = self._make_job_id(server_id, channel_id)
+    def get_channel_clear_job(self, server_id: str, channel_id: str) -> Optional[Job]:
+        job_id = self._create_job_identifier(server_id, channel_id)
         return self.scheduler.get_job(job_id)
 
-    def job_exists(self, server_id: str, channel_id: str) -> bool:
-        return self.get_job(server_id, channel_id) is not None
+    def channel_has_active_job(self, server_id: str, channel_id: str) -> bool:
+        return self.get_channel_clear_job(server_id, channel_id) is not None
 
-    def get_next_run_time(self, server_id: str, channel_id: str) -> Optional[datetime]:
-        job = self.get_job(server_id, channel_id)
+    def get_channel_next_clear_time(self, server_id: str, channel_id: str) -> Optional[datetime]:
+        job = self.get_channel_clear_job(server_id, channel_id)
         return job.next_run_time if job else None
 
-    def get_all_jobs(self) -> Dict[str, Any]:
+    def get_all_scheduled_jobs(self) -> Dict[str, Any]:
         jobs = {}
         for job in self.scheduler.get_jobs():
             jobs[job.id] = {
@@ -236,10 +236,10 @@ class SchedulerService:
         return jobs
 
     @staticmethod
-    def _make_job_id(server_id: str, channel_id: str) -> str:
+    def _create_job_identifier(server_id: str, channel_id: str) -> str:
         return f"{server_id}_{channel_id}"
     
-    def get_stats(self) -> Dict[str, Any]:
+    def get_scheduler_statistics(self) -> Dict[str, Any]:
         """Get scheduler statistics"""
         self._stats.current_queue_size = len(self.scheduler.get_jobs())
         return self._stats.to_dict()

@@ -18,8 +18,8 @@ from src.utils.logger import logger, LogArea
 
 
 # Mock classes for command registration
-class MockTimerParser:
-    """Mock timer parser for command registration"""
+class MockScheduleParser:
+    """Mock schedule parser for command registration"""
 
     pass
 
@@ -28,7 +28,7 @@ class MockSchedulerService:
     """Mock scheduler service for command registration"""
 
     def __init__(self):
-        self.timer_parser = MockTimerParser()
+        self.schedule_parser = MockScheduleParser()
 
 
 class MockDataService:

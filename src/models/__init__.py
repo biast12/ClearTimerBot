@@ -1,6 +1,6 @@
-from .timer import ChannelTimer, Server
+from .channel_subscription import ChannelTimer, Server
 
-from .database import (
+from .database_models import (
     CollectionName,
     BlacklistEntry,
     RemovedServer,
@@ -17,7 +17,7 @@ from .cache import (
     GlobalCacheStats
 )
 
-from .discord import (
+from .discord_tracking_models import (
     PermissionLevel,
     CommandCategory,
     CommandUsage,

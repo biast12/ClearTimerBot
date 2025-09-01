@@ -3,10 +3,10 @@ from discord.ext import commands
 from datetime import datetime, timezone
 
 from src.models import BotConfig, GuildInfo, CommandUsage
-from src.services.data_service import DataService
-from src.services.database import db_manager
-from src.services.scheduler_service import SchedulerService
-from src.services.message_service import MessageService
+from src.services.server_data_service import DataService
+from src.services.database_connection_manager import db_manager
+from src.services.clear_job_scheduler_service import SchedulerService
+from src.services.message_clearing_service import MessageService
 from src.utils.logger import logger, LogArea
 
 
@@ -24,11 +24,11 @@ class ClearTimerBot(commands.Bot):
         self.message_service = MessageService(self.data_service, self.scheduler_service)
 
         # Set up service callbacks
-        self.scheduler_service.set_clear_callback(
-            self.message_service.clear_channel_messages
+        self.scheduler_service.register_channel_clear_callback(
+            self.message_service.execute_channel_message_clear
         )
-        self.scheduler_service.set_notify_callback(
-            self.message_service.notify_missed_clear
+        self.scheduler_service.register_missed_clear_notification_callback(
+            self.message_service.send_missed_clear_notification
         )
 
 
@@ -67,7 +67,7 @@ class ClearTimerBot(commands.Bot):
             
             # Initialize scheduled jobs for all subscriptions
             # Requires scheduler to be running
-            await self.scheduler_service.initialize_jobs(self)
+            await self.scheduler_service.initialize_all_scheduled_jobs(self)
             logger.info(LogArea.SCHEDULER, "Scheduler jobs initialized")
 
             # Perform maintenance tasks (cleanup old removed servers)
@@ -336,7 +336,7 @@ class ClearTimerBot(commands.Bot):
 
                 # Cancel the scheduled job if it exists
                 job_id = f"{server_id}_{channel_id}"
-                if await self.scheduler_service.cancel_job(job_id):
+                if await self.scheduler_service.cancel_job_by_id(job_id):
                     logger.debug(LogArea.SCHEDULER, f"Cancelled scheduled job for deleted channel: {job_id}")
     
     async def _cleanup_server_channels(self, guild: discord.Guild) -> None:

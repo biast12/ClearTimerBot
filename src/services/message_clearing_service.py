@@ -3,8 +3,8 @@ import pytz
 from datetime import timedelta
 import discord
 
-from src.services.data_service import DataService
-from src.services.scheduler_service import SchedulerService
+from src.services.server_data_service import DataService
+from src.services.clear_job_scheduler_service import SchedulerService
 from src.utils.logger import logger, LogArea
 
 
@@ -14,19 +14,19 @@ class MessageService:
         self.scheduler_service = scheduler_service
         self.rate_limit_delay = 1.0  # Delay between message deletions
 
-    async def clear_channel_messages(self, channel: discord.TextChannel) -> None:
+    async def execute_channel_message_clear(self, channel: discord.TextChannel) -> None:
         # Check permissions
-        if not await self._check_permissions(channel):
+        if not await self._validate_bot_channel_permissions(channel):
             return
 
         # Get ignored messages and users for this channel
         ignored_messages, ignored_users = await self._get_ignored_entities(channel)
 
         # Perform the clear
-        deleted_count = await self._delete_messages(channel, ignored_messages, ignored_users)
+        deleted_count = await self._perform_message_deletion(channel, ignored_messages, ignored_users)
 
         # Update next run time
-        await self._update_next_run_time(channel)
+        await self._update_next_scheduled_clear_time(channel)
     
     async def _get_ignored_entities(self, channel: discord.TextChannel) -> tuple[set, set]:
         """Get both ignored messages and ignored users for a channel"""
@@ -41,7 +41,7 @@ class MessageService:
             return ignored_messages, ignored_users
         return set(), set()
 
-    async def _check_permissions(self, channel: discord.TextChannel) -> bool:
+    async def _validate_bot_channel_permissions(self, channel: discord.TextChannel) -> bool:
         permissions = channel.permissions_for(channel.guild.me)
         
         # Check all required permissions
@@ -63,7 +63,7 @@ class MessageService:
 
         return True
 
-    async def _delete_messages(self, channel: discord.TextChannel, ignored_messages: set = None, ignored_users: set = None) -> int:
+    async def _perform_message_deletion(self, channel: discord.TextChannel, ignored_messages: set = None, ignored_users: set = None) -> int:
         deleted_count = 0
         ignored_messages = ignored_messages or set()
         ignored_users = ignored_users or set()
@@ -135,12 +135,12 @@ class MessageService:
 
         return deleted_count
 
-    async def _update_next_run_time(self, channel: discord.TextChannel) -> None:
+    async def _update_next_scheduled_clear_time(self, channel: discord.TextChannel) -> None:
         server_id = str(channel.guild.id)
         channel_id = str(channel.id)
 
         # Get the job's next run time
-        next_run_time = self.scheduler_service.get_next_run_time(server_id, channel_id)
+        next_run_time = self.scheduler_service.get_channel_next_clear_time(server_id, channel_id)
 
         if not next_run_time:
             return
@@ -153,7 +153,7 @@ class MessageService:
             )
             await self.data_service.save_servers()
 
-    async def notify_missed_clear(
+    async def send_missed_clear_notification(
         self, channel: discord.TextChannel, job_id: str
     ) -> None:
         from src.components.errors import MissedClearView

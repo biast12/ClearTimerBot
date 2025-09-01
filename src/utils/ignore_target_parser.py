@@ -7,7 +7,7 @@ import discord
 from typing import Optional, Tuple
 
 
-async def parse_and_validate_target(
+async def identify_and_validate_ignore_target(
     target: str,
     channel: discord.TextChannel,
     guild: discord.Guild
@@ -25,7 +25,7 @@ async def parse_and_validate_target(
         Returns (None, None) if target is invalid
     """
     # First try to parse as user
-    user_id = extract_user_id(target)
+    user_id = extract_discord_user_id(target)
     if user_id:
         # Validate user exists in guild
         try:
@@ -36,7 +36,7 @@ async def parse_and_validate_target(
             pass  # Not a valid user, try message next
     
     # Try to parse as message
-    message_id = extract_message_id(target)
+    message_id = extract_discord_message_id(target)
     if message_id:
         # Try to validate message exists in channel
         try:
@@ -51,7 +51,7 @@ async def parse_and_validate_target(
     return None, None
 
 
-def extract_user_id(user_input: str) -> Optional[str]:
+def extract_discord_user_id(user_input: str) -> Optional[str]:
     """
     Extract user ID from mention or direct ID.
     
@@ -74,7 +74,7 @@ def extract_user_id(user_input: str) -> Optional[str]:
     return None
 
 
-def extract_message_id(message_input: str) -> Optional[str]:
+def extract_discord_message_id(message_input: str) -> Optional[str]:
     """
     Extract message ID from either a message link or direct ID.
     
@@ -99,7 +99,7 @@ def extract_message_id(message_input: str) -> Optional[str]:
     return None
 
 
-async def validate_and_add_target(
+async def validate_and_add_ignore_target(
     target: Optional[str],
     channel: discord.TextChannel,
     guild: discord.Guild,
@@ -120,7 +120,7 @@ async def validate_and_add_target(
     if not target:
         return None, None
     
-    entity_id, entity_type = await parse_and_validate_target(target, channel, guild)
+    entity_id, entity_type = await identify_and_validate_ignore_target(target, channel, guild)
     
     if entity_id and entity_type:
         if entity_type == "user":

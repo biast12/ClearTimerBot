@@ -273,7 +273,7 @@ class OwnerCommands(
     async def error_clear(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True, ephemeral=True)
         
-        from src.services.database import db_manager
+        from src.services.database_connection_manager import db_manager
         
         try:
             errors_collection = db_manager.db.errors

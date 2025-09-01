@@ -8,7 +8,7 @@ from src.models import (
     RemovedServer,
     TimezoneDocument
 )
-from src.services.database import db_manager
+from src.services.database_connection_manager import db_manager
 from src.services.cache_manager import MultiLevelCache
 from src.utils.logger import logger, LogArea
 
@@ -28,18 +28,18 @@ class DataService:
             return
 
         async with self._lock:
-            await self._load_servers()
-            await self._load_blacklist()
-            await self._load_timezones()
+            await self._load_all_servers_from_database()
+            await self._load_blacklist_from_database()
+            await self._load_timezone_mappings_from_database()
             self._initialized = True
 
-    async def _load_servers(self) -> None:
+    async def _load_all_servers_from_database(self) -> None:
         servers_collection = db_manager.servers
         async for server_doc in servers_collection.find():
             server_id = str(server_doc["_id"])
             self._servers_cache[server_id] = Server.from_dict(server_id, server_doc)
 
-    async def _load_blacklist(self) -> None:
+    async def _load_blacklist_from_database(self) -> None:
         blacklist_collection = db_manager.blacklist
         # Load all blacklist documents as BlacklistEntry models
         self._blacklist_names_cache: Dict[str, str] = {}  # Store server names
@@ -49,7 +49,7 @@ class DataService:
                 self._blacklist_cache.add(entry.server_id)
                 self._blacklist_names_cache[entry.server_id] = entry.server_name
 
-    async def _load_timezones(self) -> None:
+    async def _load_timezone_mappings_from_database(self) -> None:
         timezones_collection = db_manager.timezones
         tz_doc = await timezones_collection.find_one()
         if tz_doc:
