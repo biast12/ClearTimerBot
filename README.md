@@ -294,7 +294,7 @@ Your privacy is important to us. Please review our [Privacy Policy](https://bias
 
 ## Support
 
-For further assistance, join our [support Discord server](https://discord.com/invite/ERFffj9Qs7).
+For further assistance, join our [support Discord server](https://biast12.com/support).
 
 ## License
 

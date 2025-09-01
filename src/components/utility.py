@@ -40,7 +40,7 @@ class HelpView(discord.ui.LayoutView):
             "**For You:** Manage Messages\n"
             "**For Bot:** View Channel, Send Messages, Send Messages in Threads, Read Message History, Manage Messages, Embed Links, Use Application Commands\n\n"
             "**🔗 Links**\n"
-            f"[Support Server](https://discord.com/invite/ERFffj9Qs7) | "
+            f"[Support Server](https://biast12.com/support) | "
             f"[Add Bot]({bot_invite_url}) | "
             "[GitHub](https://github.com/biast12/ClearTimerBot)"
         )
