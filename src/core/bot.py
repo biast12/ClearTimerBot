@@ -363,7 +363,7 @@ class ClearTimerBot(commands.Bot):
                     
                     # Cancel any scheduled job
                     job_id = f"{server_id}_{channel_id}"
-                    await self.scheduler_service.cancel_job(job_id)
+                    await self.scheduler_service.cancel_job_by_id(job_id)
         
         if cleaned_count > 0:
             logger.info(

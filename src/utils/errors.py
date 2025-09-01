@@ -1,7 +1,6 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-import traceback
 from typing import Union
 from src.utils.logger import logger, LogArea
 

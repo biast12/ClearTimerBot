@@ -81,7 +81,7 @@ class SubscriptionCommands(commands.Cog):
         server.add_channel(channel_id, timer, next_run_time)
         
         # Add ignored target if provided (message or user)
-        ignored_entity_id, ignored_entity_type = await validate_and_add_target(
+        ignored_entity_id, ignored_entity_type = await validate_and_add_ignore_target(
             ignored_target, channel, interaction.guild, server.channels[channel_id]
         )
         

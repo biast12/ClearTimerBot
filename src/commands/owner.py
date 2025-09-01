@@ -1,7 +1,6 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from datetime import datetime, timezone
 from src.utils.logger import logger, LogArea
 
 
@@ -71,7 +70,7 @@ class OwnerCommands(
 
             # Remove all jobs and channels for this server
             for channel_id in list(server.channels.keys()):
-                self.scheduler_service.remove_job(target_id, channel_id)
+                self.scheduler_service.remove_channel_clear_job(target_id, channel_id)
                 server.remove_channel(channel_id)
 
             # Keep server in database even with no channels
@@ -86,7 +85,7 @@ class OwnerCommands(
         for server_id, server in servers.items():
             if target_id in server.channels:
                 # Remove job
-                self.scheduler_service.remove_job(server_id, target_id)
+                self.scheduler_service.remove_channel_clear_job(server_id, target_id)
 
                 # Remove from data service
                 server.remove_channel(target_id)
@@ -117,7 +116,7 @@ class OwnerCommands(
             server = await self.data_service.get_server(server_id)
             if server:
                 for channel_id in list(server.channels.keys()):
-                    self.scheduler_service.remove_job(server_id, channel_id)
+                    self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
                     server.remove_channel(channel_id)
                 # Keep server in database even with no channels
                 await self.data_service.save_servers()
