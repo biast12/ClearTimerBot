@@ -38,8 +38,8 @@ ECHO.
 ECHO ============================================
 ECHO.
 
-REM Activate virtual environment and run the main bot script
-CALL venv\Scripts\activate.bat && python main.py
+REM Activate virtual environment and start a single-instance bot
+CALL venv\Scripts\activate.bat && python main_single.py
 
 ECHO.
 ECHO Press any key to exit...

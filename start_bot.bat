@@ -49,7 +49,7 @@ GOTO PARSE_ARGS
 :RUN_BOT
 
 REM Build the command
-SET CMD=python shard_launcher.py
+SET CMD=python main.py
 
 IF DEFINED SHARD_COUNT (
     SET CMD=%CMD% --shards %SHARD_COUNT%
@@ -70,7 +70,7 @@ ECHO Launching bot...
 ECHO =====================================================
 ECHO.
 
-REM Activate virtual environment and run the sharding launcher
+REM Activate virtual environment and run the main bot
 CALL venv\Scripts\activate.bat && %CMD%
 
 REM Check if bot crashed

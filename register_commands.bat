@@ -34,7 +34,7 @@ IF NOT EXIST "venv\Scripts\activate.bat" (
     EXIT /B 1
 )
 
-REM Activate virtual environment and run the command synchronization script
+REM Activate virtual environment and run the command synchronization
 CALL venv\Scripts\activate.bat && python register_commands.py
 
 ECHO.
