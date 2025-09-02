@@ -362,8 +362,6 @@ class DataService:
             # Create default config if none exists
             self._bot_config = BotConfigDocument()
             await self.save_bot_config()
-        
-        logger.info(LogArea.DATABASE, f"Loaded {len(self._admins_cache)} admin(s) from database")
     
     async def save_bot_config(self) -> None:
         """Save bot config to database"""

@@ -2,29 +2,27 @@
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 REM ============================================================================
-REM ClearTimerBot - Main Bot Launcher
-REM Purpose: Starts the ClearTimerBot Discord bot for automatic message clearing
-REM Prerequisites: Python 3.8+ and configured .env file with bot token
+REM ClearTimerBot - Development Bot Launcher
 REM ============================================================================
 
 REM Set console title for better identification
-TITLE ClearTimerBot - Active
+TITLE ClearTimerBot - Development Bot Launcher
 
 REM Check if Python is installed and accessible
-python --version >nul 2>&1
-IF %errorlevel% NEQ 0 (
+python --version >NUL 2>&1
+IF %ERRORLEVEL% NEQ 0 (
     ECHO [ERROR] Python is not installed or not in PATH.
     ECHO Please install Python and ensure it's added to your system PATH.
     PAUSE
-    EXIT /b 1
+    EXIT /B 1
 )
 
 REM Check if virtual environment exists and offer to activate it
 IF NOT EXIST "venv\Scripts\activate.bat" (
     ECHO [WARNING] No virtual environment found.
-    ECHO Please run setup_python_environment.bat first to set up the environment.
+    ECHO Please run setup_environment.bat first to set up the environment.
     PAUSE
-    EXIT /b 1
+    EXIT /B 1
 )
 
 REM Display bot startup message
@@ -40,10 +38,9 @@ ECHO.
 ECHO ============================================
 ECHO.
 
-REM Run the main bot script
-python main.py
+REM Activate virtual environment and run the main bot script
+CALL venv\Scripts\activate.bat && python main.py
 
-REM Final pause before closing
 ECHO.
 ECHO Press any key to exit...
-PAUSE >nul
+PAUSE >NUL

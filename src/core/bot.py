@@ -11,12 +11,24 @@ from src.utils.logger import logger, LogArea
 
 
 class ClearTimerBot(commands.Bot):
-    def __init__(self, config: BotConfig):
+    def __init__(self, config: BotConfig, shard=None):
         intents = discord.Intents.default()
         intents.message_content = True
         intents.guilds = True
 
-        super().__init__(command_prefix="!", intents=intents, help_command=None)
+        # Configure sharding if provided
+        shard_id = None
+        shard_count = None
+        if shard:
+            shard_id, shard_count = shard
+
+        super().__init__(
+            command_prefix="!",
+            intents=intents,
+            help_command=None,
+            shard_id=shard_id,
+            shard_count=shard_count
+        )
 
         self.config = config
         self.data_service = DataService()
@@ -45,12 +57,20 @@ class ClearTimerBot(commands.Bot):
         await self.load_commands()
 
     async def on_ready(self) -> None:
-        logger.info(LogArea.STARTUP, f"Bot ready: {self.user} (ID: {self.user.id})")
-        logger.info(LogArea.STARTUP, f"Connected to {len(self.guilds)} guilds")
+        # Log shard information if sharded
+        if self.shard_id is not None:
+            logger.info(LogArea.STARTUP, f"Shard {self.shard_id}/{self.shard_count - 1} ready: {self.user} (ID: {self.user.id})")
+            logger.info(LogArea.STARTUP, f"Shard {self.shard_id} connected to {len(self.guilds)} guilds")
+        else:
+            logger.info(LogArea.STARTUP, f"Bot ready: {self.user} (ID: {self.user.id})")
+            logger.info(LogArea.STARTUP, f"Connected to {len(self.guilds)} guilds")
 
         try:
-            # Set bot presence first
-            activity = discord.CustomActivity(name="Cleaning up the mess! 🧹")
+            # Set bot presence with shard info if applicable
+            if self.shard_id is not None:
+                activity = discord.CustomActivity(name=f"Cleaning up the mess! 🧹 | Shard {self.shard_id}")
+            else:
+                activity = discord.CustomActivity(name="Cleaning up the mess! 🧹")
             await self.change_presence(activity=activity)
 
             # Sync server data with current guild membership
@@ -73,7 +93,10 @@ class ClearTimerBot(commands.Bot):
             # Perform maintenance tasks (cleanup old removed servers)
             await self.data_service.cleanup_old_removed_servers()
 
-            logger.info(LogArea.STARTUP, "Bot initialization complete!")
+            if self.shard_id is not None:
+                logger.info(LogArea.STARTUP, f"Shard {self.shard_id} initialization complete!")
+            else:
+                logger.info(LogArea.STARTUP, "Bot initialization complete!")
         except Exception as e:
             error_id = await logger.log_error(
                 LogArea.STARTUP,
@@ -105,7 +128,7 @@ class ClearTimerBot(commands.Bot):
         if self.config.guild_id:
             try:
                 await self.load_extension("src.commands.admin")
-                logger.info(LogArea.STARTUP, "Loading admin commands")
+                logger.info(LogArea.STARTUP, "Loaded extension: src.commands.admin")
             except Exception as e:
                 error_id = await logger.log_error(
                     LogArea.STARTUP,
@@ -118,7 +141,7 @@ class ClearTimerBot(commands.Bot):
         if self.config.owner_id and self.config.guild_id:
             try:
                 await self.load_extension("src.commands.owner")
-                logger.info(LogArea.STARTUP, "Loading owner commands")
+                logger.info(LogArea.STARTUP, "Loaded extension: src.commands.owner")
             except Exception as e:
                 error_id = await logger.log_error(
                     LogArea.STARTUP,

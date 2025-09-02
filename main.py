@@ -5,6 +5,7 @@ ClearTimer Bot - A Discord bot for automatic message clearing
 
 import asyncio
 import sys
+import os
 from pathlib import Path
 
 # Add src directory to path
@@ -20,12 +21,25 @@ async def main():
     config_manager = ConfigManager()
     config = config_manager.load_config()
 
-    # Create bot instance with configuration
-    bot = ClearTimerBot(config)
+    # Check for sharding environment variables
+    shard_id = os.environ.get('SHARD_ID')
+    shard_count = os.environ.get('SHARD_COUNT')
+    
+    # Parse sharding configuration
+    shard_config = None
+    if shard_id is not None and shard_count is not None:
+        shard_config = (int(shard_id), int(shard_count))
+        logger.info(LogArea.STARTUP, f"Running as shard {shard_id}/{int(shard_count) - 1}")
+
+    # Create bot instance with configuration and sharding
+    bot = ClearTimerBot(config, shard=shard_config)
 
     # Run the bot
     try:
-        logger.info(LogArea.STARTUP, "Starting bot...")
+        if shard_config:
+            logger.info(LogArea.STARTUP, f"Starting bot shard {shard_config[0]}...")
+        else:
+            logger.info(LogArea.STARTUP, "Starting bot...")
         await bot.start(config.token)
     except KeyboardInterrupt:
         logger.info(LogArea.STARTUP, "Received shutdown signal (Ctrl+C)")
