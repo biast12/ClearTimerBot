@@ -3,7 +3,7 @@ View Display for Owner Commands
 """
 
 import discord
-from discord.ext import commands
+import os
 
 
 class OwnerOnlyView(discord.ui.LayoutView):
@@ -208,5 +208,200 @@ class ConfigReloadErrorView(discord.ui.LayoutView):
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+
+
+class ShardReloadSingleView(discord.ui.LayoutView):
+    """View for reloading a single shard"""
+    
+    def __init__(self, shard_id: int):
+        super().__init__()
+        
+        content = (
+            "🔄 **Reloading Single Shard**\n\n"
+            f"Restarting shard {shard_id} only...\n\n"
+            "**What happens:**\n"
+            "• Only this specific shard restarts\n"
+            "• Other shards continue running\n"
+            "• Guilds on this shard temporarily offline"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.yellow().value
+        )
+        self.add_item(container)
+
+
+
+
+class ShardNotShardedView(discord.ui.LayoutView):
+    """View for when bot is not sharded but shard reload is requested"""
+    
+    def __init__(self):
+        super().__init__()
+        
+        content = (
+            "⚠️ **Cannot Reload Shard**\n\n"
+            "Bot is running in single-instance mode (not sharded).\n\n"
+            "_Use `/owner shard reload` to reload the bot_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class ShardInvalidIdView(discord.ui.LayoutView):
+    """View for invalid shard ID"""
+    
+    def __init__(self, shard_id: int, max_shard: int):
+        super().__init__()
+        
+        content = (
+            "❌ **Invalid Shard ID**\n\n"
+            f"Shard ID `{shard_id}` is invalid.\n\n"
+            f"**Valid Range:** 0 to {max_shard - 1}\n\n"
+            "_Please specify a valid shard ID_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class ShardReloadSignalView(discord.ui.LayoutView):
+    """View for reload signal sent to another shard"""
+    
+    def __init__(self, shard_id: int):
+        super().__init__()
+        
+        content = (
+            "📡 **Reload Signal Sent**\n\n"
+            f"Reload signal sent to shard {shard_id}.\n\n"
+            "**Note:** Cross-shard communication is not yet implemented.\n"
+            "Please restart the shard manually.\n\n"
+            "_Future updates will enable automatic cross-shard reloading_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class ShardReloadFailedView(discord.ui.LayoutView):
+    """View for shard reload failure"""
+    
+    def __init__(self, error: str):
+        super().__init__()
+        
+        content = (
+            "❌ **Reload Failed**\n\n"
+            "Failed to reload shard.\n\n"
+            f"**Error:** {error}\n\n"
+            "_Please check the logs for more details_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+
+
+class ShardStatusCompleteView(discord.ui.LayoutView):
+    """Comprehensive view for shard status and configuration"""
+    
+    def __init__(self, shard_config: dict, bot):
+        super().__init__()
+        
+        content = "🔷 **Shard Status & Configuration**\n\n"
+        
+        # Current runtime status
+        content += "**Current Runtime:**\n"
+        if bot.shard_id is not None:
+            content += f"• Shard: {bot.shard_id}/{bot.shard_count - 1}\n"
+            content += f"• Total Shards: {bot.shard_count}\n"
+            content += f"• Guilds on This Shard: {len(bot.guilds)}\n"
+            
+            # Get shard latency
+            latency = bot.get_shard(bot.shard_id).latency if bot.get_shard(bot.shard_id) else bot.latency
+            content += f"• Latency: {latency * 1000:.2f}ms\n"
+        else:
+            content += "• Mode: Single-instance (not sharded)\n"
+            content += f"• Total Guilds: {len(bot.guilds)}\n"
+            content += f"• Latency: {bot.latency * 1000:.2f}ms\n"
+        
+        content += f"• Process ID: `{os.getpid()}`\n\n"
+        
+        # Database configuration
+        if shard_config:
+            # Check for pending actions
+            if 'pending_action' in shard_config:
+                content += "⚠️ **Pending Action:**\n"
+                content += f"• Action: `{shard_config['pending_action']}`\n"
+                if 'action_timestamp' in shard_config:
+                    content += f"• Requested: {shard_config['action_timestamp']}\n"
+                if 'new_shard_count' in shard_config:
+                    content += f"• New Count: {shard_config['new_shard_count']}\n"
+                content += "\n"
+            
+            # Show persistent configuration
+            persistent_config = False
+            for key, value in shard_config.items():
+                if key not in ['pending_action', 'action_timestamp', 'new_shard_count']:
+                    if not persistent_config:
+                        content += "**Persistent Config:**\n"
+                        persistent_config = True
+                    content += f"• {key}: `{value}`\n"
+            
+            if persistent_config:
+                content += "\n"
+        
+        content += "**Available Commands:**\n"
+        content += "• `/owner shard reload` - Reload all shards\n"
+        content += "• `/owner shard reload <id>` - Reload specific shard\n"
+        content += "• `/owner shard status` - View this status"
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.blue().value
+        )
+        self.add_item(container)
+
+
+
+
+class ShardRestartView(discord.ui.LayoutView):
+    """View for restarting all shards"""
+    
+    def __init__(self):
+        super().__init__()
+        
+        content = (
+            "🔄 **Reloading All Shards**\n\n"
+            "Full bot reload initiated...\n\n"
+            "**What happens:**\n"
+            "• All shards shut down together\n"
+            "• Shard manager restarts\n"
+            "• All shards relaunch with fresh state\n"
+            "• Bot offline for ~5-10 seconds\n\n"
+            "_Use `/owner shard reload <id>` to reload single shard only_"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.yellow().value
         )
         self.add_item(container)

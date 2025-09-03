@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Any
 import asyncio
 from datetime import datetime, timezone, timedelta
 
@@ -21,7 +21,7 @@ class DataService:
         self._blacklist_names_cache: Dict[str, str] = {}  # Store server names
         self._blacklist_entries_cache: Dict[str, BlacklistEntry] = {}  # Store full entries
         self._timezones_cache: Dict[str, str] = {}
-        self._admins_cache: Dict[str, AdminUser] = {}  # Cache for admin users
+        self._admins_cache: Set[str] = set()  # Cache for admin user IDs
         self._bot_config: Optional[BotConfigDocument] = None  # Bot config document
         self._cache = MultiLevelCache()
         self._initialized = False
@@ -468,3 +468,42 @@ class DataService:
             await self._load_blacklist_from_database()
             
             logger.info(LogArea.DATABASE, "Reloaded all caches (except admins and timezones)")
+    
+    # Shard configuration methods
+    async def get_shard_config(self, key: str, default: Any = None) -> Any:
+        """Get shard configuration value"""
+        async with self._lock:
+            if not self._bot_config:
+                await self._load_bot_config_from_database()
+            
+            return self._bot_config.get_shard_config(key, default)
+    
+    async def update_shard_config(self, key: str, value: Any) -> None:
+        """Update shard configuration in database"""
+        async with self._lock:
+            if not self._bot_config:
+                self._bot_config = BotConfigDocument()
+            
+            self._bot_config.update_shard_config(key, value)
+            await self.save_bot_config()
+            logger.info(LogArea.DATABASE, f"Updated shard config: {key} = {value}")
+    
+    async def get_all_shard_config(self) -> Dict[str, Any]:
+        """Get all shard configuration"""
+        async with self._lock:
+            if not self._bot_config:
+                await self._load_bot_config_from_database()
+            
+            return self._bot_config.shard_config.copy()
+    
+    async def clear_shard_config(self, key: str) -> None:
+        """Clear specific shard configuration"""
+        async with self._lock:
+            if not self._bot_config:
+                await self._load_bot_config_from_database()
+            
+            if key in self._bot_config.shard_config:
+                del self._bot_config.shard_config[key]
+                self._bot_config.updated_at = datetime.now(timezone.utc)
+                await self.save_bot_config()
+                logger.info(LogArea.DATABASE, f"Cleared shard config: {key}")

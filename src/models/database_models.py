@@ -189,6 +189,7 @@ class BotConfigDocument:
     settings: Dict[str, Any] = field(default_factory=dict)
     feature_flags: Dict[str, bool] = field(default_factory=dict)
     timezones: Dict[str, str] = field(default_factory=dict)
+    shard_config: Dict[str, Any] = field(default_factory=dict)  # Shard configuration
     updated_at: Optional[datetime] = None
     
     def __post_init__(self):
@@ -212,6 +213,15 @@ class BotConfigDocument:
     def is_admin(self, user_id: str) -> bool:
         return user_id in self.admins
     
+    def update_shard_config(self, key: str, value: Any) -> None:
+        """Update shard configuration"""
+        self.shard_config[key] = value
+        self.updated_at = datetime.now(timezone.utc)
+    
+    def get_shard_config(self, key: str, default: Any = None) -> Any:
+        """Get shard configuration value"""
+        return self.shard_config.get(key, default)
+    
     def to_dict(self) -> Dict[str, Any]:
         return {
             "_id": "bot_config",
@@ -219,6 +229,7 @@ class BotConfigDocument:
             "settings": self.settings,
             "feature_flags": self.feature_flags,
             "timezones": self.timezones,
+            "shard_config": self.shard_config,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
     
@@ -243,6 +254,7 @@ class BotConfigDocument:
             settings=data.get("settings", {}),
             feature_flags=data.get("feature_flags", {}),
             timezones=data.get("timezones", {}),
+            shard_config=data.get("shard_config", {}),
             updated_at=updated_at
         )
 

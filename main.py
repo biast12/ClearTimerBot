@@ -7,14 +7,17 @@ import asyncio
 import sys
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict
 import argparse
+from datetime import datetime, timezone
 
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.core.config import ConfigManager  # noqa: E402
 from src.utils.logger import logger, LogArea  # noqa: E402
+from src.services.database_connection_manager import db_manager  # noqa: E402
+from src.services.server_data_service import DataService  # noqa: E402
 
 # Import discord to check recommended shard count
 import discord  # noqa: E402
@@ -37,7 +40,13 @@ class ShardManager:
         self.shard_count = shard_count
         self.shard_ids = shard_ids
         self.no_shard = no_shard
-        self.processes = []
+        self.processes: Dict[int, asyncio.subprocess.Process] = {}
+        self.shard_restart_counts: Dict[int, int] = {}
+        self.max_restart_attempts = 3
+        self.restart_cooldown = 30  # seconds
+        self.data_service = DataService()
+        self.should_restart = False  # Flag for full manager restart
+        self.restart_event = asyncio.Event()  # Event to signal restart
     
     async def get_recommended_shards(self) -> int:
         """Get the recommended number of shards from Discord"""
@@ -61,7 +70,7 @@ class ShardManager:
             # Default to 1 shard if we can't get recommendation
             return 1
     
-    async def launch_shard(self, shard_id: int, shard_count: int):
+    async def launch_shard(self, shard_id: int, shard_count: int, auto_restart: bool = True):
         """Launch a single shard as a subprocess"""
         logger.info(LogArea.STARTUP, f"Launching shard {shard_id}/{shard_count - 1}")
         
@@ -79,10 +88,10 @@ class ShardManager:
             stderr=asyncio.subprocess.PIPE
         )
         
-        self.processes.append(process)
+        self.processes[shard_id] = process
         
         # Monitor the process output
-        async def monitor_output(stream, prefix):
+        async def monitor_output(stream):
             while True:
                 line = await stream.readline()
                 if not line:
@@ -92,14 +101,154 @@ class ShardManager:
                     print(f"[Shard {shard_id}] {decoded}")
         
         # Start monitoring tasks
-        asyncio.create_task(monitor_output(process.stdout, "OUT"))
-        asyncio.create_task(monitor_output(process.stderr, "ERR"))
+        asyncio.create_task(monitor_output(process.stdout))
+        asyncio.create_task(monitor_output(process.stderr))
+        
+        # Monitor for crashes and auto-restart if enabled
+        if auto_restart:
+            asyncio.create_task(self.monitor_shard(shard_id, shard_count))
         
         return process
+    
+    async def monitor_shard(self, shard_id: int, shard_count: int):
+        """Monitor a shard and restart it if it crashes"""
+        while shard_id in self.processes:
+            process = self.processes.get(shard_id)
+            if process:
+                return_code = await process.wait()
+                
+                # Check if this was an intentional shutdown for restart (exit code 99)
+                if return_code == 99:
+                    logger.info(LogArea.STARTUP, f"Shard {shard_id} requested manager restart")
+                    self.should_restart = True
+                    self.restart_event.set()
+                    break
+                # Check if this was a normal shutdown (exit code 0)
+                elif return_code == 0:
+                    logger.info(LogArea.STARTUP, f"Shard {shard_id} shut down cleanly")
+                    break
+                
+                # Shard crashed, attempt restart
+                logger.warning(LogArea.STARTUP, f"Shard {shard_id} crashed with exit code {return_code}")
+                
+                # Check restart attempts
+                restart_count = self.shard_restart_counts.get(shard_id, 0)
+                
+                if restart_count >= self.max_restart_attempts:
+                    logger.error(LogArea.STARTUP, f"Shard {shard_id} exceeded max restart attempts ({self.max_restart_attempts})")
+                    break
+                
+                # Wait before restarting
+                logger.info(LogArea.STARTUP, f"Restarting shard {shard_id} in {self.restart_cooldown} seconds...")
+                await asyncio.sleep(self.restart_cooldown)
+                
+                # Restart the shard
+                self.shard_restart_counts[shard_id] = restart_count + 1
+                logger.info(LogArea.STARTUP, f"Restarting shard {shard_id} (attempt {restart_count + 1}/{self.max_restart_attempts})")
+                
+                await self.launch_shard(shard_id, shard_count, auto_restart=False)
+                
+                # Recursively monitor the new process
+                await self.monitor_shard(shard_id, shard_count)
+            else:
+                break
+    
+    async def check_shard_config(self):
+        """Check for shard configuration updates from database"""
+        try:
+            # Connect to database
+            await db_manager.connect()
+            await self.data_service.initialize()
+            
+            # Check for pending shard configuration
+            pending_action = await self.data_service.get_shard_config('pending_action')
+            
+            if pending_action:
+                timestamp = await self.data_service.get_shard_config('action_timestamp')
+                
+                # Check if this is a recent config (within last 5 minutes)
+                if timestamp:
+                    config_time = datetime.fromisoformat(timestamp)
+                    age = (datetime.now(timezone.utc) - config_time).total_seconds()
+                    
+                    if age < 300:  # 5 minutes
+                        logger.info(LogArea.STARTUP, f"Found recent shard config action: {pending_action}")
+                        
+                        # Handle different actions
+                        if pending_action == 'update_count':
+                            new_count = await self.data_service.get_shard_config('shard_count')
+                            if new_count:
+                                self.shard_count = new_count
+                                logger.info(LogArea.STARTUP, f"Using shard count from database: {self.shard_count}")
+                        
+                        elif pending_action == 'add_shard':
+                            new_count = await self.data_service.get_shard_config('new_shard_count')
+                            if new_count:
+                                self.shard_count = new_count
+                                logger.info(LogArea.STARTUP, f"Shard addition requested, new count: {self.shard_count}")
+                        
+                        # Clear the pending action after processing
+                        await self.data_service.clear_shard_config('pending_action')
+                        await self.data_service.clear_shard_config('action_timestamp')
+                        logger.info(LogArea.STARTUP, "Processed and cleared shard config action")
+                    else:
+                        # Config is too old, clear it
+                        await self.data_service.clear_shard_config('pending_action')
+                        await self.data_service.clear_shard_config('action_timestamp')
+                        logger.info(LogArea.STARTUP, "Cleared stale shard config action")
+            
+            # Check for persistent shard count override
+            override_count = await self.data_service.get_shard_config('override_shard_count')
+            if override_count and self.shard_count is None:
+                self.shard_count = override_count
+                logger.info(LogArea.STARTUP, f"Using override shard count from database: {self.shard_count}")
+                
+        except Exception as e:
+            logger.warning(LogArea.STARTUP, f"Error checking shard config from database: {e}")
+    
+    async def _monitor_processes(self):
+        """Monitor all processes until they're done"""
+        while self.processes:
+            await asyncio.sleep(5)
+            
+            # Remove finished processes
+            finished_shards = []
+            for shard_id, process in self.processes.items():
+                if process.returncode is not None:
+                    finished_shards.append(shard_id)
+            
+            for shard_id in finished_shards:
+                del self.processes[shard_id]
+                if not self.should_restart:
+                    logger.info(LogArea.STARTUP, f"Shard {shard_id} has finished")
+    
+    async def _wait_for_restart(self):
+        """Wait for restart signal"""
+        await self.restart_event.wait()
+    
+    async def _shutdown_all_shards(self):
+        """Shutdown all running shards"""
+        for shard_id, process in self.processes.items():
+            if process.returncode is None:
+                logger.info(LogArea.STARTUP, f"Terminating shard {shard_id}...")
+                process.terminate()
+        
+        # Wait for all to terminate
+        if self.processes:
+            await asyncio.gather(
+                *[p.wait() for p in self.processes.values()],
+                return_exceptions=True
+            )
+        
+        self.processes.clear()
+        self.shard_restart_counts.clear()
     
     async def run(self):
         """Run the shard manager"""
         try:
+            # Check for shard configuration updates
+            await self.check_shard_config()
+            
             # Determine shard count
             if self.shard_count is None:
                 self.shard_count = await self.get_recommended_shards()
@@ -113,8 +262,12 @@ class ShardManager:
                 logger.info(LogArea.STARTUP, "Running in single-instance mode")
                 # Import and run the bot directly
                 from main_single import run_bot
-                await run_bot()
-                return
+                result = await run_bot()
+                # Check if bot requested restart (return code 99)
+                if result == 99:
+                    logger.info(LogArea.STARTUP, "Single instance requested restart")
+                    return True  # Signal restart needed
+                return False
             
             # Determine which shards to run
             if self.shard_ids is None:
@@ -123,29 +276,55 @@ class ShardManager:
             logger.info(LogArea.STARTUP, f"Launching {len(self.shard_ids)} shard(s): {self.shard_ids}")
             
             # Launch all shards
-            tasks = []
             for shard_id in self.shard_ids:
-                process = await self.launch_shard(shard_id, self.shard_count)
-                tasks.append(process.wait())
+                await self.launch_shard(shard_id, self.shard_count)
             
-            # Wait for all shards to complete
+            # Monitor shards (the monitor tasks are already running)
             logger.info(LogArea.STARTUP, "All shards launched, monitoring...")
-            await asyncio.gather(*tasks)
+            
+            # Create tasks for monitoring
+            monitor_task = asyncio.create_task(self._monitor_processes())
+            restart_task = asyncio.create_task(self._wait_for_restart())
+            
+            # Wait for either all processes to finish or restart signal
+            done, pending = await asyncio.wait(
+                [monitor_task, restart_task],
+                return_when=asyncio.FIRST_COMPLETED
+            )
+            
+            # Cancel pending tasks
+            for task in pending:
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+            
+            # Check if we should restart
+            if self.should_restart:
+                logger.info(LogArea.STARTUP, "Manager restart requested, shutting down all shards...")
+                await self._shutdown_all_shards()
+                return True  # Signal that restart is needed
+            
+            logger.info(LogArea.STARTUP, "All shards have shut down")
+            return False  # No restart needed
             
         except KeyboardInterrupt:
             logger.info(LogArea.STARTUP, "Received shutdown signal, stopping all shards...")
-            for process in self.processes:
+            for shard_id, process in self.processes.items():
                 process.terminate()
-            await asyncio.gather(*[p.wait() for p in self.processes], return_exceptions=True)
+            await asyncio.gather(*[p.wait() for p in self.processes.values()], return_exceptions=True)
         except Exception as e:
             logger.error(LogArea.STARTUP, f"Fatal error in shard manager: {e}")
             raise
         finally:
+            # Disconnect from database
+            await db_manager.disconnect()
             logger.info(LogArea.STARTUP, "Shard manager shutdown complete")
 
 
 async def main():
-    """Main entry point with automatic sharding support"""
+    """Main entry point with automatic sharding support and self-restart"""
     parser = argparse.ArgumentParser(description='ClearTimer Bot with automatic sharding')
     parser.add_argument('--shards', type=int, help='Total number of shards (auto-detect if not specified)')
     parser.add_argument('--shard-ids', type=str, help='Comma-separated list of shard IDs to run (all if not specified)')
@@ -158,9 +337,41 @@ async def main():
     if args.shard_ids:
         shard_ids = [int(x.strip()) for x in args.shard_ids.split(',')]
     
-    # Create and run shard manager
-    manager = ShardManager(shard_count=args.shards, shard_ids=shard_ids, no_shard=args.no_shard)
-    await manager.run()
+    restart_count = 0
+    max_restarts = 10  # Prevent infinite restart loops
+    
+    while True:
+        try:
+            # Create and run shard manager
+            manager = ShardManager(shard_count=args.shards, shard_ids=shard_ids, no_shard=args.no_shard)
+            needs_restart = await manager.run()
+            
+            if needs_restart:
+                restart_count += 1
+                if restart_count > max_restarts:
+                    logger.error(LogArea.STARTUP, f"Maximum restart attempts ({max_restarts}) exceeded")
+                    break
+                
+                logger.info(LogArea.STARTUP, f"=== RESTARTING SHARD MANAGER (attempt {restart_count}/{max_restarts}) ===")
+                await asyncio.sleep(5)  # Brief pause before restart
+                continue
+            else:
+                # Normal shutdown, no restart needed
+                break
+                
+        except KeyboardInterrupt:
+            logger.info(LogArea.STARTUP, "Received keyboard interrupt, shutting down...")
+            break
+        except Exception as e:
+            logger.error(LogArea.STARTUP, f"Fatal error in main loop: {e}")
+            restart_count += 1
+            if restart_count > max_restarts:
+                logger.error(LogArea.STARTUP, f"Maximum restart attempts ({max_restarts}) exceeded after error")
+                break
+            logger.info(LogArea.STARTUP, f"Attempting restart after error (attempt {restart_count}/{max_restarts})...")
+            await asyncio.sleep(10)  # Longer pause after error
+    
+    logger.info(LogArea.STARTUP, "Bot manager terminated")
 
 
 if __name__ == "__main__":
@@ -168,5 +379,5 @@ if __name__ == "__main__":
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    # Run the bot with automatic sharding
+    # Run the bot with automatic sharding and restart capability
     asyncio.run(main())

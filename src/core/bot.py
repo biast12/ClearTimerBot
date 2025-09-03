@@ -151,6 +151,10 @@ class ClearTimerBot(commands.Bot):
                 logger.error(LogArea.STARTUP, f"Failed to load owner commands. Error ID: {error_id}")
 
     async def close(self) -> None:
+        # Check if restart was requested
+        if getattr(self, 'restart_requested', False):
+            logger.info(LogArea.STARTUP, "Restart requested, initiating graceful shutdown...")
+        
         # Stop scheduler first (prevents new jobs from running)
         await self.scheduler_service.shutdown()
         logger.info(LogArea.STARTUP, "Scheduler service shut down")

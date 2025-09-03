@@ -2,6 +2,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from src.utils.logger import logger, LogArea
+import asyncio
+from typing import Optional
 
 
 class OwnerCommands(
@@ -33,6 +35,12 @@ class OwnerCommands(
         parent=None
     )
     
+    shard_group = app_commands.Group(
+        name="shard",
+        description="Manage bot shards",
+        parent=None
+    )
+    
     @admin_group.command(
         name="list",
         description="List all bot administrators"
@@ -51,6 +59,7 @@ class OwnerCommands(
         from src.components.owner import AdminListView
         view = AdminListView(admins, self.bot)
         await interaction.followup.send(view=view)
+    
     
     @admin_group.command(
         name="add",
@@ -136,6 +145,99 @@ class OwnerCommands(
             from src.components.owner import ConfigReloadErrorView
             view = ConfigReloadErrorView(str(e))
             await interaction.followup.send(view=view)
+    
+    
+    @shard_group.command(
+        name="reload",
+        description="Reload all shards or a specific shard"
+    )
+    @app_commands.describe(
+        shard_id="Specific shard ID to reload (leave empty to reload all)"
+    )
+    async def shard_reload(self, interaction: discord.Interaction, shard_id: Optional[int] = None):
+        await interaction.response.defer(thinking=True)
+        
+        try:
+            # Check if specific shard requested but bot is not sharded
+            if self.bot.shard_id is None and shard_id is not None:
+                from src.components.owner import ShardNotShardedView
+                view = ShardNotShardedView()
+                await interaction.followup.send(view=view)
+                return
+            
+            if shard_id is not None:
+                # Reload specific shard
+                # Validate shard ID
+                if self.bot.shard_count and (shard_id < 0 or shard_id >= self.bot.shard_count):
+                    from src.components.owner import ShardInvalidIdView
+                    view = ShardInvalidIdView(shard_id, self.bot.shard_count)
+                    await interaction.followup.send(view=view)
+                    return
+                
+                from src.components.owner import ShardReloadSingleView
+                view = ShardReloadSingleView(shard_id)
+                await interaction.followup.send(view=view)
+                
+                # If this is the current shard, restart self
+                if self.bot.shard_id == shard_id:
+                    logger.info(LogArea.COMMANDS, f"Reloading current shard {shard_id} (self-restart)")
+                    self.bot.restart_requested = True
+                    # Schedule graceful shutdown after this command completes
+                    asyncio.create_task(self._delayed_shutdown())
+                else:
+                    # Send reload signal to shard manager (would need IPC implementation)
+                    logger.info(LogArea.COMMANDS, f"Reload requested for shard {shard_id}")
+                    from src.components.owner import ShardReloadSignalView
+                    view = ShardReloadSignalView(shard_id)
+                    await interaction.edit_original_response(view=view)
+            else:
+                # Reload all shards (no shard_id specified)
+                from src.components.owner import ShardRestartView
+                view = ShardRestartView()
+                await interaction.followup.send(view=view)
+                
+                logger.info(LogArea.COMMANDS, "Reloading all shards")
+                
+                # Set restart flag on bot
+                self.bot.restart_requested = True
+                
+                # Schedule graceful shutdown after this command completes
+                asyncio.create_task(self._delayed_shutdown())
+                
+        except Exception as e:
+            logger.error(LogArea.COMMANDS, f"Error reloading shard: {e}")
+            from src.components.owner import ShardReloadFailedView
+            view = ShardReloadFailedView(str(e))
+            await interaction.followup.send(view=view)
+    
+    
+    @shard_group.command(
+        name="status",
+        description="View current shard status and configuration"
+    )
+    async def shard_status(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True)
+        
+        try:
+            # Get all shard configuration from database
+            shard_config = await self.data_service.get_all_shard_config()
+            
+            from src.components.owner import ShardStatusCompleteView
+            view = ShardStatusCompleteView(shard_config, self.bot)
+            await interaction.followup.send(view=view)
+            
+        except Exception as e:
+            logger.error(LogArea.COMMANDS, f"Error getting shard status: {e}")
+            from src.components.errors import ErrorView
+            view = ErrorView("❌ **Failed to Get Status**", f"An error occurred: {str(e)}")
+            await interaction.followup.send(view=view)
+    
+    
+    async def _delayed_shutdown(self):
+        """Gracefully shutdown the bot after a delay"""
+        await asyncio.sleep(2)  # Give time for responses to send
+        logger.info(LogArea.COMMANDS, "Initiating graceful shutdown for restart...")
+        await self.bot.close()
 
 
 async def setup(bot):

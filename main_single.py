@@ -24,8 +24,12 @@ async def run_bot(shard_config=None):
 
     # Create bot instance with configuration and sharding
     bot = ClearTimerBot(config, shard=shard_config)
+    
+    # Add restart flag
+    bot.restart_requested = False
 
     # Run the bot
+    restart_requested = False
     try:
         if shard_config:
             logger.info(LogArea.STARTUP, f"Starting bot shard {shard_config[0]}...")
@@ -35,16 +39,30 @@ async def run_bot(shard_config=None):
     except KeyboardInterrupt:
         logger.info(LogArea.STARTUP, "Received shutdown signal (Ctrl+C)")
     except Exception as e:
-        error_id = await logger.log_error(
-            LogArea.STARTUP,
-            "Fatal error occurred during bot operation",
-            exception=e
-        )
-        logger.critical(LogArea.STARTUP, f"Fatal error: {e}. Error ID: {error_id}")
+        # Don't log SystemExit as an error
+        if not isinstance(e, SystemExit):
+            error_id = await logger.log_error(
+                LogArea.STARTUP,
+                "Fatal error occurred during bot operation",
+                exception=e
+            )
+            logger.critical(LogArea.STARTUP, f"Fatal error: {e}. Error ID: {error_id}")
     finally:
         logger.info(LogArea.STARTUP, "Beginning shutdown sequence...")
-        await bot.close()
+        # Check if restart was requested before closing
+        restart_requested = getattr(bot, 'restart_requested', False)
+        
+        # Make sure bot is properly closed
+        if not bot.is_closed():
+            await bot.close()
+            
         logger.info(LogArea.STARTUP, "Shutdown complete")
+        
+        # Return restart signal
+        if restart_requested:
+            logger.info(LogArea.STARTUP, "Restart was requested")
+            return 99  # Special code for restart
+        return 0
 
 
 async def main():
@@ -59,7 +77,11 @@ async def main():
         shard_config = (int(shard_id), int(shard_count))
         logger.info(LogArea.STARTUP, f"Running as shard {shard_id}/{int(shard_count) - 1}")
     
-    await run_bot(shard_config)
+    exit_code = await run_bot(shard_config)
+    
+    # Exit with the appropriate code
+    if exit_code:
+        sys.exit(exit_code)
 
 
 if __name__ == "__main__":
