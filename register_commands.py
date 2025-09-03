@@ -210,7 +210,7 @@ if __name__ == "__main__":
 
     # Set up asyncio for Windows
     if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
     # Run the registration
     asyncio.run(main(args.guild_id, args.owner_id))

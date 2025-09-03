@@ -18,28 +18,23 @@ from src.core.config import ConfigManager  # noqa: E402
 from src.utils.logger import logger, LogArea  # noqa: E402
 from src.services.database_connection_manager import db_manager  # noqa: E402
 
-# Import discord to check recommended shard count
-import discord  # noqa: E402
-
 
 class ShardManager:
     """Manages bot sharding and process launching"""
     
-    def __init__(self, shard_count: Optional[int] = None, shard_ids: Optional[list] = None, no_shard: bool = False, original_args: Optional[list] = None):
+    def __init__(self, shard_count: Optional[int] = None, shard_ids: Optional[list] = None, original_args: Optional[list] = None):
         """
         Initialize the shard manager
         
         Args:
             shard_count: Total number of shards (None for auto-detection)
             shard_ids: List of shard IDs to run on this process (None for all)
-            no_shard: Force single-instance mode without sharding
             original_args: Original command-line arguments to preserve on restart
         """
         self.config_manager = ConfigManager()
         self.config = self.config_manager.load_config()
         self.shard_count = shard_count
         self.shard_ids = shard_ids
-        self.no_shard = no_shard
         self.original_args = original_args or []  # Store original command-line arguments
         self.processes: Dict[int, asyncio.subprocess.Process] = {}
         self.shard_restart_counts: Dict[int, int] = {}
@@ -50,20 +45,25 @@ class ShardManager:
     
     async def get_recommended_shards(self) -> int:
         """Get the recommended number of shards from Discord"""
-        if self.no_shard:
-            return 1
-            
         try:
-            # Create a temporary client just to get shard count
-            client = discord.Client(intents=discord.Intents.default())
+            # Get bot token from config
+            token = self.config.token
             
-            # Get recommended shard count
-            shard_count = await client.fetch_recommended_shard_count()
-            
-            await client.close()
-            
-            logger.info(LogArea.STARTUP, f"Discord recommends {shard_count} shard(s)")
-            return shard_count
+            # Use aiohttp to get recommended shard count from Discord
+            import aiohttp
+            async with aiohttp.ClientSession() as session:
+                headers = {
+                    "Authorization": f"Bot {token}"
+                }
+                async with session.get("https://discord.com/api/v10/gateway/bot", headers=headers) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        shard_count = data.get('shards', 1)
+                        logger.info(LogArea.STARTUP, f"Discord recommends {shard_count} shard(s)")
+                        return shard_count
+                    else:
+                        logger.warning(LogArea.STARTUP, f"Failed to get shard recommendation: HTTP {resp.status}")
+                        return 1
             
         except Exception as e:
             logger.error(LogArea.STARTUP, f"Failed to get recommended shard count: {e}")
@@ -79,10 +79,10 @@ class ShardManager:
         env['SHARD_ID'] = str(shard_id)
         env['SHARD_COUNT'] = str(shard_count)
         
-        # Build command with original arguments preserved
-        cmd = [sys.executable, 'main_single.py'] + self.original_args
+        # Build command to run shard_runner.py with original arguments preserved
+        cmd = [sys.executable, 'shard_runner.py'] + self.original_args
         
-        # Launch the shard process using main_single.py with preserved arguments
+        # Launch the shard process using shard_runner.py
         process = await asyncio.create_subprocess_exec(
             *cmd,
             env=env,
@@ -199,34 +199,9 @@ class ShardManager:
             # Determine shard count
             if self.shard_count is None:
                 self.shard_count = await self.get_recommended_shards()
-                if not self.no_shard:
-                    logger.info(LogArea.STARTUP, f"Auto-detected shard count: {self.shard_count}")
+                logger.info(LogArea.STARTUP, f"Auto-detected shard count: {self.shard_count}")
             else:
                 logger.info(LogArea.STARTUP, f"Using manual shard count: {self.shard_count}")
-            
-            # If only 1 shard needed or no-shard mode, run the bot directly
-            if self.shard_count == 1 or self.no_shard:
-                logger.info(LogArea.STARTUP, "Running in single-instance mode")
-                
-                # Build command with original arguments preserved for single-instance mode
-                cmd = [sys.executable, 'main_single.py'] + self.original_args
-                
-                # Run as subprocess to preserve arguments on restart
-                process = await asyncio.create_subprocess_exec(
-                    *cmd,
-                    stdout=None,  # Inherit stdout
-                    stderr=None,  # Inherit stderr
-                    stdin=None    # Inherit stdin
-                )
-                
-                # Wait for process to complete
-                return_code = await process.wait()
-                
-                # Check if bot requested restart (return code 99)
-                if return_code == 99:
-                    logger.info(LogArea.STARTUP, "Single instance requested restart")
-                    return True  # Signal restart needed
-                return False
             
             # Determine which shards to run
             if self.shard_ids is None:
@@ -237,9 +212,6 @@ class ShardManager:
             # Launch all shards
             for shard_id in self.shard_ids:
                 await self.launch_shard(shard_id, self.shard_count)
-            
-            # Monitor shards (the monitor tasks are already running)
-            logger.info(LogArea.STARTUP, "All shards launched, monitoring...")
             
             # Create tasks for monitoring
             monitor_task = asyncio.create_task(self._monitor_processes())
@@ -274,7 +246,9 @@ class ShardManager:
                 process.terminate()
             await asyncio.gather(*[p.wait() for p in self.processes.values()], return_exceptions=True)
         except Exception as e:
+            import traceback
             logger.error(LogArea.STARTUP, f"Fatal error in shard manager: {e}")
+            logger.error(LogArea.STARTUP, f"Traceback: {traceback.format_exc()}")
             raise
         finally:
             logger.info(LogArea.STARTUP, "Shard manager shutdown complete")
@@ -285,7 +259,6 @@ async def main():
     parser = argparse.ArgumentParser(description='ClearTimer Bot with automatic sharding')
     parser.add_argument('--shards', type=int, help='Total number of shards (auto-detect if not specified)')
     parser.add_argument('--shard-ids', type=str, help='Comma-separated list of shard IDs to run (all if not specified)')
-    parser.add_argument('--no-shard', action='store_true', help='Run in single-instance mode without sharding')
     parser.add_argument('--force-shards', type=int, help='Force a specific number of shards (overrides auto-detection)')
     parser.add_argument('--max-restarts', type=int, default=10, help='Maximum number of restart attempts (default: 10)')
     parser.add_argument('--restart-cooldown', type=int, default=30, help='Cooldown between shard restarts in seconds (default: 30)')
@@ -312,7 +285,6 @@ async def main():
             manager = ShardManager(
                 shard_count=shard_count, 
                 shard_ids=shard_ids, 
-                no_shard=args.no_shard,
                 original_args=original_args
             )
             
@@ -341,7 +313,9 @@ async def main():
             logger.info(LogArea.STARTUP, "Received keyboard interrupt, shutting down...")
             break
         except Exception as e:
+            import traceback
             logger.error(LogArea.STARTUP, f"Fatal error in main loop: {e}")
+            logger.error(LogArea.STARTUP, f"Traceback: {traceback.format_exc()}")
             restart_count += 1
             if restart_count > max_restarts:
                 logger.error(LogArea.STARTUP, f"Maximum restart attempts ({max_restarts}) exceeded after error")
@@ -355,7 +329,8 @@ async def main():
 if __name__ == "__main__":
     # Set up asyncio for Windows
     if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        # Use ProactorEventLoop for subprocess support on Windows
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
     # Run the bot with automatic sharding and restart capability
     asyncio.run(main())

@@ -66,11 +66,8 @@ class ClearTimerBot(commands.Bot):
             logger.info(LogArea.STARTUP, f"Connected to {len(self.guilds)} guilds")
 
         try:
-            # Set bot presence with shard info if applicable
-            if self.shard_id is not None:
-                activity = discord.CustomActivity(name=f"Cleaning up the mess! 🧹 | Shard {self.shard_id}")
-            else:
-                activity = discord.CustomActivity(name="Cleaning up the mess! 🧹")
+            # Set bot presence
+            activity = discord.CustomActivity(name="Cleaning up the mess! 🧹")
             await self.change_presence(activity=activity)
 
             # Sync server data with current guild membership
