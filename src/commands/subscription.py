@@ -15,6 +15,124 @@ class SubscriptionCommands(commands.Cog):
         self.scheduler_service = bot.scheduler_service
         self.schedule_parser = bot.scheduler_service.schedule_parser
         self.validator = CommandValidator(bot)
+        
+        # Add context menu commands
+        self.add_context_menus()
+
+    def add_context_menus(self):
+        """Add context menu commands to the bot"""
+        # Message context menu - Ignore Message
+        @self.bot.tree.context_menu(name='Ignore Message')
+        async def ignore_message_context(interaction: discord.Interaction, message: discord.Message):
+            await self.handle_ignore_message_context(interaction, message)
+        
+        # User context menu - Ignore User
+        @self.bot.tree.context_menu(name='Ignore User')
+        async def ignore_user_context(interaction: discord.Interaction, user: discord.User):
+            await self.handle_ignore_user_context(interaction, user)
+    
+    async def handle_ignore_message_context(self, interaction: discord.Interaction, message: discord.Message):
+        """Handle the ignore message context menu command"""
+        # Check if user has manage_messages permission
+        if not interaction.user.guild_permissions.manage_messages:
+            await interaction.response.send_message(
+                "❌ You need the **Manage Messages** permission to use this command.",
+                ephemeral=True
+            )
+            return
+        
+        # Check if channel is subscribed
+        server_id = str(interaction.guild.id)
+        channel_id = str(message.channel.id)
+        
+        server = await self.data_service.get_server(server_id)
+        if not server or channel_id not in server.channels:
+            await interaction.response.send_message(
+                f"❌ {message.channel.mention} is not subscribed to automatic message clearing.\n"
+                f"Use `/subscription add` to subscribe the channel first.",
+                ephemeral=True
+            )
+            return
+        
+        channel_timer = server.channels[channel_id]
+        message_id = str(message.id)
+        
+        # Toggle ignore status
+        if message_id in channel_timer.ignored.messages:
+            # Remove from ignored
+            channel_timer.remove_ignored_message(message_id)
+            await self.data_service.save_servers()
+            
+            await interaction.response.send_message(
+                f"✅ Message from {message.author.mention} will **no longer be ignored** during clearing in {message.channel.mention}",
+                ephemeral=True
+            )
+        else:
+            # Add to ignored
+            channel_timer.add_ignored_message(message_id)
+            await self.data_service.save_servers()
+            
+            await interaction.response.send_message(
+                f"✅ Message from {message.author.mention} will be **ignored** during clearing in {message.channel.mention}\n"
+                f"Message ID: `{message_id}`",
+                ephemeral=True
+            )
+    
+    async def handle_ignore_user_context(self, interaction: discord.Interaction, user: discord.User):
+        """Handle the ignore user context menu command"""
+        # Check if user has manage_messages permission
+        if not interaction.user.guild_permissions.manage_messages:
+            await interaction.response.send_message(
+                "❌ You need the **Manage Messages** permission to use this command.",
+                ephemeral=True
+            )
+            return
+        
+        # Get the channel where the context menu was invoked
+        channel = interaction.channel
+        if not isinstance(channel, discord.TextChannel):
+            await interaction.response.send_message(
+                "❌ This command can only be used in text channels.",
+                ephemeral=True
+            )
+            return
+        
+        server_id = str(interaction.guild.id)
+        channel_id = str(channel.id)
+        
+        # Check if channel is subscribed
+        server = await self.data_service.get_server(server_id)
+        if not server or channel_id not in server.channels:
+            await interaction.response.send_message(
+                f"❌ {channel.mention} is not subscribed to automatic message clearing.\n"
+                f"Use `/subscription add` to subscribe the channel first.",
+                ephemeral=True
+            )
+            return
+        
+        channel_timer = server.channels[channel_id]
+        user_id = str(user.id)
+        
+        # Toggle ignore status
+        if user_id in channel_timer.ignored.users:
+            # Remove from ignored
+            channel_timer.remove_ignored_user(user_id)
+            await self.data_service.save_servers()
+            
+            await interaction.response.send_message(
+                f"✅ Messages from {user.mention} will **no longer be ignored** during clearing in {channel.mention}",
+                ephemeral=True
+            )
+        else:
+            # Add to ignored
+            channel_timer.add_ignored_user(user_id)
+            await self.data_service.save_servers()
+            
+            await interaction.response.send_message(
+                f"✅ Messages from {user.mention} will be **ignored** during clearing in {channel.mention}\n"
+                f"User ID: `{user_id}`",
+                ephemeral=True
+            )
 
     # Create the main /subscription command group
     subscription_group = app_commands.Group(name="subscription", description="Manage automatic message clearing for channels")
