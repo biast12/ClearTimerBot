@@ -41,7 +41,7 @@ class HelpView(discord.ui.LayoutView):
             "**For You:** Manage Messages\n"
             "**For Bot:** View Channel, Send Messages, Send Messages in Threads, Read Message History, Manage Messages, Embed Links, Use Application Commands\n\n"
             "**🔗 Links**\n"
-            f"[Support Server](https://biast12.com/support) | "
+            f"[Support Server](https://biast12.com/botsupport) | "
             f"[Add Bot]({bot_invite_url}) | "
             "[GitHub](https://github.com/biast12/ClearTimerBot)"
         )
@@ -92,7 +92,7 @@ class BlacklistedServerView(discord.ui.LayoutView):
         content = add_footer(
             "❌ **Server Blacklisted**\n\n"
             "This server has been blacklisted and cannot use this bot.\n\n"
-            "If you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/support)."
+            "If you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/botsupport)."
         )
         
         container = discord.ui.Container(

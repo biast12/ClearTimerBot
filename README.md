@@ -293,15 +293,15 @@ Commands for recaching configuration under `/owner recache`:
 
 ## Terms of Service
 
-By using this bot, you agree to the [Terms of Service](https://biast12.info/cleartimer/termsofservice).
+By using this bot, you agree to the [Terms of Service](https://biast12.com/cleartimer/termsofservice).
 
 ## Privacy Policy
 
-Your privacy is important to us. Please review our [Privacy Policy](https://biast12.info/cleartimer/privacypolicy) for more information.
+Your privacy is important to us. Please review our [Privacy Policy](https://biast12.com/cleartimer/privacypolicy) for more information.
 
 ## Support
 
-For further assistance, join our [support Discord server](https://biast12.com/support).
+For further assistance, join our [support Discord server](https://biast12.com/botsupport).
 
 ## License
 
