@@ -25,7 +25,6 @@ class BotConfig:
     guild_id: Optional[int] = None
     application_id: Optional[str] = None
     database_url: Optional[str] = None
-    prefix: str = "!"
     environment: Environment = Environment.PRODUCTION
     log_level: LogLevel = LogLevel.INFO
     shard_count: Optional[int] = None
@@ -43,7 +42,6 @@ class BotConfig:
             guild_id=int(env_vars["GUILD_ID"]) if env_vars.get("GUILD_ID") else None,
             application_id=env_vars.get("APPLICATION_ID"),
             database_url=env_vars.get("DATABASE_URL"),
-            prefix=env_vars.get("BOT_PREFIX", "!"),
             environment=Environment(env_vars.get("ENVIRONMENT", "production")),
             log_level=LogLevel(env_vars.get("LOG_LEVEL", "INFO")),
             shard_count=int(env_vars["SHARD_COUNT"]) if "SHARD_COUNT" in env_vars else None,
@@ -54,7 +52,6 @@ class BotConfig:
         return {
             "application_id": self.application_id,
             "owner_id": self.owner_id,
-            "prefix": self.prefix,
             "environment": self.environment.value,
             "log_level": self.log_level.value,
             "shard_count": self.shard_count,

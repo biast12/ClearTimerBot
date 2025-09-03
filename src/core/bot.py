@@ -23,7 +23,7 @@ class ClearTimerBot(commands.Bot):
             shard_id, shard_count = shard
 
         super().__init__(
-            command_prefix="!",
+            command_prefix=lambda bot, msg: None,  # Disable all text commands
             intents=intents,
             help_command=None,
             shard_id=shard_id,
@@ -332,38 +332,6 @@ class ClearTimerBot(commands.Bot):
                 if not channel:
                     # Channel doesn't exist, remove subscription
                     await self.data_service.remove_channel_subscription(server_id, channel_id)
-    
-    async def on_command(self, ctx: commands.Context) -> None:
-        """Track command usage"""
-        command_usage = CommandUsage(
-            command_name=ctx.command.name if ctx.command else "unknown",
-            user_id=str(ctx.author.id),
-            guild_id=str(ctx.guild.id) if ctx.guild else None,
-            timestamp=datetime.now(timezone.utc),
-            success=True
-        )
-        logger.debug(LogArea.COMMANDS, f"Command executed: {command_usage.command_name} by user {ctx.author}")
-    
-    async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
-        """Track command errors"""
-        command_usage = CommandUsage(
-            command_name=ctx.command.name if ctx.command else "unknown",
-            user_id=str(ctx.author.id),
-            guild_id=str(ctx.guild.id) if ctx.guild else None,
-            timestamp=datetime.now(timezone.utc),
-            success=False,
-            error_message=str(error)
-        )
-        
-        # Log the error
-        await logger.log_error(
-            LogArea.COMMANDS,
-            f"Command error: {command_usage.command_name}",
-            exception=error,
-            user_id=command_usage.user_id,
-            guild_id=command_usage.guild_id,
-            command=command_usage.command_name
-        )
     
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel) -> None:
         """Handle when a channel is deleted"""

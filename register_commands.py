@@ -49,7 +49,7 @@ class CommandRegisterBot(commands.Bot):
         intents.message_content = True
         intents.guilds = True
 
-        super().__init__(command_prefix="!", intents=intents, help_command=None)
+        super().__init__(command_prefix=lambda bot, msg: None, intents=intents, help_command=None)
 
         self.config = config
         # Mock services that commands expect
