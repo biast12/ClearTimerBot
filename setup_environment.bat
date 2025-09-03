@@ -97,4 +97,5 @@ ECHO.
 ECHO To run the bot, use:
 ECHO   start_bot.bat
 ECHO.
-PAUSE
+ECHO Press any key to exit...
+PAUSE >NUL

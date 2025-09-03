@@ -90,4 +90,6 @@ if %ERRORLEVEL% neq 0 (
 REM Deactivate virtual environment
 deactivate
 
-PAUSE
+ECHO.
+ECHO Press any key to exit...
+PAUSE >NUL
