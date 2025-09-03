@@ -19,7 +19,10 @@ class SchedulerService:
     def __init__(self, data_service: DataService):
         self.data_service = data_service
         self.scheduler = AsyncIOScheduler()
-        self.schedule_parser = ScheduleExpressionParser(data_service.get_timezone)
+        self.schedule_parser = ScheduleExpressionParser(
+            data_service.get_timezone,
+            data_service.get_timezone_for_server
+        )
         self._clear_callback: Optional[Callable] = None
         self._notify_callback: Optional[Callable] = None
         self._stats = SchedulerStats()

@@ -209,7 +209,7 @@ class ClearTimerBot(commands.Bot):
             logger.info(LogArea.DISCORD, f"Bot joined new server: {guild.name} (ID: {server_id})")
 
         # Add or update server in data service
-        await self.data_service.add_server(server_id, guild.name)
+        await self.data_service.add_server(guild)
 
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         """Handle when bot leaves or is removed from a server"""
@@ -254,7 +254,7 @@ class ClearTimerBot(commands.Bot):
                     logger.debug(LogArea.DATABASE, f"Updated server name: {old_name} -> {guild.name} (ID: {server_id})")
             else:
                 # Server not in database, add it
-                await self.data_service.add_server(server_id, guild.name)
+                await self.data_service.add_server(guild)
                 updated_count += 1
                 logger.debug(LogArea.DATABASE, f"Added new server: {guild.name} (ID: {server_id})")
         

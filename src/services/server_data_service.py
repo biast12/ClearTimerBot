@@ -110,10 +110,20 @@ class DataService:
                 return server
             return None
 
-    async def add_server(self, server_id: str, server_name: str) -> Server:
+    async def add_server(self, guild) -> Server:
+        """Add or update a server from a guild object"""
+        server_id = str(guild.id)
+        server_name = guild.name
+        
         async with self._lock:
             if server_id not in self._servers_cache:
                 server = Server(server_id, server_name)
+                # Auto-detect timezone for new servers
+                if not server.timezone:
+                    detected_tz = self._auto_detect_timezone(guild)
+                    if detected_tz:
+                        server.timezone = detected_tz
+                        server.timezone_auto_detected = True
                 self._servers_cache[server_id] = server
 
                 servers_collection = db_manager.servers
@@ -127,12 +137,22 @@ class DataService:
             else:
                 # Server already exists, update its name if different
                 existing_server = self._servers_cache[server_id]
+                updated = False
                 if existing_server.server_name != server_name:
                     existing_server.server_name = server_name
+                    updated = True
+                # Auto-detect timezone if not set
+                if not existing_server.timezone:
+                    detected_tz = self._auto_detect_timezone(guild)
+                    if detected_tz:
+                        existing_server.timezone = detected_tz
+                        existing_server.timezone_auto_detected = True
+                        updated = True
+                if updated:
                     servers_collection = db_manager.servers
                     await servers_collection.update_one(
                         {"_id": server_id},
-                        {"$set": {"server_name": server_name}}
+                        {"$set": {"server_name": server_name, "timezone": existing_server.timezone, "timezone_auto_detected": existing_server.timezone_auto_detected}}
                     )
                     # Invalidate cache for this server
                     cache_key = f"server:{server_id}"
@@ -269,6 +289,40 @@ class DataService:
 
     def get_timezone(self, timezone_abbr: str) -> Optional[str]:
         return self._timezones_cache.get(timezone_abbr)
+    
+    def get_timezones_list(self) -> Dict[str, str]:
+        """Get all available timezone mappings from config"""
+        return self._timezones_cache.copy()
+    
+    async def set_server_timezone(self, server_id: str, timezone_str: str, auto_detected: bool = False) -> None:
+        """Set or update the timezone for a specific server"""
+        server = await self.get_server(server_id)
+        if server:
+            server.timezone = timezone_str
+            server.timezone_auto_detected = auto_detected
+            await self.save_servers()
+    
+    async def get_server_timezone(self, server_id: str) -> Optional[str]:
+        """Get the timezone setting for a specific server"""
+        server = await self.get_server(server_id)
+        if server and server.timezone:
+            return server.timezone
+        return None
+    
+    def get_timezone_for_server(self, server_id: str, timezone_abbr: str = None) -> Optional[str]:
+        """Get timezone for a server, with fallback to abbreviation mapping or UTC"""
+        # First check if server has a specific timezone set
+        if server_id in self._servers_cache:
+            server = self._servers_cache[server_id]
+            if server.timezone:
+                return server.timezone
+        
+        # If timezone abbreviation provided, check mapping
+        if timezone_abbr:
+            return self._timezones_cache.get(timezone_abbr)
+        
+        # Default to UTC
+        return "UTC"
     
     async def get_removed_server(self, server_id: str) -> Optional[RemovedServer]:
         cache_key = f"removed_server:{server_id}"
@@ -449,7 +503,66 @@ class DataService:
         """Reload timezones cache from database"""
         async with self._lock:
             await self._load_timezone_mappings_from_database()
-            logger.info(LogArea.DATABASE, f"Reloaded {len(self._timezones_cache)} timezone(s) from database")
+            logger.info(LogArea.DATABASE, f"Reloaded {len(self._timezones_cache)} timezone mapping(s) from database")
+    
+    def _auto_detect_timezone(self, guild) -> Optional[str]:
+        """Auto-detect timezone based on guild region"""
+        region_timezone_map = {
+            # US regions
+            'us-west': 'America/Los_Angeles',
+            'us-central': 'America/Chicago',
+            'us-east': 'America/New_York',
+            'us-south': 'America/Chicago',
+            
+            # Europe regions
+            'europe': 'Europe/London',
+            'eu-west': 'Europe/London',
+            'eu-central': 'Europe/Berlin',
+            'london': 'Europe/London',
+            'frankfurt': 'Europe/Berlin',
+            'amsterdam': 'Europe/Amsterdam',
+            'russia': 'Europe/Moscow',
+            
+            # Asia regions
+            'hongkong': 'Asia/Hong_Kong',
+            'singapore': 'Asia/Singapore',
+            'sydney': 'Australia/Sydney',
+            'japan': 'Asia/Tokyo',
+            'india': 'Asia/Kolkata',
+            'dubai': 'Asia/Dubai',
+            'south-korea': 'Asia/Seoul',
+            
+            # South America
+            'brazil': 'America/Sao_Paulo',
+            'argentina': 'America/Argentina/Buenos_Aires',
+            
+            # South Africa
+            'southafrica': 'Africa/Johannesburg',
+        }
+        
+        detected_timezone = None
+        
+        # Try to get region from guild
+        if hasattr(guild, 'region') and guild.region:
+            region_str = str(guild.region).lower()
+            for region_key, tz in region_timezone_map.items():
+                if region_key in region_str:
+                    detected_timezone = tz
+                    break
+        
+        # If no region detected, try to use the first voice channel's region
+        if not detected_timezone and guild.voice_channels:
+            for vc in guild.voice_channels:
+                if hasattr(vc, 'rtc_region') and vc.rtc_region:
+                    region_str = str(vc.rtc_region).lower()
+                    for region_key, tz in region_timezone_map.items():
+                        if region_key in region_str:
+                            detected_timezone = tz
+                            break
+                    if detected_timezone:
+                        break
+        
+        return detected_timezone
     
     async def reload_all_caches(self) -> None:
         """Reload all caches except admins and timezones"""

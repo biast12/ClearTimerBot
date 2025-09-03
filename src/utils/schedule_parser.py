@@ -14,11 +14,12 @@ class ScheduleExpressionParser:
     TIMEZONE_PATTERN = re.compile(r"^(\d{1,2}:\d{2})\s*([A-Z][\w+-]*)?\s*$")
     INTERVAL_PATTERN = re.compile(r"^(?:(\d+)d)?(?:(\d+)h(?:r)?)?(?:(\d+)m)?$")
 
-    def __init__(self, timezone_resolver):
+    def __init__(self, timezone_resolver, get_server_timezone_func=None):
         self.timezone_resolver = timezone_resolver
+        self.get_server_timezone = get_server_timezone_func
 
     def parse_schedule_expression(
-        self, timer_string: str
+        self, timer_string: str, server_id: str = None
     ) -> Tuple[Union[CronTrigger, IntervalTrigger], datetime]:
         if not timer_string:
             raise ScheduleParseError("Timer string cannot be empty")
@@ -39,7 +40,7 @@ class ScheduleExpressionParser:
 
         # Try to parse as daily scheduled time
         if match := self.TIMEZONE_PATTERN.match(timer_string):
-            return self._parse_daily_cron_schedule(match)
+            return self._parse_daily_cron_schedule(match, server_id)
 
         # Try to parse as interval
         if match := self.INTERVAL_PATTERN.match(timer_string):
@@ -50,9 +51,9 @@ class ScheduleExpressionParser:
             "Use '1d2h3m' for intervals, '24' for hours, or 'HH:MM TIMEZONE' for daily schedules."
         )
 
-    def _parse_daily_cron_schedule(self, match: re.Match) -> Tuple[CronTrigger, datetime]:
+    def _parse_daily_cron_schedule(self, match: re.Match, server_id: str = None) -> Tuple[CronTrigger, datetime]:
         time_str = match.group(1)
-        timezone_abbr = match.group(2) or "GMT"
+        timezone_abbr = match.group(2)
 
         try:
             hour, minute = map(int, time_str.split(":"))
@@ -63,9 +64,15 @@ class ScheduleExpressionParser:
                 f"Invalid time format: '{time_str}'. Use HH:MM format."
             )
 
-        timezone_str = self.timezone_resolver(timezone_abbr)
-        if not timezone_str:
-            raise ScheduleParseError(f"Unknown timezone: '{timezone_abbr}'")
+        # If no timezone specified in the command, use server's timezone if available
+        if not timezone_abbr and server_id and self.get_server_timezone:
+            timezone_str = self.get_server_timezone(server_id, None)
+        else:
+            # Use provided timezone or default to GMT
+            timezone_abbr = timezone_abbr or "GMT"
+            timezone_str = self.timezone_resolver(timezone_abbr)
+            if not timezone_str:
+                raise ScheduleParseError(f"Unknown timezone: '{timezone_abbr}'")
 
         try:
             timezone = pytz.timezone(timezone_str)

@@ -175,7 +175,7 @@ class SubscriptionCommands(commands.Cog):
 
         # Parse timer
         try:
-            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer)
+            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer, server_id)
         except ScheduleParseError as e:
             from src.components.subscription import InvalidTimerView
             view = InvalidTimerView(str(e))
@@ -194,9 +194,7 @@ class SubscriptionCommands(commands.Cog):
         # Save to data service
         server = await self.data_service.get_server(server_id)
         if not server:
-            server = await self.data_service.add_server(
-                server_id, interaction.guild.name
-            )
+            server = await self.data_service.add_server(interaction.guild)
 
         server.add_channel(channel_id, timer, next_run_time)
         
@@ -383,7 +381,7 @@ class SubscriptionCommands(commands.Cog):
 
         # Parse new timer
         try:
-            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer)
+            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer, server_id)
         except ScheduleParseError as e:
             from src.components.subscription import InvalidTimerView
             view = InvalidTimerView(str(e))

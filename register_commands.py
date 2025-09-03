@@ -87,6 +87,58 @@ class CommandRegisterBot(commands.Bot):
             except Exception as e:
                 logger.error(LogArea.NONE, f"Failed to load owner commands: {e}")
 
+    def display_commands(self, commands, command_type=""):
+        """Display registered commands in a clean format"""
+        if not commands:
+            return
+            
+        # Separate context menu commands from regular commands
+        slash_commands = []
+        context_menus = []
+        
+        for cmd in commands:
+            # Check if it's a context menu command
+            if hasattr(cmd, 'type'):
+                if cmd.type == discord.AppCommandType.user:
+                    context_menus.append(cmd.name)
+                elif cmd.type == discord.AppCommandType.message:
+                    context_menus.append(cmd.name)
+                else:
+                    slash_commands.append(cmd)
+            else:
+                slash_commands.append(cmd)
+        
+        # Display slash commands
+        if slash_commands:
+            logger.info(LogArea.NONE, f"{command_type} Slash commands registered:")
+            for cmd in slash_commands:
+                logger.info(LogArea.NONE, f"  - /{cmd.name}: {cmd.description}")
+                # Check if it's a group command with subcommands
+                if hasattr(cmd, "options"):
+                    for option in cmd.options:
+                        # Skip parameters - they have 'required' or 'choices' attributes
+                        # Only show subcommands - they have 'description' but not 'required'
+                        if hasattr(option, "required") or hasattr(option, "choices"):
+                            continue  # Skip parameters
+                        
+                        # Check if this option is a subgroup (has its own options)
+                        if hasattr(option, "options") and option.options:
+                            logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
+                            for suboption in option.options:
+                                # Skip parameters in suboptions too
+                                if hasattr(suboption, "required") or hasattr(suboption, "choices"):
+                                    continue
+                                logger.info(LogArea.NONE, f"          - {suboption.name}: {suboption.description}")
+                        else:
+                            # Regular subcommand
+                            logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
+        
+        # Display context menu commands
+        if context_menus:
+            logger.info(LogArea.NONE, f"{command_type} Context menu commands registered:")
+            for cmd_name in context_menus:
+                logger.info(LogArea.NONE, f"  - {cmd_name}")
+
     async def on_ready(self):
         logger.info(LogArea.NONE, f"Connected as: {self.user} (ID: {self.user.id})")
         logger.spacer()
@@ -97,53 +149,9 @@ class CommandRegisterBot(commands.Bot):
             registered = await self.tree.sync()
             logger.info(LogArea.NONE, f"Successfully registered {len(registered)} global commands")
 
-            # List registered commands
+            # Display the registered global commands
             if registered:
-                # Separate context menu commands from regular commands
-                import discord
-                slash_commands = []
-                context_menus = []
-                
-                for cmd in registered:
-                    # Check if it's a context menu command (type 2 for user, type 3 for message)
-                    # Context menus don't have descriptions
-                    if hasattr(cmd, 'type'):
-                        if cmd.type == discord.AppCommandType.user:
-                            context_menus.append((cmd, "User"))
-                        elif cmd.type == discord.AppCommandType.message:
-                            context_menus.append((cmd, "Message"))
-                        else:
-                            slash_commands.append(cmd)
-                    elif not cmd.description:  # Context menus have empty descriptions
-                        # Try to determine type from name (fallback)
-                        if "User" in cmd.name or "user" in cmd.name:
-                            context_menus.append((cmd, "User"))
-                        elif "Message" in cmd.name or "message" in cmd.name:
-                            context_menus.append((cmd, "Message"))
-                        else:
-                            context_menus.append((cmd, "Unknown"))
-                    else:
-                        slash_commands.append(cmd)
-                
-                # Display slash commands
-                if slash_commands:
-                    logger.info(LogArea.NONE, "Slash commands registered:")
-                    for cmd in slash_commands:
-                        logger.info(LogArea.NONE, f"  - /{cmd.name}: {cmd.description}")
-                        # Check if it's a group command with subcommands
-                        if hasattr(cmd, "options"):
-                            for option in cmd.options:
-                                # Check if this option is a subgroup (has its own options)
-                                if hasattr(option, "options") and option.options:
-                                    logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
-                                    for suboption in option.options:
-                                        logger.info(LogArea.NONE, f"          - {suboption.name}: {suboption.description}")
-                
-                # Display context menu commands
-                if context_menus:
-                    logger.info(LogArea.NONE, "Context menu commands registered:")
-                    for cmd, cmd_type in context_menus:
-                        logger.info(LogArea.NONE, f"  - {cmd.name}")
+                self.display_commands(registered, "Global")
 
             # Register guild-specific commands (admin and owner) if configured
             if self.config.guild_id:
@@ -153,21 +161,9 @@ class CommandRegisterBot(commands.Bot):
                 registered_guild = await self.tree.sync(guild=guild)
                 logger.info(LogArea.NONE, f"Successfully registered {len(registered_guild)} commands to guild")
 
-                # List guild-specific commands
+                # Display the registered guild-specific commands
                 if registered_guild:
-                    logger.info(LogArea.NONE, "Guild-specific commands registered:")
-                    for cmd in registered_guild:
-                        logger.info(LogArea.NONE, f"  - /{cmd.name}: {cmd.description}")
-                        # Check if it's a group command with subcommands
-                        if hasattr(cmd, "options"):
-                            for option in cmd.options:
-                                # Check if this option is a subgroup (has its own options)
-                                if hasattr(option, "options") and option.options:
-                                    logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
-                                    for suboption in option.options:
-                                        logger.info(LogArea.NONE, f"          - {suboption.name}: {suboption.description}")
-                                else:
-                                    logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
+                    self.display_commands(registered_guild, "Guild-specific")
 
             logger.spacer()
 
