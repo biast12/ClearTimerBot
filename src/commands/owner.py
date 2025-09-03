@@ -213,17 +213,14 @@ class OwnerCommands(
     
     @shard_group.command(
         name="status",
-        description="View current shard status and configuration"
+        description="View current shard status"
     )
     async def shard_status(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
         
         try:
-            # Get all shard configuration from database
-            shard_config = await self.data_service.get_all_shard_config()
-            
             from src.components.owner import ShardStatusCompleteView
-            view = ShardStatusCompleteView(shard_config, self.bot)
+            view = ShardStatusCompleteView(self.bot)
             await interaction.followup.send(view=view)
             
         except Exception as e:

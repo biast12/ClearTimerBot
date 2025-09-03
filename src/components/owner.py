@@ -321,12 +321,12 @@ class ShardReloadFailedView(discord.ui.LayoutView):
 
 
 class ShardStatusCompleteView(discord.ui.LayoutView):
-    """Comprehensive view for shard status and configuration"""
+    """View for shard status"""
     
-    def __init__(self, shard_config: dict, bot):
+    def __init__(self, bot):
         super().__init__()
         
-        content = "🔷 **Shard Status & Configuration**\n\n"
+        content = "🔷 **Shard Status**\n\n"
         
         # Current runtime status
         content += "**Current Runtime:**\n"
@@ -344,30 +344,6 @@ class ShardStatusCompleteView(discord.ui.LayoutView):
             content += f"• Latency: {bot.latency * 1000:.2f}ms\n"
         
         content += f"• Process ID: `{os.getpid()}`\n\n"
-        
-        # Database configuration
-        if shard_config:
-            # Check for pending actions
-            if 'pending_action' in shard_config:
-                content += "⚠️ **Pending Action:**\n"
-                content += f"• Action: `{shard_config['pending_action']}`\n"
-                if 'action_timestamp' in shard_config:
-                    content += f"• Requested: {shard_config['action_timestamp']}\n"
-                if 'new_shard_count' in shard_config:
-                    content += f"• New Count: {shard_config['new_shard_count']}\n"
-                content += "\n"
-            
-            # Show persistent configuration
-            persistent_config = False
-            for key, value in shard_config.items():
-                if key not in ['pending_action', 'action_timestamp', 'new_shard_count']:
-                    if not persistent_config:
-                        content += "**Persistent Config:**\n"
-                        persistent_config = True
-                    content += f"• {key}: `{value}`\n"
-            
-            if persistent_config:
-                content += "\n"
         
         content += "**Available Commands:**\n"
         content += "• `/owner shard reload` - Reload all shards\n"

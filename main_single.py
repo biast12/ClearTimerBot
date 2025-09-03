@@ -7,6 +7,7 @@ import asyncio
 import sys
 import os
 from pathlib import Path
+import argparse
 
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -67,6 +68,18 @@ async def run_bot(shard_config=None):
 
 async def main():
     """Main entry point for single bot instance"""
+    # Parse command-line arguments (these are passed from main.py when running as a shard)
+    parser = argparse.ArgumentParser(description='ClearTimer Bot single instance')
+    parser.add_argument('--shards', type=int, help='Total number of shards')
+    parser.add_argument('--shard-ids', type=str, help='Comma-separated list of shard IDs')
+    parser.add_argument('--no-shard', action='store_true', help='Run in single-instance mode')
+    parser.add_argument('--force-shards', type=int, help='Force a specific number of shards')
+    parser.add_argument('--max-restarts', type=int, default=10, help='Maximum number of restart attempts')
+    parser.add_argument('--restart-cooldown', type=int, default=30, help='Cooldown between shard restarts')
+    
+    # Parse arguments but don't error if they're not provided (when running standalone)
+    args, unknown = parser.parse_known_args()
+    
     # Check for sharding environment variables (when called from main.py)
     shard_id = os.environ.get('SHARD_ID')
     shard_count = os.environ.get('SHARD_COUNT')
@@ -76,6 +89,14 @@ async def main():
     if shard_id is not None and shard_count is not None:
         shard_config = (int(shard_id), int(shard_count))
         logger.info(LogArea.STARTUP, f"Running as shard {shard_id}/{int(shard_count) - 1}")
+        
+        # Log if we received command-line flags (for debugging)
+        if args.force_shards:
+            logger.debug(LogArea.STARTUP, f"Force-shards flag preserved: {args.force_shards}")
+        if args.max_restarts != 10:
+            logger.debug(LogArea.STARTUP, f"Max-restarts flag preserved: {args.max_restarts}")
+        if args.restart_cooldown != 30:
+            logger.debug(LogArea.STARTUP, f"Restart-cooldown flag preserved: {args.restart_cooldown}")
     
     exit_code = await run_bot(shard_config)
     
