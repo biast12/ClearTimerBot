@@ -7,7 +7,7 @@ import asyncio
 import sys
 import os
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 import argparse
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -19,7 +19,7 @@ from src.utils.logger import logger, LogArea  # noqa: E402
 class ShardManager:
     """Manages bot sharding"""
     
-    def __init__(self, shard_count: Optional[int] = None, shard_ids: Optional[list] = None, original_args: Optional[list] = None):
+    def __init__(self, shard_count: Optional[int] = None, shard_ids: Optional[List[int]] = None, original_args: Optional[List[str]] = None) -> None:
         """
         Initialize the shard manager
         
@@ -63,7 +63,7 @@ class ShardManager:
             logger.error(LogArea.STARTUP, f"Failed to get recommended shard count: {e}")
             return 1
     
-    async def launch_shard(self, shard_id: int, shard_count: int, auto_restart: bool = True):
+    async def launch_shard(self, shard_id: int, shard_count: int, auto_restart: bool = True) -> 'asyncio.subprocess.Process':
         logger.info(LogArea.STARTUP, f"Launching shard {shard_id}/{shard_count - 1}")
         
         env = os.environ.copy()
@@ -80,7 +80,7 @@ class ShardManager:
         
         self.processes[shard_id] = process
         
-        async def monitor_output(stream):
+        async def monitor_output(stream) -> None:
             while True:
                 line = await stream.readline()
                 if not line:
@@ -97,7 +97,7 @@ class ShardManager:
         
         return process
     
-    async def monitor_shard(self, shard_id: int, shard_count: int):
+    async def monitor_shard(self, shard_id: int, shard_count: int) -> None:
         """Monitor a shard and restart it if it crashes"""
         while shard_id in self.processes:
             process = self.processes.get(shard_id)
@@ -133,7 +133,7 @@ class ShardManager:
                 break
     
     
-    async def _monitor_processes(self):
+    async def _monitor_processes(self) -> None:
         """Monitor all processes until they're done"""
         while self.processes:
             await asyncio.sleep(5)
@@ -149,11 +149,11 @@ class ShardManager:
                 if not self.should_restart:
                     logger.info(LogArea.STARTUP, f"Shard {shard_id} has finished")
     
-    async def _wait_for_restart(self):
+    async def _wait_for_restart(self) -> None:
         """Wait for restart signal"""
         await self.restart_event.wait()
     
-    async def _shutdown_all_shards(self):
+    async def _shutdown_all_shards(self) -> None:
         """Shutdown all running shards"""
         for shard_id, process in self.processes.items():
             if process.returncode is None:
@@ -170,7 +170,7 @@ class ShardManager:
         self.processes.clear()
         self.shard_restart_counts.clear()
     
-    async def run(self):
+    async def run(self) -> bool:
         """Run the shard manager"""
         try:
             # Determine shard count
@@ -231,7 +231,7 @@ class ShardManager:
             logger.info(LogArea.STARTUP, "Shard manager shutdown complete")
 
 
-async def main():
+async def main() -> None:
     """Main entry point with automatic sharding support and self-restart"""
     parser = argparse.ArgumentParser(description='ClearTimer Bot with automatic sharding')
     parser.add_argument('--shards', type=int, help='Total number of shards (auto-detect if not specified)')

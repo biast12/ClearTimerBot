@@ -2,7 +2,7 @@ import os
 import sys
 import traceback
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, List
 import uuid
 
 from src.models import (
@@ -186,7 +186,7 @@ class BotLogger:
         except Exception:
             return False
     
-    async def get_recent_errors(self, limit: int = 10) -> list[ErrorDocument]:
+    async def get_recent_errors(self, limit: int = 10) -> List[ErrorDocument]:
         try:
             from src.services.database_connection_manager import db_manager
             errors_collection = db_manager.errors

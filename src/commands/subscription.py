@@ -1,7 +1,10 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from discord.ext.commands import Bot
 
 from src.utils.schedule_parser import ScheduleParseError
 from src.utils.ignore_target_parser import (
@@ -12,7 +15,7 @@ from src.utils.command_validation import CommandValidator, ValidationCheck
 
 
 class SubscriptionCommands(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: 'Bot') -> None:
         self.bot = bot
         self.data_service = bot.data_service
         self.scheduler_service = bot.scheduler_service
@@ -22,7 +25,7 @@ class SubscriptionCommands(commands.Cog):
         # Add context menu commands
         self.add_context_menus()
 
-    def add_context_menus(self):
+    def add_context_menus(self) -> None:
         @self.bot.tree.context_menu(name='Ignore Message')
         async def ignore_message_context(interaction: discord.Interaction, message: discord.Message):
             await self.handle_ignore_message_context(interaction, message)
@@ -31,7 +34,7 @@ class SubscriptionCommands(commands.Cog):
         async def ignore_user_context(interaction: discord.Interaction, user: discord.User):
             await self.handle_ignore_user_context(interaction, user)
     
-    async def handle_ignore_message_context(self, interaction: discord.Interaction, message: discord.Message):
+    async def handle_ignore_message_context(self, interaction: discord.Interaction, message: discord.Message) -> None:
         if not interaction.user.guild_permissions.manage_messages:
             await interaction.response.send_message(
                 "❌ You need the **Manage Messages** permission to use this command.",
@@ -76,7 +79,7 @@ class SubscriptionCommands(commands.Cog):
                 ephemeral=True
             )
     
-    async def handle_ignore_user_context(self, interaction: discord.Interaction, user: discord.User):
+    async def handle_ignore_user_context(self, interaction: discord.Interaction, user: discord.User) -> None:
         """Handle the ignore user context menu command"""
         # Check if user has manage_messages permission
         if not interaction.user.guild_permissions.manage_messages:
@@ -786,5 +789,5 @@ class SubscriptionCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
 
 
-async def setup(bot):
+async def setup(bot) -> None:
     await bot.add_cog(SubscriptionCommands(bot))

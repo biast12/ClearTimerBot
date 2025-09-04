@@ -1,7 +1,7 @@
 import re
 import pytz
 from datetime import datetime, timedelta
-from typing import Tuple, Union
+from typing import Tuple, Union, Callable, Optional
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -14,7 +14,7 @@ class ScheduleExpressionParser:
     TIMEZONE_PATTERN = re.compile(r"^(\d{1,2}:\d{2})\s*([A-Z][\w+-]*)?\s*$")
     INTERVAL_PATTERN = re.compile(r"^(?:(\d+)d)?(?:(\d+)h(?:r)?)?(?:(\d+)m)?$")
 
-    def __init__(self, timezone_resolver, get_server_timezone_func=None):
+    def __init__(self, timezone_resolver: Callable[[str], Optional[str]], get_server_timezone_func: Optional[Callable[[str, Optional[str]], Optional[str]]] = None) -> None:
         self.timezone_resolver = timezone_resolver
         self.get_server_timezone = get_server_timezone_func
 

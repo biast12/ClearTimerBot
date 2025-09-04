@@ -1,6 +1,7 @@
 import asyncio
 import pytz
-from datetime import timedelta
+from datetime import timedelta, datetime
+from typing import Tuple, Set, Optional
 import discord
 
 from src.services.server_data_service import DataService
@@ -32,7 +33,7 @@ class MessageService:
 
         await self._update_next_scheduled_clear_time(channel)
     
-    async def _get_ignored_entities(self, channel: discord.TextChannel) -> tuple[set, set]:
+    async def _get_ignored_entities(self, channel: discord.TextChannel) -> Tuple[Set[str], Set[str]]:
         server_id = str(channel.guild.id)
         channel_id = str(channel.id)
         
@@ -64,7 +65,7 @@ class MessageService:
 
         return True
 
-    async def _perform_message_deletion(self, channel: discord.TextChannel, ignored_messages: set = None, ignored_users: set = None) -> int:
+    async def _perform_message_deletion(self, channel: discord.TextChannel, ignored_messages: Optional[Set[str]] = None, ignored_users: Optional[Set[str]] = None) -> int:
         deleted_count = 0
         ignored_messages = ignored_messages or set()
         ignored_users = ignored_users or set()
@@ -150,7 +151,7 @@ class MessageService:
             await self.data_service.save_servers()
     
     async def _update_view_message(self, channel: discord.TextChannel, message_id: str, 
-                                    timer: str, next_run_time) -> None:
+                                    timer: str, next_run_time: datetime) -> None:
         try:
             message = await channel.fetch_message(int(message_id))
             from src.components.subscription import TimerViewMessage

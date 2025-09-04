@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 
 
 @dataclass
@@ -9,14 +9,14 @@ class IgnoredEntities:
     messages: List[str] = field(default_factory=list)
     users: List[str] = field(default_factory=list)
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "messages": self.messages,
             "users": self.users
         }
     
     @classmethod
-    def from_dict(cls, data: Dict) -> "IgnoredEntities":
+    def from_dict(cls, data: Dict[str, Any]) -> "IgnoredEntities":
         return cls(
             messages=data.get("messages", []),
             users=data.get("users", [])
@@ -33,7 +33,7 @@ class ChannelTimer:
     # Keep backward compatibility
     _legacy_ignored_messages: Optional[List[str]] = field(default=None, init=False)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> Dict[str, Any]:
         data = {
             "timer": self.timer, 
             "next_run_time": self.next_run_time.isoformat(),
@@ -44,7 +44,7 @@ class ChannelTimer:
         return data
 
     @classmethod
-    def from_dict(cls, channel_id: str, data: Dict) -> "ChannelTimer":
+    def from_dict(cls, channel_id: str, data: Dict[str, Any]) -> "ChannelTimer":
         # Handle backward compatibility
         if "ignored" in data:
             ignored = IgnoredEntities.from_dict(data["ignored"])
@@ -112,7 +112,7 @@ class Server:
     def get_channel(self, channel_id: str) -> Optional[ChannelTimer]:
         return self.channels.get(channel_id)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "server_name": self.server_name or "",
             "channels": {
@@ -124,7 +124,7 @@ class Server:
         }
 
     @classmethod
-    def from_dict(cls, server_id: str, data: Dict) -> "Server":
+    def from_dict(cls, server_id: str, data: Dict[str, Any]) -> "Server":
         server = cls(
             server_id=server_id,
             server_name=data.get("server_name", "") or "",

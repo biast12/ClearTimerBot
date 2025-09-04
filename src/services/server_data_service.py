@@ -1,5 +1,6 @@
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Any
 import asyncio
+import discord
 from datetime import datetime, timezone, timedelta
 
 from src.models import (
@@ -110,7 +111,7 @@ class DataService:
                 return server
             return None
 
-    async def add_server(self, guild) -> Server:
+    async def add_server(self, guild: discord.Guild) -> Server:
         """Add or update a server from a guild object"""
         server_id = str(guild.id)
         server_name = guild.name
@@ -338,7 +339,7 @@ class DataService:
             return removed_server
         return None
     
-    async def cache_removed_server(self, server_id: str, server_doc: Dict) -> None:
+    async def cache_removed_server(self, server_id: str, server_doc: Dict[str, Any]) -> None:
         cache_key = f"removed_server:{server_id}"
         removed_server = RemovedServer.from_dict(server_doc) if isinstance(server_doc, dict) else server_doc
         await self._cache.set(cache_key, removed_server, cache_level="cold", ttl=1800)
@@ -347,7 +348,7 @@ class DataService:
         cache_key = f"removed_server:{server_id}"
         await self._cache.invalidate(cache_key)
     
-    def get_cache_stats(self) -> Dict:
+    def get_cache_stats(self) -> Dict[str, Any]:
         return self._cache.get_all_stats()
 
     async def cleanup_old_removed_servers(self) -> int:
@@ -505,7 +506,7 @@ class DataService:
             await self._load_timezone_mappings_from_database()
             logger.info(LogArea.DATABASE, f"Reloaded {len(self._timezones_cache)} timezone mapping(s) from database")
     
-    def _auto_detect_timezone(self, guild) -> Optional[str]:
+    def _auto_detect_timezone(self, guild: discord.Guild) -> Optional[str]:
         """Auto-detect timezone based on guild region"""
         region_timezone_map = {
             # US regions

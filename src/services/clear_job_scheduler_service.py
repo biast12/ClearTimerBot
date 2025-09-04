@@ -1,6 +1,7 @@
 import pytz
 from datetime import datetime
-from typing import Optional, Callable, Dict, Any
+from typing import Optional, Callable, Dict, Any, TYPE_CHECKING
+import discord
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.base import BaseTrigger
 from apscheduler.job import Job
@@ -13,6 +14,9 @@ from src.models import (
 from src.services.server_data_service import DataService
 from src.utils.schedule_parser import ScheduleExpressionParser
 from src.utils.logger import logger, LogArea
+
+if TYPE_CHECKING:
+    from src.core.bot import ClearTimerBot
 
 
 class SchedulerService:
@@ -87,7 +91,7 @@ class SchedulerService:
         )
 
     async def _create_scheduled_clear_job(
-        self, bot, server_id: str, channel_id: str, channel_timer: ChannelTimer
+        self, bot: "ClearTimerBot", server_id: str, channel_id: str, channel_timer: ChannelTimer
     ) -> None:
         job_id = self._create_job_identifier(server_id, channel_id)
         
@@ -126,7 +130,7 @@ class SchedulerService:
         )
 
     async def _reschedule_missed_clear_job(
-        self, bot, server_id: str, channel_id: str, channel_timer: ChannelTimer
+        self, bot: "ClearTimerBot", server_id: str, channel_id: str, channel_timer: ChannelTimer
     ) -> None:
         job_id = self._create_job_identifier(server_id, channel_id)
 
@@ -168,7 +172,7 @@ class SchedulerService:
         channel_id: str,
         server_id: str,
         trigger: BaseTrigger,
-        channel,
+        channel: discord.TextChannel,
         next_run_time: Optional[datetime] = None,
     ) -> str:
         job_id = self._create_job_identifier(server_id, channel_id)

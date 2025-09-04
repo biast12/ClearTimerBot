@@ -1,6 +1,9 @@
 import discord
-from typing import Optional, Dict, Any, Tuple
+from typing import Optional, Dict, Any, Tuple, TYPE_CHECKING
 from enum import Enum
+
+if TYPE_CHECKING:
+    from discord.ext.commands import Bot
 
 
 class ValidationCheck(Enum):
@@ -18,7 +21,7 @@ class SubscriptionStatus(Enum):
 
 
 class CommandValidator:
-    def __init__(self, bot):
+    def __init__(self, bot: 'Bot') -> None:
         self.bot = bot
         self.data_service = bot.data_service
         self.scheduler_service = bot.scheduler_service
@@ -149,7 +152,7 @@ class CommandValidator:
         interaction: discord.Interaction, 
         error_message: str, 
         ephemeral: bool = True
-    ):
+    ) -> None:
         from src.components.validation import ValidationErrorView
         
         view = ValidationErrorView(error_message)
