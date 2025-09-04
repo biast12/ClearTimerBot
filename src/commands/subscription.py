@@ -202,16 +202,7 @@ class SubscriptionCommands(commands.Cog):
                     tz_abbr = datetime.now(tz).strftime('%Z')
                     timer_to_store = f"{timer.strip()} {tz_abbr}"
 
-        # Add to scheduler
-        self.scheduler_service.create_channel_clear_job(
-            channel_id=channel_id,
-            server_id=server_id,
-            trigger=trigger,
-            channel=channel,
-            next_run_time=next_run_time,
-        )
-
-        # Save to data service
+        # Save to data service FIRST (before creating scheduler job)
         server = await self.data_service.get_server(server_id)
         if not server:
             server = await self.data_service.add_server(interaction.guild)
@@ -223,7 +214,18 @@ class SubscriptionCommands(commands.Cog):
             ignored_target, channel, interaction.guild, server.channels[channel_id]
         )
         
+        # Save the data BEFORE creating the job to prevent race condition
         await self.data_service.save_servers()
+
+        # Add to scheduler AFTER data is saved
+        # This ensures ignored targets are persisted before any clearing can happen
+        self.scheduler_service.create_channel_clear_job(
+            channel_id=channel_id,
+            server_id=server_id,
+            trigger=trigger,
+            channel=channel,
+            next_run_time=next_run_time,
+        )
 
         # Send success message
         from src.components.subscription import SubscriptionSuccessView
@@ -416,23 +418,16 @@ class SubscriptionCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
-        # Get current ignored messages
+        # Get current ignored messages and users
         server = await self.data_service.get_server(server_id)
         current_ignored_messages = []
+        current_ignored_users = []
         if server and channel_id in server.channels:
             current_ignored_messages = list(server.channels[channel_id].ignored_messages)
+            current_ignored_users = list(server.channels[channel_id].ignored.users)
 
-        # Remove old job
+        # Remove old job first
         self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
-
-        # Add new job with updated timer
-        self.scheduler_service.create_channel_clear_job(
-            channel_id=channel_id,
-            server_id=server_id,
-            trigger=trigger,
-            channel=channel,
-            next_run_time=next_run_time,
-        )
 
         # If timer is a time without timezone (e.g., "15:30"), append server timezone
         timer_to_store = timer
@@ -454,16 +449,29 @@ class SubscriptionCommands(commands.Cog):
             server.channels[channel_id].timer = timer_to_store
             server.channels[channel_id].next_run_time = next_run_time
             
-            # Restore ignored messages
+            # Restore ignored messages and users
             for msg_id in current_ignored_messages:
                 server.channels[channel_id].add_ignored_message(msg_id)
+            for user_id in current_ignored_users:
+                server.channels[channel_id].add_ignored_user(user_id)
             
             # Add new ignored targets if provided (messages or users)
             added_targets = await validate_and_add_multiple_ignore_targets(
                 ignored_target, channel, interaction.guild, server.channels[channel_id]
             )
             
+            # Save data BEFORE creating the new job to prevent race condition
             await self.data_service.save_servers()
+
+        # Add new job with updated timer AFTER data is saved
+        # This ensures ignored targets are persisted before any clearing can happen
+        self.scheduler_service.create_channel_clear_job(
+            channel_id=channel_id,
+            server_id=server_id,
+            trigger=trigger,
+            channel=channel,
+            next_run_time=next_run_time,
+        )
 
         # Send success message
         from src.components.subscription import UpdateSuccessView
