@@ -498,9 +498,6 @@ class RecacheSuccessView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-# RecacheTimezonesSuccessView removed - no longer needed
-
-
 class RecacheErrorView(discord.ui.LayoutView):
     """View for recache error"""
     

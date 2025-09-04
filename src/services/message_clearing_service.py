@@ -15,14 +15,11 @@ class MessageService:
         self.rate_limit_delay = 1.0  # Delay between message deletions
 
     async def execute_channel_message_clear(self, channel: discord.TextChannel) -> None:
-        # Check permissions
         if not await self._validate_bot_channel_permissions(channel):
             return
 
-        # Get ignored messages and users for this channel
         ignored_messages, ignored_users = await self._get_ignored_entities(channel)
         
-        # Add view message to ignored list if it exists
         server_id = str(channel.guild.id)
         channel_id = str(channel.id)
         server = await self.data_service.get_server(server_id)
@@ -31,14 +28,11 @@ class MessageService:
             if view_message_id:
                 ignored_messages.add(view_message_id)
 
-        # Perform the clear
         deleted_count = await self._perform_message_deletion(channel, ignored_messages, ignored_users)
 
-        # Update next run time
         await self._update_next_scheduled_clear_time(channel)
     
     async def _get_ignored_entities(self, channel: discord.TextChannel) -> tuple[set, set]:
-        """Get both ignored messages and ignored users for a channel"""
         server_id = str(channel.guild.id)
         channel_id = str(channel.id)
         
@@ -53,7 +47,6 @@ class MessageService:
     async def _validate_bot_channel_permissions(self, channel: discord.TextChannel) -> bool:
         permissions = channel.permissions_for(channel.guild.me)
         
-        # Check all required permissions
         required_perms = {
             'view_channel': permissions.view_channel,
             'send_messages': permissions.send_messages,
@@ -64,7 +57,6 @@ class MessageService:
             'send_messages_in_threads': permissions.send_messages_in_threads
         }
         
-        # Log any missing permissions
         missing_perms = [perm for perm, has_perm in required_perms.items() if not has_perm]
         
         if missing_perms:
@@ -78,20 +70,16 @@ class MessageService:
         ignored_users = ignored_users or set()
 
         try:
-            # Try bulk delete first (for messages < 14 days old)
             two_weeks_ago = discord.utils.utcnow() - timedelta(days=13)
 
-            # Collect messages for bulk delete
             messages_to_delete = []
             old_messages = []
 
             try:
                 async for message in channel.history(limit=None):
-                    # Skip ignored messages
                     if str(message.id) in ignored_messages:
                         continue
                     
-                    # Skip messages from ignored users
                     if str(message.author.id) in ignored_users:
                         continue
                     
@@ -103,9 +91,7 @@ class MessageService:
                 logger.warning(LogArea.PERMISSIONS, f"No permission to access channel history for channel {channel.id}")
                 return 0
 
-            # Bulk delete newer messages
             if messages_to_delete:
-                # Discord allows bulk delete of up to 100 messages at a time
                 for i in range(0, len(messages_to_delete), 100):
                     batch = messages_to_delete[i : i + 100]
                     try:
@@ -124,7 +110,6 @@ class MessageService:
                             except discord.HTTPException:
                                 pass
 
-            # Delete old messages individually
             for message in old_messages:
                 try:
                     await message.delete()
@@ -148,19 +133,16 @@ class MessageService:
         server_id = str(channel.guild.id)
         channel_id = str(channel.id)
 
-        # Get the job's next run time
         next_run_time = self.scheduler_service.get_channel_next_clear_time(server_id, channel_id)
 
         if not next_run_time:
             return
 
-        # Update in data service
         server = await self.data_service.get_server(server_id)
         if server and channel_id in server.channels:
             channel_timer = server.channels[channel_id]
             channel_timer.next_run_time = next_run_time.astimezone(pytz.UTC)
             
-            # Update view message if it exists
             if channel_timer.view_message_id:
                 await self._update_view_message(channel, channel_timer.view_message_id, 
                                                 channel_timer.timer, next_run_time)
@@ -169,14 +151,12 @@ class MessageService:
     
     async def _update_view_message(self, channel: discord.TextChannel, message_id: str, 
                                     timer: str, next_run_time) -> None:
-        """Update the persistent view message with new next run time"""
         try:
             message = await channel.fetch_message(int(message_id))
             from src.components.subscription import TimerViewMessage
             view = TimerViewMessage(channel, timer, next_run_time)
             await message.edit(view=view)
         except discord.NotFound:
-            # Message was deleted, clear the ID from data
             server_id = str(channel.guild.id)
             channel_id = str(channel.id)
             server = await self.data_service.get_server(server_id)

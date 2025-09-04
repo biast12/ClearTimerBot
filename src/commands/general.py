@@ -3,7 +3,6 @@ from discord import app_commands
 from discord.ext import commands
 import time
 import pytz
-from typing import Optional
 from src.utils.command_validation import CommandValidator, ValidationCheck
 
 
@@ -17,7 +16,6 @@ class GeneralCommands(commands.Cog):
         name="help", description="Display help information about the bot"
     )
     async def help_command(self, interaction: discord.Interaction):
-        # Check if server is blacklisted
         server_id = str(interaction.guild.id)
         if await self.data_service.is_blacklisted(server_id):
             from src.components.general import BlacklistedServerView
@@ -25,7 +23,6 @@ class GeneralCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
             return
         
-        # Help display
         from src.components.general import HelpView
         
         view = HelpView()
@@ -33,7 +30,6 @@ class GeneralCommands(commands.Cog):
 
     @app_commands.command(name="ping", description="Check the bot's latency")
     async def ping(self, interaction: discord.Interaction):
-        # Validate command - blacklist check only
         checks = {
             ValidationCheck.BLACKLIST: True,
         }
@@ -46,22 +42,18 @@ class GeneralCommands(commands.Cog):
             await self.validator.send_validation_error(interaction, error_msg)
             return
         
-        # Calculate latencies
         ws_latency = round(self.bot.latency * 1000)
 
-        # Measure response time
         start_time = time.perf_counter()
         await interaction.response.defer(thinking=True)
         end_time = time.perf_counter()
         response_time = round((end_time - start_time) * 1000)
 
-        # Ping display
         from src.components.general import PingView
         
         view = PingView(ws_latency, response_time)
         await interaction.followup.send(view=view)
 
-    # Create timezone command group
     timezone_group = app_commands.Group(
         name="timezone",
         description="Manage server timezone preferences"
@@ -80,7 +72,6 @@ class GeneralCommands(commands.Cog):
         interaction: discord.Interaction,
         timezone: str
     ):
-        # Validate command - blacklist check only
         checks = {
             ValidationCheck.BLACKLIST: True,
         }
@@ -93,16 +84,13 @@ class GeneralCommands(commands.Cog):
             await self.validator.send_validation_error(interaction, error_msg)
             return
         
-        # First check if it's an abbreviation in the config
         timezone_mappings = self.data_service.get_timezones_list()
         if timezone.upper() in timezone_mappings:
             timezone = timezone_mappings[timezone.upper()]
         
-        # Validate timezone
         try:
             pytz.timezone(timezone)
         except pytz.exceptions.UnknownTimeZoneError:
-            # Try to find a similar timezone
             all_timezones = pytz.all_timezones
             suggestion = None
             timezone_lower = timezone.lower()
@@ -117,15 +105,12 @@ class GeneralCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
             return
         
-        # Set or update the timezone
         server_id = str(interaction.guild.id)
         
-        # Ensure server exists
         server = await self.data_service.get_server(server_id)
         if not server:
             server = await self.data_service.add_server(interaction.guild)
         
-        # Update timezone
         await self.data_service.set_server_timezone(server_id, timezone, auto_detected=False)
         
         from src.components.timezone import TimezoneChangeView
@@ -140,7 +125,6 @@ class GeneralCommands(commands.Cog):
         self,
         interaction: discord.Interaction
     ):
-        # Validate command - blacklist check only
         checks = {
             ValidationCheck.BLACKLIST: True,
         }
@@ -153,7 +137,6 @@ class GeneralCommands(commands.Cog):
             await self.validator.send_validation_error(interaction, error_msg)
             return
         
-        # Get timezones from config
         timezones = self.data_service.get_timezones_list()
         
         from src.components.timezone import TimezoneListView

@@ -17,15 +17,7 @@ from .cache import (
 )
 
 from .discord_tracking_models import (
-    PermissionLevel,
-    CommandCategory,
-    CommandUsage,
-    GuildInfo,
-    ChannelInfo,
-    UserInfo,
-    MessageInfo,
-    EmbedField,
-    EmbedData
+    GuildInfo
 )
 
 from .scheduler import (
@@ -49,12 +41,6 @@ from .config import (
 )
 
 from .errors import (
-    ErrorSeverity,
-    ErrorCategory,
-    ErrorContext,
-    ErrorRecord,
-    ErrorStats,
-    LogEntry,
     LogArea
 )
 
@@ -78,15 +64,7 @@ __all__ = [
     "GlobalCacheStats",
     
     # Discord models
-    "PermissionLevel",
-    "CommandCategory",
-    "CommandUsage",
     "GuildInfo",
-    "ChannelInfo",
-    "UserInfo",
-    "MessageInfo",
-    "EmbedField",
-    "EmbedData",
     
     # Scheduler models
     "TaskStatus",
@@ -107,11 +85,5 @@ __all__ = [
     "ApplicationConfig",
     
     # Error models
-    "ErrorSeverity",
-    "ErrorCategory",
-    "ErrorContext",
-    "ErrorRecord",
-    "ErrorStats",
-    "LogEntry",
     "LogArea"
 ]

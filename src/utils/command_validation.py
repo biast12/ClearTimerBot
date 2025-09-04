@@ -29,20 +29,8 @@ class CommandValidator:
         target_channel: Optional[discord.TextChannel] = None,
         checks: Optional[Dict[ValidationCheck, Any]] = None,
     ) -> Tuple[bool, Optional[str], Optional[discord.TextChannel]]:
-        """
-        Centralized validation for subscription commands.
-        
-        Args:
-            interaction: The Discord interaction
-            target_channel: The target channel (defaults to current channel)
-            checks: Dictionary of validation checks to perform with their configurations
-        
-        Returns:
-            Tuple of (success, error_message, resolved_channel)
-        """
         channel = target_channel or interaction.channel
         
-        # Default checks configuration
         if checks is None:
             checks = {
                 ValidationCheck.BLACKLIST: True,
@@ -50,30 +38,25 @@ class CommandValidator:
                 ValidationCheck.BOT_PERMISSIONS: True,
             }
         
-        # Always check blacklist first if enabled
         if checks.get(ValidationCheck.BLACKLIST, False):
             is_blacklisted, error_msg = await self._check_blacklist(interaction)
             if is_blacklisted:
                 return False, error_msg, channel
         
-        # Check user permissions if enabled
         if checks.get(ValidationCheck.USER_PERMISSIONS, False):
             has_perms, error_msg = await self._check_user_permissions(interaction)
             if not has_perms:
                 return False, error_msg, channel
         
-        # Check bot permissions if enabled
         if checks.get(ValidationCheck.BOT_PERMISSIONS, False):
             has_perms, error_msg = await self._check_bot_permissions(interaction, channel)
             if not has_perms:
                 return False, error_msg, channel
         
-        # Check subscription status
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
         is_subscribed = self.scheduler_service.channel_has_active_job(server_id, channel_id)
         
-        # Handle subscription requirement check
         if ValidationCheck.CHANNEL_SUBSCRIBED in checks:
             config = checks[ValidationCheck.CHANNEL_SUBSCRIBED]
             if not is_subscribed:
@@ -84,7 +67,6 @@ class CommandValidator:
                 )
                 return False, error_msg, channel
         
-        # Handle non-subscription requirement check
         if ValidationCheck.CHANNEL_NOT_SUBSCRIBED in checks:
             config = checks[ValidationCheck.CHANNEL_NOT_SUBSCRIBED]
             if is_subscribed:
@@ -98,21 +80,17 @@ class CommandValidator:
         return True, None, channel
 
     async def _check_blacklist(self, interaction: discord.Interaction) -> Tuple[bool, Optional[str]]:
-        """Check if the server is blacklisted."""
         server_id = str(interaction.guild.id)
         if await self.data_service.is_blacklisted(server_id):
             return True, "❌ This server has been blacklisted and cannot use this bot."
         return False, None
 
     async def _check_user_permissions(self, interaction: discord.Interaction) -> Tuple[bool, Optional[str]]:
-        """Check if the user has required permissions."""
         member = interaction.guild.get_member(interaction.user.id)
         
-        # Bot owner bypasses permission checks
         if self.bot.is_owner(interaction.user):
             return True, None
         
-        # Check for manage_messages permission
         if not member.guild_permissions.manage_messages:
             return False, "❌ You need the `Manage Messages` permission to use this command."
         
@@ -123,7 +101,6 @@ class CommandValidator:
         interaction: discord.Interaction, 
         channel: discord.TextChannel
     ) -> Tuple[bool, Optional[str]]:
-        """Check if the bot has required permissions in the target channel."""
         bot_permissions = channel.permissions_for(interaction.guild.me)
         
         required_perms = {
@@ -153,7 +130,6 @@ class CommandValidator:
         required: bool, 
         custom_message: Optional[str] = None
     ) -> str:
-        """Generate appropriate error message for subscription status."""
         if custom_message:
             return custom_message.format(channel=channel.mention)
         
@@ -174,7 +150,6 @@ class CommandValidator:
         error_message: str, 
         ephemeral: bool = True
     ):
-        """Send validation error message to the user."""
         from src.components.validation import ValidationErrorView
         
         view = ValidationErrorView(error_message)

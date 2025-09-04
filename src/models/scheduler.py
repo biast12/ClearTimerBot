@@ -155,6 +155,3 @@ class SchedulerStats:
             "current_queue_size": self.current_queue_size,
             "success_rate": f"{(self.total_tasks_completed / max(self.total_tasks_scheduled, 1)) * 100:.2f}%"
         }
-
-
-from typing import List

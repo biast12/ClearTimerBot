@@ -5,8 +5,6 @@ from typing import Optional
 
 from src.utils.schedule_parser import ScheduleParseError
 from src.utils.ignore_target_parser import (
-    identify_and_validate_ignore_target, 
-    validate_and_add_ignore_target,
     identify_and_validate_multiple_ignore_targets,
     validate_and_add_multiple_ignore_targets
 )
@@ -25,20 +23,15 @@ class SubscriptionCommands(commands.Cog):
         self.add_context_menus()
 
     def add_context_menus(self):
-        """Add context menu commands to the bot"""
-        # Message context menu - Ignore Message
         @self.bot.tree.context_menu(name='Ignore Message')
         async def ignore_message_context(interaction: discord.Interaction, message: discord.Message):
             await self.handle_ignore_message_context(interaction, message)
         
-        # User context menu - Ignore User
         @self.bot.tree.context_menu(name='Ignore User')
         async def ignore_user_context(interaction: discord.Interaction, user: discord.User):
             await self.handle_ignore_user_context(interaction, user)
     
     async def handle_ignore_message_context(self, interaction: discord.Interaction, message: discord.Message):
-        """Handle the ignore message context menu command"""
-        # Check if user has manage_messages permission
         if not interaction.user.guild_permissions.manage_messages:
             await interaction.response.send_message(
                 "❌ You need the **Manage Messages** permission to use this command.",
@@ -791,17 +784,6 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import NextTimeNotFoundView
             view = NextTimeNotFoundView(channel)
             await interaction.response.send_message(view=view, ephemeral=True)
-
-    # Legacy methods moved to command_validation.py and target_parser utility
-    def _parse_message_id_from_input(self, message_input: str) -> Optional[str]:
-        """Extract message ID from either a message link or direct ID"""
-        from src.utils.ignore_target_parser import extract_discord_message_id
-        return extract_discord_message_id(message_input)
-    
-    def _parse_user_id_from_input(self, user_input: str) -> Optional[str]:
-        """Extract user ID from mention or direct ID"""
-        from src.utils.ignore_target_parser import extract_discord_user_id
-        return extract_discord_user_id(user_input)
 
 
 async def setup(bot):

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from datetime import datetime, timezone
 
-from src.models import BotConfig, GuildInfo, CommandUsage
+from src.models import BotConfig, GuildInfo
 from src.services.server_data_service import DataService
 from src.services.database_connection_manager import db_manager
 from src.services.clear_job_scheduler_service import SchedulerService
@@ -16,22 +16,20 @@ class ClearTimerBot(commands.Bot):
         intents.message_content = True
         intents.guilds = True
 
-        # Configure sharding if provided
         shard_id = None
         shard_count = None
         if shard:
             shard_id, shard_count = shard
 
-        # Configure allowed mentions to prevent pinging users
         allowed_mentions = discord.AllowedMentions(
-            everyone=False,  # Disable @everyone and @here
-            users=False,     # Disable user pings
-            roles=False,     # Disable role pings
-            replied_user=False  # Don't ping on replies
+            everyone=False,
+            users=False,
+            roles=False,
+            replied_user=False
         )
         
         super().__init__(
-            command_prefix=lambda bot, msg: None,  # Disable all text commands
+            command_prefix=lambda bot, msg: None,
             intents=intents,
             help_command=None,
             allowed_mentions=allowed_mentions,
@@ -44,10 +42,8 @@ class ClearTimerBot(commands.Bot):
         self.scheduler_service = SchedulerService(self.data_service)
         self.message_service = MessageService(self.data_service, self.scheduler_service)
         
-        # Activity rotation state
         self.activity_dots = 0
 
-        # Set up service callbacks
         self.scheduler_service.register_channel_clear_callback(
             self.message_service.execute_channel_message_clear
         )
@@ -58,28 +54,21 @@ class ClearTimerBot(commands.Bot):
 
     @tasks.loop(seconds=2.0)
     async def rotate_activity(self):
-        """Rotate the activity status with animated dots"""
         dots = "." * self.activity_dots
         activity = discord.CustomActivity(name=f"🧹 Cleaning up the mess{dots}")
         await self.change_presence(activity=activity)
-        
-        # Cycle through 0, 1, 2, 3 dots
         self.activity_dots = (self.activity_dots + 1) % 4
 
     async def setup_hook(self) -> None:
-        # Connect to database first
         await db_manager.connect()
         logger.info(LogArea.DATABASE, "Connected to MongoDB")
 
-        # Initialize data service
         await self.data_service.initialize()
         logger.info(LogArea.STARTUP, "Data service initialized")
 
-        # Load command cogs last
         await self.load_commands()
 
     async def on_ready(self) -> None:
-        # Log shard information if sharded
         if self.shard_id is not None:
             logger.info(LogArea.STARTUP, f"Shard {self.shard_id}/{self.shard_count - 1} ready: {self.user} (ID: {self.user.id})")
             logger.info(LogArea.STARTUP, f"Shard {self.shard_id} connected to {len(self.guilds)} guilds")
@@ -88,16 +77,10 @@ class ClearTimerBot(commands.Bot):
             logger.info(LogArea.STARTUP, f"Connected to {len(self.guilds)} guilds")
 
         try:
-            # Start rotating activity
             self.rotate_activity.start()
 
-            # Sync server data with current guild membership
             await self._sync_server_cleanup_status()
-            
-            # Update server names for all connected guilds
             await self._update_server_names()
-            
-            # Clean up subscriptions for deleted channels
             await self._cleanup_deleted_channels()
 
             # Start the scheduler service

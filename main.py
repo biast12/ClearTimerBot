@@ -9,18 +9,15 @@ import os
 from pathlib import Path
 from typing import Optional, Dict
 import argparse
-from datetime import datetime, timezone
 
-# Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.core.config import ConfigManager  # noqa: E402
 from src.utils.logger import logger, LogArea  # noqa: E402
-from src.services.database_connection_manager import db_manager  # noqa: E402
 
 
 class ShardManager:
-    """Manages bot sharding and process launching"""
+    """Manages bot sharding"""
     
     def __init__(self, shard_count: Optional[int] = None, shard_ids: Optional[list] = None, original_args: Optional[list] = None):
         """
@@ -35,21 +32,18 @@ class ShardManager:
         self.config = self.config_manager.load_config()
         self.shard_count = shard_count
         self.shard_ids = shard_ids
-        self.original_args = original_args or []  # Store original command-line arguments
+        self.original_args = original_args or []
         self.processes: Dict[int, asyncio.subprocess.Process] = {}
         self.shard_restart_counts: Dict[int, int] = {}
         self.max_restart_attempts = 3
         self.restart_cooldown = 30  # seconds
-        self.should_restart = False  # Flag for full manager restart
-        self.restart_event = asyncio.Event()  # Event to signal restart
+        self.should_restart = False
+        self.restart_event = asyncio.Event()
     
     async def get_recommended_shards(self) -> int:
-        """Get the recommended number of shards from Discord"""
         try:
-            # Get bot token from config
             token = self.config.token
             
-            # Use aiohttp to get recommended shard count from Discord
             import aiohttp
             async with aiohttp.ClientSession() as session:
                 headers = {
@@ -67,22 +61,16 @@ class ShardManager:
             
         except Exception as e:
             logger.error(LogArea.STARTUP, f"Failed to get recommended shard count: {e}")
-            # Default to 1 shard if we can't get recommendation
             return 1
     
     async def launch_shard(self, shard_id: int, shard_count: int, auto_restart: bool = True):
-        """Launch a single shard as a subprocess"""
         logger.info(LogArea.STARTUP, f"Launching shard {shard_id}/{shard_count - 1}")
         
-        # Set environment variables for the shard
         env = os.environ.copy()
         env['SHARD_ID'] = str(shard_id)
         env['SHARD_COUNT'] = str(shard_count)
         
-        # Build command to run shard_runner.py with original arguments preserved
         cmd = [sys.executable, 'shard_runner.py'] + self.original_args
-        
-        # Launch the shard process using shard_runner.py
         process = await asyncio.create_subprocess_exec(
             *cmd,
             env=env,
@@ -92,7 +80,6 @@ class ShardManager:
         
         self.processes[shard_id] = process
         
-        # Monitor the process output
         async def monitor_output(stream):
             while True:
                 line = await stream.readline()
@@ -102,11 +89,9 @@ class ShardManager:
                 if decoded:
                     print(f"[Shard {shard_id}] {decoded}")
         
-        # Start monitoring tasks
         asyncio.create_task(monitor_output(process.stdout))
         asyncio.create_task(monitor_output(process.stderr))
         
-        # Monitor for crashes and auto-restart if enabled
         if auto_restart:
             asyncio.create_task(self.monitor_shard(shard_id, shard_count))
         
@@ -119,32 +104,24 @@ class ShardManager:
             if process:
                 return_code = await process.wait()
                 
-                # Check if this was an intentional shutdown for restart (exit code 99)
                 if return_code == 99:
                     logger.info(LogArea.STARTUP, f"Shard {shard_id} requested manager restart")
                     self.should_restart = True
                     self.restart_event.set()
                     break
-                # Check if this was a normal shutdown (exit code 0)
                 elif return_code == 0:
                     logger.info(LogArea.STARTUP, f"Shard {shard_id} shut down cleanly")
                     break
                 
-                # Shard crashed, attempt restart
                 logger.warning(LogArea.STARTUP, f"Shard {shard_id} crashed with exit code {return_code}")
-                
-                # Check restart attempts
                 restart_count = self.shard_restart_counts.get(shard_id, 0)
                 
                 if restart_count >= self.max_restart_attempts:
                     logger.error(LogArea.STARTUP, f"Shard {shard_id} exceeded max restart attempts ({self.max_restart_attempts})")
                     break
                 
-                # Wait before restarting
                 logger.info(LogArea.STARTUP, f"Restarting shard {shard_id} in {self.restart_cooldown} seconds...")
                 await asyncio.sleep(self.restart_cooldown)
-                
-                # Restart the shard
                 self.shard_restart_counts[shard_id] = restart_count + 1
                 logger.info(LogArea.STARTUP, f"Restarting shard {shard_id} (attempt {restart_count + 1}/{self.max_restart_attempts})")
                 
