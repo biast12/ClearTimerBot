@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from datetime import datetime, timezone
 
 from src.models import BotConfig, GuildInfo, CommandUsage
@@ -43,6 +43,9 @@ class ClearTimerBot(commands.Bot):
         self.data_service = DataService()
         self.scheduler_service = SchedulerService(self.data_service)
         self.message_service = MessageService(self.data_service, self.scheduler_service)
+        
+        # Activity rotation state
+        self.activity_dots = 0
 
         # Set up service callbacks
         self.scheduler_service.register_channel_clear_callback(
@@ -52,6 +55,16 @@ class ClearTimerBot(commands.Bot):
             self.message_service.send_missed_clear_notification
         )
 
+
+    @tasks.loop(seconds=2.0)
+    async def rotate_activity(self):
+        """Rotate the activity status with animated dots"""
+        dots = "." * self.activity_dots
+        activity = discord.CustomActivity(name=f"🧹 Cleaning up the mess{dots}")
+        await self.change_presence(activity=activity)
+        
+        # Cycle through 0, 1, 2, 3 dots
+        self.activity_dots = (self.activity_dots + 1) % 4
 
     async def setup_hook(self) -> None:
         # Connect to database first
@@ -75,9 +88,8 @@ class ClearTimerBot(commands.Bot):
             logger.info(LogArea.STARTUP, f"Connected to {len(self.guilds)} guilds")
 
         try:
-            # Set bot presence
-            activity = discord.CustomActivity(name="Cleaning up the mess! 🧹")
-            await self.change_presence(activity=activity)
+            # Start rotating activity
+            self.rotate_activity.start()
 
             # Sync server data with current guild membership
             await self._sync_server_cleanup_status()
@@ -160,6 +172,10 @@ class ClearTimerBot(commands.Bot):
         # Check if restart was requested
         if getattr(self, 'restart_requested', False):
             logger.info(LogArea.STARTUP, "Restart requested, initiating graceful shutdown...")
+        
+        # Stop the rotating activity task
+        if self.rotate_activity.is_running():
+            self.rotate_activity.cancel()
         
         # Stop scheduler first (prevents new jobs from running)
         await self.scheduler_service.shutdown()
