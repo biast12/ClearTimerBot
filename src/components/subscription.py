@@ -3,7 +3,7 @@ View Display for Subscription Commands
 """
 
 import discord
-from typing import Optional
+from typing import Optional, List, Tuple
 from datetime import datetime
 from src.utils.footer import add_footer
 
@@ -459,5 +459,131 @@ class NextTimeNotFoundView(discord.ui.LayoutView):
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
             accent_color=discord.Color.red().value
+        )
+        self.add_item(container)
+
+
+class MultipleIgnoreEntityView(discord.ui.LayoutView):
+    """View for multiple ignore entity operations"""
+    
+    def __init__(
+        self,
+        channel: discord.TextChannel,
+        added_users: List[str],
+        removed_users: List[str],
+        added_messages: List[str],
+        removed_messages: List[str]
+    ):
+        super().__init__()
+        
+        content_parts = []
+        
+        # Build content based on what was added/removed
+        if added_users:
+            user_mentions = [f"<@{uid}>" for uid in added_users]
+            content_parts.append(f"✅ **Added Users to Ignore List:** {', '.join(user_mentions)}")
+        
+        if removed_users:
+            user_mentions = [f"<@{uid}>" for uid in removed_users]
+            content_parts.append(f"❌ **Removed Users from Ignore List:** {', '.join(user_mentions)}")
+        
+        if added_messages:
+            content_parts.append(f"✅ **Added Messages to Ignore List:** {len(added_messages)} message(s)")
+            content_parts.append(f"   IDs: {', '.join(added_messages)}")
+        
+        if removed_messages:
+            content_parts.append(f"❌ **Removed Messages from Ignore List:** {len(removed_messages)} message(s)")
+            content_parts.append(f"   IDs: {', '.join(removed_messages)}")
+        
+        if not content_parts:
+            content_parts.append("ℹ️ **No changes made** - All targets were already in their respective states")
+        
+        content = f"**Ignore List Updated for {channel.mention}**\n\n" + "\n\n".join(content_parts)
+        content = add_footer(content)
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value if (added_users or added_messages) else discord.Color.orange().value
+        )
+        self.add_item(container)
+
+
+class SubscriptionSuccessWithMultipleIgnoresView(discord.ui.LayoutView):
+    """View for subscription success with multiple ignored targets"""
+    
+    def __init__(
+        self,
+        channel: discord.TextChannel,
+        timer: str,
+        next_run_time: datetime,
+        added_targets: List[Tuple[str, str]]
+    ):
+        super().__init__()
+        
+        timestamp = int(next_run_time.timestamp())
+        
+        content = (
+            f"✅ **Channel Subscribed**\n\n"
+            f"Messages in {channel.mention} will be cleared automatically.\n\n"
+            f"**Timer:** {timer}\n"
+            f"**Next Clear:** <t:{timestamp}:f>\n"
+            f"**Time Until:** <t:{timestamp}:R>"
+        )
+        
+        if added_targets:
+            users = [f"<@{entity_id}>" for entity_id, entity_type in added_targets if entity_type == "user"]
+            messages = [entity_id for entity_id, entity_type in added_targets if entity_type == "message"]
+            
+            if users:
+                content += f"\n\n**Ignored Users:** {', '.join(users)}"
+            if messages:
+                content += f"\n**Ignored Messages:** {len(messages)} message(s) - IDs: {', '.join(messages)}"
+        
+        content = add_footer(content)
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
+        )
+        self.add_item(container)
+
+
+class UpdateSuccessWithMultipleIgnoresView(discord.ui.LayoutView):
+    """View for update success with multiple ignored targets"""
+    
+    def __init__(
+        self,
+        channel: discord.TextChannel,
+        timer: str,
+        next_run_time: datetime,
+        added_targets: List[Tuple[str, str]]
+    ):
+        super().__init__()
+        
+        timestamp = int(next_run_time.timestamp())
+        
+        content = (
+            f"✅ **Subscription Updated**\n\n"
+            f"Timer for {channel.mention} has been updated.\n\n"
+            f"**New Timer:** {timer}\n"
+            f"**Next Clear:** <t:{timestamp}:f>\n"
+            f"**Time Until:** <t:{timestamp}:R>"
+        )
+        
+        if added_targets:
+            users = [f"<@{entity_id}>" for entity_id, entity_type in added_targets if entity_type == "user"]
+            messages = [entity_id for entity_id, entity_type in added_targets if entity_type == "message"]
+            
+            content += "\n\n**Newly Added to Ignore List:**"
+            if users:
+                content += f"\n• **Users:** {', '.join(users)}"
+            if messages:
+                content += f"\n• **Messages:** {len(messages)} message(s) - IDs: {', '.join(messages)}"
+        
+        content = add_footer(content)
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.green().value
         )
         self.add_item(container)

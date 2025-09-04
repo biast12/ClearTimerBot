@@ -4,7 +4,7 @@ Utility functions for parsing and validating ignore targets (messages and users)
 
 import re
 import discord
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 
 async def identify_and_validate_ignore_target(
@@ -49,6 +49,35 @@ async def identify_and_validate_ignore_target(
             return message_id, "message"
     
     return None, None
+
+
+async def identify_and_validate_multiple_ignore_targets(
+    targets: str,
+    channel: discord.TextChannel,
+    guild: discord.Guild
+) -> List[Tuple[str, str]]:
+    """
+    Parse and validate multiple comma-separated target strings.
+    
+    Args:
+        targets: Comma-separated target strings (message IDs/links or user mentions/IDs)
+        channel: The channel to check for messages
+        guild: The guild to check for users
+    
+    Returns:
+        List of tuples (entity_id, entity_type) where entity_type is 'user' or 'message'
+    """
+    validated_targets = []
+    target_list = [t.strip() for t in targets.split(',') if t.strip()]
+    
+    for target in target_list:
+        entity_id, entity_type = await identify_and_validate_ignore_target(target, channel, guild)
+        if entity_id and entity_type:
+            # Avoid duplicates
+            if (entity_id, entity_type) not in validated_targets:
+                validated_targets.append((entity_id, entity_type))
+    
+    return validated_targets
 
 
 def extract_discord_user_id(user_input: str) -> Optional[str]:
@@ -135,3 +164,42 @@ async def validate_and_add_ignore_target(
                 return entity_id, entity_type
     
     return None, None
+
+
+async def validate_and_add_multiple_ignore_targets(
+    targets: Optional[str],
+    channel: discord.TextChannel,
+    guild: discord.Guild,
+    channel_timer
+) -> List[Tuple[str, str]]:
+    """
+    Validate and add multiple comma-separated targets to the channel timer's ignore list.
+    
+    Args:
+        targets: Comma-separated target strings to parse and add
+        channel: The channel for message validation
+        guild: The guild for user validation
+        channel_timer: The channel timer object to add the targets to
+    
+    Returns:
+        List of tuples (entity_id, entity_type) for successfully added targets
+    """
+    if not targets:
+        return []
+    
+    added_targets = []
+    validated_targets = await identify_and_validate_multiple_ignore_targets(targets, channel, guild)
+    
+    for entity_id, entity_type in validated_targets:
+        if entity_type == "user":
+            # Check if not already ignored
+            if entity_id not in channel_timer.ignored.users:
+                channel_timer.add_ignored_user(entity_id)
+                added_targets.append((entity_id, entity_type))
+        else:  # message
+            # Check if not already ignored
+            if entity_id not in channel_timer.ignored.messages:
+                channel_timer.add_ignored_message(entity_id)
+                added_targets.append((entity_id, entity_type))
+    
+    return added_targets

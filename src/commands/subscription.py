@@ -4,7 +4,12 @@ from discord.ext import commands
 from typing import Optional
 
 from src.utils.schedule_parser import ScheduleParseError
-from src.utils.ignore_target_parser import identify_and_validate_ignore_target, validate_and_add_ignore_target
+from src.utils.ignore_target_parser import (
+    identify_and_validate_ignore_target, 
+    validate_and_add_ignore_target,
+    identify_and_validate_multiple_ignore_targets,
+    validate_and_add_multiple_ignore_targets
+)
 from src.utils.command_validation import CommandValidator, ValidationCheck
 
 
@@ -145,7 +150,7 @@ class SubscriptionCommands(commands.Cog):
     @app_commands.describe(
         timer="Timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to clear (defaults to current channel)",
-        ignored_target="Message ID/link or user mention/ID to ignore during clearing (optional)",
+        ignored_target="Message IDs/links or user mentions/IDs (comma-separated for multiple)",
     )
     async def subscription_add(
         self,
@@ -213,8 +218,8 @@ class SubscriptionCommands(commands.Cog):
 
         server.add_channel(channel_id, timer_to_store, next_run_time)
         
-        # Add ignored target if provided (message or user)
-        ignored_entity_id, ignored_entity_type = await validate_and_add_ignore_target(
+        # Add ignored targets if provided (messages or users)
+        added_targets = await validate_and_add_multiple_ignore_targets(
             ignored_target, channel, interaction.guild, server.channels[channel_id]
         )
         
@@ -223,7 +228,15 @@ class SubscriptionCommands(commands.Cog):
         # Send success message
         from src.components.subscription import SubscriptionSuccessView
         
-        view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, ignored_entity_id, ignored_entity_type)
+        # For backward compatibility, pass first target if there's only one
+        if len(added_targets) == 1:
+            view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, added_targets[0][0], added_targets[0][1])
+        elif len(added_targets) > 1:
+            # Use a new view for multiple targets
+            from src.components.subscription import SubscriptionSuccessWithMultipleIgnoresView
+            view = SubscriptionSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets)
+        else:
+            view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, None, None)
         await interaction.response.send_message(view=view)
 
     @subscription_group.command(
@@ -366,7 +379,7 @@ class SubscriptionCommands(commands.Cog):
     @app_commands.describe(
         timer="New timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to update (defaults to current channel)",
-        ignored_target="Message ID/link or user mention/ID to add to ignore list (optional)",
+        ignored_target="Message IDs/links or user mentions/IDs to add (comma-separated for multiple)",
     )
     async def subscription_update(
         self,
@@ -445,8 +458,8 @@ class SubscriptionCommands(commands.Cog):
             for msg_id in current_ignored_messages:
                 server.channels[channel_id].add_ignored_message(msg_id)
             
-            # Add new ignored target if provided (message or user)
-            ignored_entity_id, ignored_entity_type = await validate_and_add_ignore_target(
+            # Add new ignored targets if provided (messages or users)
+            added_targets = await validate_and_add_multiple_ignore_targets(
                 ignored_target, channel, interaction.guild, server.channels[channel_id]
             )
             
@@ -454,16 +467,25 @@ class SubscriptionCommands(commands.Cog):
 
         # Send success message
         from src.components.subscription import UpdateSuccessView
-        view = UpdateSuccessView(channel, timer_to_store, next_run_time, ignored_entity_id, ignored_entity_type)
+        
+        # For backward compatibility, pass first target if there's only one
+        if len(added_targets) == 1:
+            view = UpdateSuccessView(channel, timer_to_store, next_run_time, added_targets[0][0], added_targets[0][1])
+        elif len(added_targets) > 1:
+            # Use a new view for multiple targets
+            from src.components.subscription import UpdateSuccessWithMultipleIgnoresView
+            view = UpdateSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets)
+        else:
+            view = UpdateSuccessView(channel, timer_to_store, next_run_time, None, None)
         await interaction.response.send_message(view=view)
 
     @subscription_group.command(
         name="ignore",
-        description="Toggle a message or user to be ignored during channel clearing"
+        description="Toggle messages or users to be ignored during channel clearing"
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
-        target="Message ID/link or user mention/ID to toggle ignore status",
+        target="Message IDs/links or user mentions/IDs (comma-separated for multiple)",
         target_channel="Channel with the subscription (defaults to current channel)"
     )
     async def subscription_ignore(
@@ -491,10 +513,10 @@ class SubscriptionCommands(commands.Cog):
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
 
-        # Parse and validate the target
-        entity_id, entity_type = await identify_and_validate_ignore_target(target, channel, interaction.guild)
+        # Parse and validate multiple targets
+        validated_targets = await identify_and_validate_multiple_ignore_targets(target, channel, interaction.guild)
         
-        if not entity_id:
+        if not validated_targets:
             from src.components.subscription import InvalidTargetView
             view = InvalidTargetView()
             await interaction.response.send_message(view=view, ephemeral=True)
@@ -510,70 +532,46 @@ class SubscriptionCommands(commands.Cog):
 
         channel_timer = server.channels[channel_id]
         
-        if entity_type == "user":
-            # Handle user toggle
-            if entity_id in channel_timer.ignored.users:
-                # Remove the user
-                channel_timer.remove_ignored_user(entity_id)
-                await self.data_service.save_servers()
-                
-                from src.components.subscription import IgnoreEntityView
-                view = IgnoreEntityView("User", entity_id, channel, added=False)
-                await interaction.response.send_message(view=view)
-            else:
-                # Verify user exists in the guild (double-check)
-                try:
-                    member = await interaction.guild.fetch_member(int(entity_id))
-                    if not member:
-                        from src.components.subscription import UserNotFoundView
-                        view = UserNotFoundView(entity_id)
-                        await interaction.response.send_message(view=view, ephemeral=True)
-                        return
-                except (discord.NotFound, discord.HTTPException, ValueError):
-                    from src.components.subscription import UserNotFoundView
-                    view = UserNotFoundView(entity_id)
-                    await interaction.response.send_message(view=view, ephemeral=True)
-                    return
-                
-                # Add the user
-                channel_timer.add_ignored_user(entity_id)
-                await self.data_service.save_servers()
-                
-                from src.components.subscription import IgnoreEntityView
-                view = IgnoreEntityView("User", entity_id, channel, added=True)
-                await interaction.response.send_message(view=view)
-        else:  # message
-            # Handle message toggle
-            if entity_id in channel_timer.ignored_messages:
-                # Remove the message
-                channel_timer.remove_ignored_message(entity_id)
-                await self.data_service.save_servers()
-                
-                from src.components.subscription import IgnoreEntityView
-                view = IgnoreEntityView("Message", entity_id, channel, added=False)
-                await interaction.response.send_message(view=view)
-            else:
-                # Check if message exists in the channel before adding
-                try:
-                    message = await channel.fetch_message(int(entity_id))
-                    if not message:
-                        from src.components.subscription import MessageNotFoundView
-                        view = MessageNotFoundView(entity_id, channel)
-                        await interaction.response.send_message(view=view, ephemeral=True)
-                        return
-                except (discord.NotFound, discord.HTTPException, ValueError):
-                    from src.components.subscription import MessageNotFoundView
-                    view = MessageNotFoundView(entity_id, channel)
-                    await interaction.response.send_message(view=view, ephemeral=True)
-                    return
-                
-                # Add the message
-                channel_timer.add_ignored_message(entity_id)
-                await self.data_service.save_servers()
-                
-                from src.components.subscription import IgnoreEntityView
-                view = IgnoreEntityView("Message", entity_id, channel, added=True)
-                await interaction.response.send_message(view=view)
+        # Process all targets
+        added_users = []
+        removed_users = []
+        added_messages = []
+        removed_messages = []
+        
+        for entity_id, entity_type in validated_targets:
+            if entity_type == "user":
+                # Handle user toggle
+                if entity_id in channel_timer.ignored.users:
+                    # Remove the user
+                    channel_timer.remove_ignored_user(entity_id)
+                    removed_users.append(entity_id)
+                else:
+                    # Add the user
+                    channel_timer.add_ignored_user(entity_id)
+                    added_users.append(entity_id)
+            else:  # message
+                # Handle message toggle
+                if entity_id in channel_timer.ignored.messages:
+                    # Remove the message
+                    channel_timer.remove_ignored_message(entity_id)
+                    removed_messages.append(entity_id)
+                else:
+                    # Add the message
+                    channel_timer.add_ignored_message(entity_id)
+                    added_messages.append(entity_id)
+        
+        await self.data_service.save_servers()
+        
+        # Build response message
+        from src.components.subscription import MultipleIgnoreEntityView
+        view = MultipleIgnoreEntityView(
+            channel,
+            added_users,
+            removed_users,
+            added_messages,
+            removed_messages
+        )
+        await interaction.response.send_message(view=view)
 
     @subscription_group.command(
         name="clear",
