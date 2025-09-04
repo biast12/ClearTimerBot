@@ -22,10 +22,19 @@ class ClearTimerBot(commands.Bot):
         if shard:
             shard_id, shard_count = shard
 
+        # Configure allowed mentions to prevent pinging users
+        allowed_mentions = discord.AllowedMentions(
+            everyone=False,  # Disable @everyone and @here
+            users=False,     # Disable user pings
+            roles=False,     # Disable role pings
+            replied_user=False  # Don't ping on replies
+        )
+        
         super().__init__(
             command_prefix=lambda bot, msg: None,  # Disable all text commands
             intents=intents,
             help_command=None,
+            allowed_mentions=allowed_mentions,
             shard_id=shard_id,
             shard_count=shard_count
         )
