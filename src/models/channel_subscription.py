@@ -29,15 +29,19 @@ class ChannelTimer:
     timer: str
     next_run_time: datetime
     ignored: IgnoredEntities = field(default_factory=IgnoredEntities)
+    view_message_id: Optional[str] = None
     # Keep backward compatibility
     _legacy_ignored_messages: Optional[List[str]] = field(default=None, init=False)
 
     def to_dict(self) -> Dict:
-        return {
+        data = {
             "timer": self.timer, 
             "next_run_time": self.next_run_time.isoformat(),
             "ignored": self.ignored.to_dict()
         }
+        if self.view_message_id:
+            data["view_message_id"] = self.view_message_id
+        return data
 
     @classmethod
     def from_dict(cls, channel_id: str, data: Dict) -> "ChannelTimer":
@@ -54,7 +58,8 @@ class ChannelTimer:
             channel_id=channel_id,
             timer=data["timer"],
             next_run_time=datetime.fromisoformat(data["next_run_time"]),
-            ignored=ignored
+            ignored=ignored,
+            view_message_id=data.get("view_message_id")
         )
     
     # Backward compatibility properties

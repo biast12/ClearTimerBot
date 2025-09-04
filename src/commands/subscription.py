@@ -151,6 +151,7 @@ class SubscriptionCommands(commands.Cog):
         timer="Timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to clear (defaults to current channel)",
         ignored_target="Message IDs/links or user mentions/IDs (comma-separated for multiple)",
+        view="Show persistent timer message that updates after each clear",
     )
     async def subscription_add(
         self,
@@ -158,6 +159,7 @@ class SubscriptionCommands(commands.Cog):
         timer: str,
         target_channel: Optional[discord.TextChannel] = None,
         ignored_target: Optional[str] = None,
+        view: Optional[bool] = False,
     ):
         # Validate command with required checks
         checks = {
@@ -209,10 +211,23 @@ class SubscriptionCommands(commands.Cog):
 
         server.add_channel(channel_id, timer_to_store, next_run_time)
         
+        # Defer the response immediately (non-ephemeral so we can send a proper response)
+        await interaction.response.defer(ephemeral=False)
+        
         # Add ignored targets if provided (messages or users)
         added_targets = await validate_and_add_multiple_ignore_targets(
             ignored_target, channel, interaction.guild, server.channels[channel_id]
         )
+        
+        # Create view message if requested
+        view_message = None
+        if view:
+            from src.components.subscription import TimerViewMessage
+            timer_view = TimerViewMessage(channel, timer_to_store, next_run_time)
+            view_message = await channel.send(view=timer_view)
+            
+            # Store the view message ID
+            server.channels[channel_id].view_message_id = str(view_message.id)
         
         # Save the data BEFORE creating the job to prevent race condition
         await self.data_service.save_servers()
@@ -227,19 +242,37 @@ class SubscriptionCommands(commands.Cog):
             next_run_time=next_run_time,
         )
 
-        # Send success message
+        # Send success message using followup since we deferred
         from src.components.subscription import SubscriptionSuccessView
         
         # For backward compatibility, pass first target if there's only one
         if len(added_targets) == 1:
-            view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, added_targets[0][0], added_targets[0][1])
+            success_view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, added_targets[0][0], added_targets[0][1])
         elif len(added_targets) > 1:
             # Use a new view for multiple targets
             from src.components.subscription import SubscriptionSuccessWithMultipleIgnoresView
-            view = SubscriptionSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets)
+            success_view = SubscriptionSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets)
         else:
-            view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, None, None)
-        await interaction.response.send_message(view=view)
+            success_view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, None, None)
+        
+        # Edit the deferred response - send just the view without extra content
+        try:
+            await interaction.edit_original_response(
+                view=success_view
+            )
+        except Exception as e:
+            print(f"Error editing response: {e}")
+            # Try followup as fallback
+            try:
+                await interaction.followup.send(
+                    view=success_view
+                )
+            except Exception as e2:
+                print(f"Error with followup: {e2}")
+                # Last resort - send without view
+                await interaction.followup.send(
+                    content=f"✅ Subscription {'created with persistent timer view' if view_message else 'created successfully'}."
+                )
 
     @subscription_group.command(
         name="remove",
@@ -276,9 +309,19 @@ class SubscriptionCommands(commands.Cog):
         # Remove from scheduler
         self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
 
-        # Remove from data service
+        # Remove from data service and clean up view message
         server = await self.data_service.get_server(server_id)
         if server:
+            # Delete view message if it exists
+            if channel_id in server.channels:
+                view_message_id = server.channels[channel_id].view_message_id
+                if view_message_id:
+                    try:
+                        message = await channel.fetch_message(int(view_message_id))
+                        await message.delete()
+                    except:
+                        pass  # Message might have been deleted already
+            
             server.remove_channel(channel_id)
             await self.data_service.save_servers()
 
@@ -382,6 +425,7 @@ class SubscriptionCommands(commands.Cog):
         timer="New timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
         target_channel="Channel to update (defaults to current channel)",
         ignored_target="Message IDs/links or user mentions/IDs to add (comma-separated for multiple)",
+        view="Show/update persistent timer message that updates after each clear",
     )
     async def subscription_update(
         self,
@@ -389,6 +433,7 @@ class SubscriptionCommands(commands.Cog):
         timer: str,
         target_channel: Optional[discord.TextChannel] = None,
         ignored_target: Optional[str] = None,
+        view: Optional[bool] = False,
     ):
         # Validate command with required checks
         checks = {
@@ -418,14 +463,19 @@ class SubscriptionCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
+        # Defer the response immediately (non-ephemeral so we can send a proper response)
+        await interaction.response.defer(ephemeral=False)
+        
         # Get current ignored messages and users
         server = await self.data_service.get_server(server_id)
         current_ignored_messages = []
         current_ignored_users = []
+        old_view_message_id = None
         if server and channel_id in server.channels:
             current_ignored_messages = list(server.channels[channel_id].ignored_messages)
             current_ignored_users = list(server.channels[channel_id].ignored.users)
-
+            old_view_message_id = server.channels[channel_id].view_message_id
+        
         # Remove old job first
         self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
 
@@ -460,6 +510,34 @@ class SubscriptionCommands(commands.Cog):
                 ignored_target, channel, interaction.guild, server.channels[channel_id]
             )
             
+            # Handle view message BEFORE responding
+            view_message = None
+            from src.components.subscription import TimerViewMessage
+            timer_view = TimerViewMessage(channel, timer_to_store, next_run_time)
+            
+            if view:
+                # Delete old view message if it exists
+                if old_view_message_id:
+                    try:
+                        old_message = await channel.fetch_message(int(old_view_message_id))
+                        await old_message.delete()
+                    except:
+                        pass  # Message might have been deleted already
+                
+                # Create new view message
+                view_message = await channel.send(view=timer_view)
+                server.channels[channel_id].view_message_id = str(view_message.id)
+            elif old_view_message_id:
+                # User didn't specify view parameter but there's an existing view message
+                # Update the existing view message
+                try:
+                    old_message = await channel.fetch_message(int(old_view_message_id))
+                    await old_message.edit(view=timer_view)
+                    view_message = old_message  # Track that we updated it
+                except:
+                    # If message doesn't exist, clear the ID
+                    server.channels[channel_id].view_message_id = None
+            
             # Save data BEFORE creating the new job to prevent race condition
             await self.data_service.save_servers()
 
@@ -478,14 +556,32 @@ class SubscriptionCommands(commands.Cog):
         
         # For backward compatibility, pass first target if there's only one
         if len(added_targets) == 1:
-            view = UpdateSuccessView(channel, timer_to_store, next_run_time, added_targets[0][0], added_targets[0][1])
+            success_view = UpdateSuccessView(channel, timer_to_store, next_run_time, added_targets[0][0], added_targets[0][1])
         elif len(added_targets) > 1:
             # Use a new view for multiple targets
             from src.components.subscription import UpdateSuccessWithMultipleIgnoresView
-            view = UpdateSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets)
+            success_view = UpdateSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets)
         else:
-            view = UpdateSuccessView(channel, timer_to_store, next_run_time, None, None)
-        await interaction.response.send_message(view=view)
+            success_view = UpdateSuccessView(channel, timer_to_store, next_run_time, None, None)
+        
+        # Edit the deferred response - send just the view without extra content
+        try:
+            await interaction.edit_original_response(
+                view=success_view
+            )
+        except Exception as e:
+            print(f"Error editing response: {e}")
+            # Try followup as fallback
+            try:
+                await interaction.followup.send(
+                    view=success_view
+                )
+            except Exception as e2:
+                print(f"Error with followup: {e2}")
+                # Last resort - send without view
+                await interaction.followup.send(
+                    content=f"✅ Subscription {'updated with persistent timer view' if view_message else 'updated successfully'}."
+                )
 
     @subscription_group.command(
         name="ignore",

@@ -21,6 +21,15 @@ class MessageService:
 
         # Get ignored messages and users for this channel
         ignored_messages, ignored_users = await self._get_ignored_entities(channel)
+        
+        # Add view message to ignored list if it exists
+        server_id = str(channel.guild.id)
+        channel_id = str(channel.id)
+        server = await self.data_service.get_server(server_id)
+        if server and channel_id in server.channels:
+            view_message_id = server.channels[channel_id].view_message_id
+            if view_message_id:
+                ignored_messages.add(view_message_id)
 
         # Perform the clear
         deleted_count = await self._perform_message_deletion(channel, ignored_messages, ignored_users)
@@ -148,10 +157,34 @@ class MessageService:
         # Update in data service
         server = await self.data_service.get_server(server_id)
         if server and channel_id in server.channels:
-            server.channels[channel_id].next_run_time = next_run_time.astimezone(
-                pytz.UTC
-            )
+            channel_timer = server.channels[channel_id]
+            channel_timer.next_run_time = next_run_time.astimezone(pytz.UTC)
+            
+            # Update view message if it exists
+            if channel_timer.view_message_id:
+                await self._update_view_message(channel, channel_timer.view_message_id, 
+                                                channel_timer.timer, next_run_time)
+            
             await self.data_service.save_servers()
+    
+    async def _update_view_message(self, channel: discord.TextChannel, message_id: str, 
+                                    timer: str, next_run_time) -> None:
+        """Update the persistent view message with new next run time"""
+        try:
+            message = await channel.fetch_message(int(message_id))
+            from src.components.subscription import TimerViewMessage
+            view = TimerViewMessage(channel, timer, next_run_time)
+            await message.edit(view=view)
+        except discord.NotFound:
+            # Message was deleted, clear the ID from data
+            server_id = str(channel.guild.id)
+            channel_id = str(channel.id)
+            server = await self.data_service.get_server(server_id)
+            if server and channel_id in server.channels:
+                server.channels[channel_id].view_message_id = None
+                await self.data_service.save_servers()
+        except Exception as e:
+            logger.warning(LogArea.DISCORD, f"Failed to update view message: {e}")
 
     async def send_missed_clear_notification(
         self, channel: discord.TextChannel, job_id: str

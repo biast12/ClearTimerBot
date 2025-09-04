@@ -587,3 +587,26 @@ class UpdateSuccessWithMultipleIgnoresView(discord.ui.LayoutView):
             accent_color=discord.Color.green().value
         )
         self.add_item(container)
+
+
+class TimerViewMessage(discord.ui.LayoutView):
+    """Persistent view message that displays the next run time for a subscription"""
+    
+    def __init__(self, channel: discord.TextChannel, timer: str, next_run_time: datetime):
+        super().__init__()
+        
+        timestamp = int(next_run_time.timestamp())
+        
+        content = add_footer(
+            f"⏰ **Active Timer for {channel.mention}**\n\n"
+            f"**Timer Setting:** {timer}\n"
+            f"**Next Clear:** <t:{timestamp}:f>\n"
+            f"**Time Remaining:** <t:{timestamp}:R>\n\n"
+            f"_This message updates automatically after each clear._"
+        )
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.blue().value
+        )
+        self.add_item(container)
