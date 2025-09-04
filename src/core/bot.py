@@ -90,6 +90,9 @@ class ClearTimerBot(commands.Bot):
             # Requires scheduler to be running
             await self.scheduler_service.initialize_all_scheduled_jobs(self)
             logger.info(LogArea.SCHEDULER, "Scheduler jobs initialized")
+            
+            # Update all view messages to show current next run times
+            await self._update_all_view_messages()
 
             # Perform maintenance tasks (cleanup old removed servers)
             await self.data_service.cleanup_old_removed_servers()
@@ -390,4 +393,45 @@ class ClearTimerBot(commands.Bot):
             logger.info(
                 LogArea.CLEANUP,
                 f"Cleaned up {cleaned_count} deleted channel(s) in rejoined server {guild.name}"
+            )
+    
+    async def _update_all_view_messages(self) -> None:
+        """Update all view messages to show current next run times on startup"""
+        servers = await self.data_service.get_all_servers()
+        updated_count = 0
+        failed_count = 0
+        
+        for server_id, server in servers.items():
+            # Skip servers bot is not in
+            guild = self.get_guild(int(server_id))
+            if not guild:
+                continue
+            
+            for channel_id, channel_timer in server.channels.items():
+                if not channel_timer.view_message_id:
+                    continue
+                
+                channel = guild.get_channel(int(channel_id))
+                if not channel:
+                    continue
+                
+                try:
+                    # Get next run time from scheduler
+                    next_run_time = self.scheduler_service.get_channel_next_clear_time(server_id, channel_id)
+                    if next_run_time:
+                        await self.message_service._update_view_message(
+                            channel, 
+                            channel_timer.view_message_id,
+                            channel_timer.timer,
+                            next_run_time
+                        )
+                        updated_count += 1
+                except Exception as e:
+                    failed_count += 1
+                    logger.debug(LogArea.STARTUP, f"Failed to update view message in {channel.name}: {e}")
+        
+        if updated_count > 0 or failed_count > 0:
+            logger.info(
+                LogArea.STARTUP, 
+                f"View messages updated: {updated_count} successful, {failed_count} failed"
             )

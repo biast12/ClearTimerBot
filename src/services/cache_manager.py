@@ -112,6 +112,10 @@ class MultiLevelCache:
         await self.memory_cache.delete(key)
         await self.warm_cache.delete(key)
         await self.cold_cache.delete(key)
+    
+    async def delete(self, key: str) -> None:
+        """Alias for invalidate for consistency"""
+        await self.invalidate(key)
 
     async def clear_all(self) -> None:
         await self.memory_cache.clear()
