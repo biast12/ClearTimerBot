@@ -1,3 +1,4 @@
+import os
 import sys
 import traceback
 from datetime import datetime, timezone
@@ -177,15 +178,26 @@ class BotLogger:
         """Print a clean message without level or area fields"""
         self.log(LogLevel.NONE, LogArea.NONE, message, **kwargs)
     
-    def spacer(self, char: str = "=", length: int = 100, color: Optional[LogLevel] = None) -> None:
+    def spacer(self, char: str = "=", length: Optional[int] = None, color: Optional[LogLevel] = None) -> None:
         """Print a colored spacer line that fits the logger theme"""
+        # Get terminal width, fallback to 100 if unable to determine
+        if length is None:
+            try:
+                # Get terminal width on Windows and Unix systems
+                terminal_width = os.get_terminal_size().columns
+            except (OSError, AttributeError):
+                # Fallback if terminal size can't be determined
+                terminal_width = 100
+        else:
+            terminal_width = length
+            
         if color:
             color_code = self._get_color(color)
         else:
             # Default to a cyan/blue color for better visibility
             color_code = "\033[36m"  # Cyan
         reset = self._reset_color()
-        print(f"{color_code}{char * length}{reset}")
+        print(f"{color_code}{char * terminal_width}{reset}")
     
     async def get_error(self, error_id: str) -> Optional[ErrorDocument]:
         """Retrieve an error from the database by ID"""
