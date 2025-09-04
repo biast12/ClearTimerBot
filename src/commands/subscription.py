@@ -181,6 +181,21 @@ class SubscriptionCommands(commands.Cog):
             view = InvalidTimerView(str(e))
             await interaction.response.send_message(view=view, ephemeral=True)
             return
+        
+        # If timer is a time without timezone (e.g., "15:30"), append server timezone
+        timer_to_store = timer
+        if self.schedule_parser.TIMEZONE_PATTERN.match(timer.strip()):
+            match = self.schedule_parser.TIMEZONE_PATTERN.match(timer.strip())
+            if match and not match.group(2):  # No timezone specified
+                server_timezone = self.data_service.get_timezone_for_server(server_id, None)
+                if server_timezone and server_timezone != "UTC":
+                    # Get timezone abbreviation from the full timezone string
+                    import pytz
+                    from datetime import datetime
+                    tz = pytz.timezone(server_timezone)
+                    # Get the current timezone abbreviation (handles DST)
+                    tz_abbr = datetime.now(tz).strftime('%Z')
+                    timer_to_store = f"{timer.strip()} {tz_abbr}"
 
         # Add to scheduler
         self.scheduler_service.create_channel_clear_job(
@@ -196,7 +211,7 @@ class SubscriptionCommands(commands.Cog):
         if not server:
             server = await self.data_service.add_server(interaction.guild)
 
-        server.add_channel(channel_id, timer, next_run_time)
+        server.add_channel(channel_id, timer_to_store, next_run_time)
         
         # Add ignored target if provided (message or user)
         ignored_entity_id, ignored_entity_type = await validate_and_add_ignore_target(
@@ -208,7 +223,7 @@ class SubscriptionCommands(commands.Cog):
         # Send success message
         from src.components.subscription import SubscriptionSuccessView
         
-        view = SubscriptionSuccessView(channel, timer, next_run_time, ignored_entity_id, ignored_entity_type)
+        view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, ignored_entity_id, ignored_entity_type)
         await interaction.response.send_message(view=view)
 
     @subscription_group.command(
@@ -406,9 +421,24 @@ class SubscriptionCommands(commands.Cog):
             next_run_time=next_run_time,
         )
 
+        # If timer is a time without timezone (e.g., "15:30"), append server timezone
+        timer_to_store = timer
+        if self.schedule_parser.TIMEZONE_PATTERN.match(timer.strip()):
+            match = self.schedule_parser.TIMEZONE_PATTERN.match(timer.strip())
+            if match and not match.group(2):  # No timezone specified
+                server_timezone = self.data_service.get_timezone_for_server(server_id, None)
+                if server_timezone and server_timezone != "UTC":
+                    # Get timezone abbreviation from the full timezone string
+                    import pytz
+                    from datetime import datetime
+                    tz = pytz.timezone(server_timezone)
+                    # Get the current timezone abbreviation (handles DST)
+                    tz_abbr = datetime.now(tz).strftime('%Z')
+                    timer_to_store = f"{timer.strip()} {tz_abbr}"
+        
         # Update in data service
         if server:
-            server.channels[channel_id].timer = timer
+            server.channels[channel_id].timer = timer_to_store
             server.channels[channel_id].next_run_time = next_run_time
             
             # Restore ignored messages
@@ -424,7 +454,7 @@ class SubscriptionCommands(commands.Cog):
 
         # Send success message
         from src.components.subscription import UpdateSuccessView
-        view = UpdateSuccessView(channel, timer, next_run_time, ignored_entity_id, ignored_entity_type)
+        view = UpdateSuccessView(channel, timer_to_store, next_run_time, ignored_entity_id, ignored_entity_type)
         await interaction.response.send_message(view=view)
 
     @subscription_group.command(
