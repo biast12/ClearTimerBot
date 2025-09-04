@@ -84,7 +84,16 @@ class OwnerCommands(
             if success:
                 # Try to get username for display
                 try:
-                    user = await self.bot.fetch_user(int(user_id))
+                    # Check cache first
+                    cache_key = f"discord:user:{user_id}"
+                    user = await self.data_service._cache.get(cache_key)
+                    
+                    if not user:
+                        # Not cached, fetch from Discord
+                        user = await self.bot.fetch_user(int(user_id))
+                        # Cache for 30 minutes (user data changes rarely)
+                        await self.data_service._cache.set(cache_key, user, cache_level="warm", ttl=1800)
+                    
                     username = str(user)
                 except:
                     username = "Unknown User"

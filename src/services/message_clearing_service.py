@@ -46,6 +46,13 @@ class MessageService:
         return set(), set()
 
     async def _validate_bot_channel_permissions(self, channel: discord.TextChannel) -> bool:
+        # Cache permission checks
+        cache_key = f"perms:{channel.guild.id}:{channel.id}:{channel.guild.me.id}"
+        cached_result = await self.data_service._cache.get(cache_key)
+        
+        if cached_result is not None:
+            return cached_result
+        
         permissions = channel.permissions_for(channel.guild.me)
         
         required_perms = {
@@ -59,6 +66,11 @@ class MessageService:
         }
         
         missing_perms = [perm for perm, has_perm in required_perms.items() if not has_perm]
+        
+        result = len(missing_perms) == 0
+        
+        # Cache the result for 15 minutes
+        await self.data_service._cache.set(cache_key, result, cache_level="memory", ttl=900)
         
         if missing_perms:
             return False
@@ -153,7 +165,15 @@ class MessageService:
     async def _update_view_message(self, channel: discord.TextChannel, message_id: str, 
                                     timer: str, next_run_time: datetime) -> None:
         try:
-            message = await channel.fetch_message(int(message_id))
+            # Try to get message from cache first
+            cache_key = f"discord:msg:{channel.id}:{message_id}"
+            message = await self.data_service._cache.get(cache_key)
+            
+            if not message:
+                # Not in cache, fetch from Discord
+                message = await channel.fetch_message(int(message_id))
+                # Cache for 1 hour (messages don't change)
+                await self.data_service._cache.set(cache_key, message, cache_level="warm", ttl=3600)
             from src.components.subscription import TimerViewMessage
             view = TimerViewMessage(channel, timer, next_run_time)
             await message.edit(view=view)

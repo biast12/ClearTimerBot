@@ -313,8 +313,18 @@ class SubscriptionCommands(commands.Cog):
                 view_message_id = server.channels[channel_id].view_message_id
                 if view_message_id:
                     try:
-                        message = await channel.fetch_message(int(view_message_id))
+                        # Try cache first
+                        cache_key = f"discord:msg:{channel.id}:{view_message_id}"
+                        message = await self.data_service._cache.get(cache_key)
+                        
+                        if not message:
+                            message = await channel.fetch_message(int(view_message_id))
+                            # Cache briefly since we're about to delete it
+                            await self.data_service._cache.set(cache_key, message, cache_level="memory", ttl=60)
+                        
                         await message.delete()
+                        # Invalidate cache after deletion
+                        await self.data_service._cache.invalidate(cache_key)
                     except:
                         pass  # Message might have been deleted already
             
@@ -515,8 +525,18 @@ class SubscriptionCommands(commands.Cog):
                 # Delete old view message if it exists
                 if old_view_message_id:
                     try:
-                        old_message = await channel.fetch_message(int(old_view_message_id))
+                        # Try cache first
+                        cache_key = f"discord:msg:{channel.id}:{old_view_message_id}"
+                        old_message = await self.data_service._cache.get(cache_key)
+                        
+                        if not old_message:
+                            old_message = await channel.fetch_message(int(old_view_message_id))
+                            # Cache briefly since we're about to delete it
+                            await self.data_service._cache.set(cache_key, old_message, cache_level="memory", ttl=60)
+                        
                         await old_message.delete()
+                        # Invalidate cache after deletion
+                        await self.data_service._cache.invalidate(cache_key)
                     except:
                         pass  # Message might have been deleted already
                 

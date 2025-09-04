@@ -76,7 +76,15 @@ class AdminCommands(
             # Count server-specific errors
             from src.services.database_connection_manager import db_manager
             errors_collection = db_manager.db.errors
-            server_errors = await errors_collection.count_documents({"server_id": server_id})
+            
+            # Cache server error count
+            cache_key = f"stats:errors:server:{server_id}"
+            server_errors = await self.data_service._cache.get(cache_key)
+            
+            if server_errors is None:
+                server_errors = await errors_collection.count_documents({"server_id": server_id})
+                # Cache for 5 minutes
+                await self.data_service._cache.set(cache_key, server_errors, cache_level="memory", ttl=300)
             
             # Get channel details
             channel_count = len(server.channels)
@@ -106,7 +114,15 @@ class AdminCommands(
             # Count errors
             from src.services.database_connection_manager import db_manager
             errors_collection = db_manager.db.errors
-            error_count = await errors_collection.count_documents({})
+            
+            # Cache total error count
+            cache_key = "stats:errors:total"
+            error_count = await self.data_service._cache.get(cache_key)
+            
+            if error_count is None:
+                error_count = await errors_collection.count_documents({})
+                # Cache for 5 minutes
+                await self.data_service._cache.set(cache_key, error_count, cache_level="memory", ttl=300)
             
             # Simple stats display
             from src.components.admin import SimpleStatsView
