@@ -22,7 +22,6 @@ class OwnerCommands(
             return False
         return True
     
-    # Create subgroups
     admin_group = app_commands.Group(
         name="admin",
         description="Manage bot administrators",
@@ -72,7 +71,6 @@ class OwnerCommands(
         await interaction.response.defer(thinking=True)
         
         try:
-            # Don't allow adding self as admin if already owner
             if str(interaction.user.id) == user_id:
                 from src.components.owner import AdminAddSelfView
                 view = AdminAddSelfView()
@@ -82,16 +80,12 @@ class OwnerCommands(
             success = await self.data_service.add_admin(user_id)
             
             if success:
-                # Try to get username for display
                 try:
-                    # Check cache first
                     cache_key = f"discord:user:{user_id}"
                     user = await self.data_service._cache.get(cache_key)
                     
                     if not user:
-                        # Not cached, fetch from Discord
                         user = await self.bot.fetch_user(int(user_id))
-                        # Cache for 30 minutes (user data changes rarely)
                         await self.data_service._cache.set(cache_key, user, cache_level="warm", ttl=1800)
                     
                     username = str(user)
@@ -139,10 +133,7 @@ class OwnerCommands(
         await interaction.response.defer(thinking=True)
         
         try:
-            # Reload admin configuration and other bot settings
             await self.data_service.reload_admins_cache()
-            
-            # Get admin count
             admin_count = len(await self.data_service.get_admins())
             
             from src.components.owner import ConfigReloadSuccessView
@@ -167,7 +158,6 @@ class OwnerCommands(
         await interaction.response.defer(thinking=True)
         
         try:
-            # Check if specific shard requested but bot is not sharded
             if self.bot.shard_id is None and shard_id is not None:
                 from src.components.owner import ShardNotShardedView
                 view = ShardNotShardedView()
@@ -175,8 +165,6 @@ class OwnerCommands(
                 return
             
             if shard_id is not None:
-                # Reload specific shard
-                # Validate shard ID
                 if self.bot.shard_count and (shard_id < 0 or shard_id >= self.bot.shard_count):
                     from src.components.owner import ShardInvalidIdView
                     view = ShardInvalidIdView(shard_id, self.bot.shard_count)
@@ -187,30 +175,22 @@ class OwnerCommands(
                 view = ShardReloadSingleView(shard_id)
                 await interaction.followup.send(view=view)
                 
-                # If this is the current shard, restart self
                 if self.bot.shard_id == shard_id:
                     logger.info(LogArea.COMMANDS, f"Reloading current shard {shard_id} (self-restart)")
                     self.bot.restart_requested = True
-                    # Schedule graceful shutdown after this command completes
                     asyncio.create_task(self._delayed_shutdown())
                 else:
-                    # Send reload signal to shard manager (would need IPC implementation)
                     logger.info(LogArea.COMMANDS, f"Reload requested for shard {shard_id}")
                     from src.components.owner import ShardReloadSignalView
                     view = ShardReloadSignalView(shard_id)
                     await interaction.edit_original_response(view=view)
             else:
-                # Reload all shards (no shard_id specified)
                 from src.components.owner import ShardRestartView
                 view = ShardRestartView()
                 await interaction.followup.send(view=view)
                 
                 logger.info(LogArea.COMMANDS, "Reloading all shards")
-                
-                # Set restart flag on bot
                 self.bot.restart_requested = True
-                
-                # Schedule graceful shutdown after this command completes
                 asyncio.create_task(self._delayed_shutdown())
                 
         except Exception as e:
@@ -241,12 +221,11 @@ class OwnerCommands(
     
     async def _delayed_shutdown(self):
         """Gracefully shutdown the bot after a delay"""
-        await asyncio.sleep(2)  # Give time for responses to send
+        await asyncio.sleep(2)
         logger.info(LogArea.COMMANDS, "Initiating graceful shutdown for restart...")
         await self.bot.close()
 
 
 async def setup(bot):
-    # Owner commands require both OWNER_ID and GUILD_ID
     if bot.config.owner_id and bot.config.guild_id:
         await bot.add_cog(OwnerCommands(bot), guild=discord.Object(id=bot.config.guild_id))

@@ -138,7 +138,6 @@ class ShardManager:
         while self.processes:
             await asyncio.sleep(5)
             
-            # Remove finished processes
             finished_shards = []
             for shard_id, process in self.processes.items():
                 if process.returncode is not None:
@@ -190,7 +189,6 @@ class ShardManager:
             for shard_id in self.shard_ids:
                 await self.launch_shard(shard_id, self.shard_count)
             
-            # Create tasks for monitoring
             monitor_task = asyncio.create_task(self._monitor_processes())
             restart_task = asyncio.create_task(self._wait_for_restart())
             
@@ -208,7 +206,6 @@ class ShardManager:
                 except asyncio.CancelledError:
                     pass
             
-            # Check if we should restart
             if self.should_restart:
                 logger.info(LogArea.STARTUP, "Manager restart requested, shutting down all shards...")
                 await self._shutdown_all_shards()
@@ -242,8 +239,7 @@ async def main() -> None:
     
     args = parser.parse_args()
     
-    # Store original arguments to pass to child processes
-    original_args = sys.argv[1:]  # Get all arguments except script name
+    original_args = sys.argv[1:]
     
     # Parse shard IDs if provided
     shard_ids = None
@@ -258,7 +254,6 @@ async def main() -> None:
     
     while True:
         try:
-            # Create and run shard manager with original arguments
             manager = ShardManager(
                 shard_count=shard_count, 
                 shard_ids=shard_ids, 
@@ -304,9 +299,7 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    # Set up asyncio for Windows
     if sys.platform == "win32":
-        # Use ProactorEventLoop for subprocess support on Windows
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
     # Run the bot with automatic sharding and restart capability
