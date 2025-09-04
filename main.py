@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from src.core.config import ConfigManager  # noqa: E402
 from src.utils.logger import logger, LogArea  # noqa: E402
+from src.config import get_global_config  # noqa: E402
 
 
 class ShardManager:
@@ -35,8 +36,9 @@ class ShardManager:
         self.original_args = original_args or []
         self.processes: Dict[int, asyncio.subprocess.Process] = {}
         self.shard_restart_counts: Dict[int, int] = {}
-        self.max_restart_attempts = 3
-        self.restart_cooldown = 30  # seconds
+        config = get_global_config()
+        self.max_restart_attempts = config.max_restart_attempts
+        self.restart_cooldown = config.restart_cooldown
         self.should_restart = False
         self.restart_event = asyncio.Event()
     

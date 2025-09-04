@@ -7,6 +7,7 @@ import discord
 from src.services.server_data_service import DataService
 from src.services.clear_job_scheduler_service import SchedulerService
 from src.utils.logger import logger, LogArea
+from src.config import get_global_config
 
 
 class MessageService:
@@ -189,5 +190,6 @@ class MessageService:
     ) -> None:
         from src.components.errors import MissedClearView
         
+        config = get_global_config()
         view = MissedClearView()
-        await channel.send(view=view, delete_after=60)
+        await channel.send(view=view, delete_after=config.missed_clear_notification_timeout)

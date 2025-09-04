@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional
 import asyncio
 from src.models import CacheEntry as ModelCacheEntry, CacheLevel, CacheStats, GlobalCacheStats
+from src.config import get_global_config
 
 
 class CacheManager:
@@ -68,9 +69,10 @@ class CacheManager:
 
 class MultiLevelCache:
     def __init__(self):
-        self.memory_cache = CacheManager(level=CacheLevel.MEMORY, default_ttl=60)  # 1 minute for hot data
-        self.warm_cache = CacheManager(level=CacheLevel.WARM, default_ttl=300)  # 5 minutes for warm data
-        self.cold_cache = CacheManager(level=CacheLevel.COLD, default_ttl=3600)  # 1 hour for cold data
+        config = get_global_config()
+        self.memory_cache = CacheManager(level=CacheLevel.MEMORY, default_ttl=config.default_cache_ttl_memory)
+        self.warm_cache = CacheManager(level=CacheLevel.WARM, default_ttl=config.default_cache_ttl_warm)
+        self.cold_cache = CacheManager(level=CacheLevel.COLD, default_ttl=config.default_cache_ttl_cold)
         self._global_stats = GlobalCacheStats()
 
     async def get(self, key: str, cache_level: str = "memory") -> Optional[Any]:

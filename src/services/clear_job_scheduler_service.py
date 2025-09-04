@@ -14,6 +14,7 @@ from src.models import (
 from src.services.server_data_service import DataService
 from src.utils.schedule_parser import ScheduleExpressionParser
 from src.utils.logger import logger, LogArea
+from src.config import get_global_config
 
 if TYPE_CHECKING:
     from src.core.bot import ClearTimerBot
@@ -82,10 +83,11 @@ class SchedulerService:
             replace_existing=True,
         )
         
+        config = get_global_config()
         self.scheduler.add_job(
             self._perform_periodic_cache_cleanup,
             "interval",
-            minutes=15,
+            seconds=config.cache_cleanup_interval,
             id="cleanup_cache",
             replace_existing=True,
         )

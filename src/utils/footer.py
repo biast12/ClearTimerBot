@@ -2,6 +2,8 @@
 Footer utility to add a "Powered by" footer to all bot responses
 """
 
+from src.config import get_global_config
+
 
 def add_footer(content: str) -> str:
     """
@@ -13,5 +15,6 @@ def add_footer(content: str) -> str:
     Returns:
         The content with the footer appended
     """
-    footer = "\n\n<:logo:1411854240443531384> **Powered by ClearTimer Bot**"
-    return content + footer
+    config = get_global_config()
+    footer = config.get_footer_text()
+    return content + footer if footer else content

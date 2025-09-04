@@ -4,6 +4,7 @@ View Display for Utility Commands
 
 import discord
 from src.utils.footer import add_footer
+from src.config import get_global_config
 
 
 class HelpView(discord.ui.LayoutView):
@@ -12,14 +13,10 @@ class HelpView(discord.ui.LayoutView):
     def __init__(self):
         super().__init__()
 
-        bot_invite_url = (
-            "https://discord.com/oauth2/authorize?"
-            "client_id=1290353946308775987&permissions=277025483776&"
-            "integration_type=0&scope=bot"
-        )
+        config = get_global_config()
 
         content = add_footer(
-            "**ClearTimer Bot Help**\n\n"
+            f"**{config.bot_name} Help**\n\n"
             "Automatically clear messages in Discord channels on a schedule.\n\n"
             "**📝 Subscription Commands**\n"
             "`/subscription add <timer> [channel] [target]` - Subscribe channel\n"
@@ -41,9 +38,9 @@ class HelpView(discord.ui.LayoutView):
             "**For You:** Manage Messages\n"
             "**For Bot:** View Channel, Send Messages, Send Messages in Threads, Read Message History, Manage Messages, Embed Links, Use Application Commands\n\n"
             "**🔗 Links**\n"
-            f"[Support Server](https://biast12.com/botsupport) | "
-            f"[Add Bot]({bot_invite_url}) | "
-            "[GitHub](https://github.com/biast12/ClearTimerBot)"
+            f"[Support Server]({config.support_server_url}) | "
+            f"[Add Bot]({config.bot_invite_url}) | "
+            f"[GitHub]({config.github_url})"
         )
 
         container = discord.ui.Container(
