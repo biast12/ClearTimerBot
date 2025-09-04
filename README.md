@@ -225,6 +225,14 @@ Check the bot's response latency to Discord servers.
 
 Display comprehensive help information including commands, timer formats, and useful links.
 
+#### Timezone Management
+
+Commands for managing server timezone settings under `/timezone`:
+
+- **`/timezone change [timezone]`**: Set the default timezone for your server (requires Manage Server permission)
+  - Examples: `/timezone change America/New_York`, `/timezone change EST`, `/timezone change Europe/London`
+- **`/timezone list`**: Display all available timezones from the configuration
+
 </details>
 
 ### Admin Commands
@@ -288,6 +296,14 @@ Commands for managing bot administrators under `/owner admin`:
 Commands for recaching configuration under `/owner recache`:
 
 - **`/owner recache config`**: Recache bot configuration from database
+
+#### Shard Management
+
+Commands for managing bot shards under `/owner shard` (if bot is sharded):
+
+- **`/owner shard status`**: View current shard status and statistics
+- **`/owner shard reload`**: Reload all shards (restart bot)
+- **`/owner shard reload [shard_id]`**: Reload a specific shard
 
 </details>
 
