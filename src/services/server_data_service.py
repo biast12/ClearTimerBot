@@ -124,7 +124,6 @@ class DataService:
                     detected_tz = self._auto_detect_timezone(guild)
                     if detected_tz:
                         server.timezone = detected_tz
-                        server.timezone_auto_detected = True
                 # Set default language to English if not set
                 if not server.language:
                     server.language = "en"
@@ -150,13 +149,12 @@ class DataService:
                     detected_tz = self._auto_detect_timezone(guild)
                     if detected_tz:
                         existing_server.timezone = detected_tz
-                        existing_server.timezone_auto_detected = True
                         updated = True
                 if updated:
                     servers_collection = db_manager.servers
                     await servers_collection.update_one(
                         {"_id": server_id},
-                        {"$set": {"server_name": server_name, "timezone": existing_server.timezone, "timezone_auto_detected": existing_server.timezone_auto_detected}}
+                        {"$set": {"server_name": server_name, "timezone": existing_server.timezone}}
                     )
                     # Invalidate cache for this server
                     cache_key = f"server:{server_id}"
@@ -298,12 +296,11 @@ class DataService:
         """Get all available timezone mappings from config"""
         return self._timezones_cache.copy()
     
-    async def set_server_timezone(self, server_id: str, timezone_str: str, auto_detected: bool = False) -> None:
+    async def set_server_timezone(self, server_id: str, timezone_str: str) -> None:
         """Set or update the timezone for a specific server"""
         server = await self.get_server(server_id)
         if server:
             server.timezone = timezone_str
-            server.timezone_auto_detected = auto_detected
             await self.save_servers()
     
     async def get_server_timezone(self, server_id: str) -> Optional[str]:

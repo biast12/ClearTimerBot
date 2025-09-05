@@ -62,8 +62,6 @@
       },
       "current": {
         "title": "Current Server Timezone",
-        "auto_detected": "**Timezone:** `{timezone}` (Auto-detected)",
-        "manually_set": "**Timezone:** `{timezone}` (Manually set)",
         "timezone": "**Timezone:** `{timezone}`",
         "offset": "**Offset:** {offset}",
         "time": "**Current Time:** {time}",

@@ -121,7 +121,7 @@ class GeneralCommands(commands.Cog):
         if not server:
             server = await self.data_service.add_server(interaction.guild)
         
-        await self.data_service.set_server_timezone(server_id, timezone, auto_detected=False)
+        await self.data_service.set_server_timezone(server_id, timezone)
         
         translator = await get_translator(server_id, self.data_service)
         from src.components.timezone import TimezoneChangeSuccessView

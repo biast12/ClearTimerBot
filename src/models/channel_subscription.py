@@ -98,7 +98,6 @@ class Server:
     server_name: str
     channels: Dict[str, ChannelTimer] = field(default_factory=dict)
     timezone: Optional[str] = None
-    timezone_auto_detected: bool = False
     language: Optional[str] = None
 
     def add_channel(self, channel_id: str, timer: str, next_run_time: datetime) -> None:
@@ -121,7 +120,6 @@ class Server:
                 for channel_id, timer in self.channels.items()
             },
             "timezone": self.timezone,
-            "timezone_auto_detected": self.timezone_auto_detected,
             "language": self.language,
         }
 
@@ -131,7 +129,6 @@ class Server:
             server_id=server_id,
             server_name=data.get("server_name", "") or "",
             timezone=data.get("timezone"),
-            timezone_auto_detected=data.get("timezone_auto_detected", False),
             language=data.get("language", "en")  # Default to English if not set
         )
         for channel_id, channel_data in data.get("channels", {}).items():

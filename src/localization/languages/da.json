@@ -58,8 +58,6 @@
       },
       "current": {
         "title": "Nuværende Server Tidszone",
-        "auto_detected": "**Tidszone:** `{timezone}` (Auto-opdaget)",
-        "manually_set": "**Tidszone:** `{timezone}` (Manuelt indstillet)",
         "timezone": "**Tidszone:** `{timezone}`",
         "offset": "**Forskydning:** {offset}",
         "time": "**Nuværende Tid:** {time}",

@@ -12,7 +12,7 @@ from src.utils.footer import add_footer
 class TimezoneChangeView(discord.ui.LayoutView):
     """View for successful timezone change"""
     
-    def __init__(self, timezone: str, translator, auto_detected: bool = False):
+    def __init__(self, timezone: str, translator):
         super().__init__()
         
         try:
@@ -22,11 +22,8 @@ class TimezoneChangeView(discord.ui.LayoutView):
             formatted_offset = f"UTC{offset[:3]}:{offset[3:]}" if offset else "UTC"
             current_time = now.strftime("%I:%M %p")
             
-            detection_method = "🔍 **Auto-Detected**\n\n" if auto_detected else ""
-            
             content = add_footer(
                 f"✅ **Timezone Updated**\n\n"
-                f"{detection_method}"
                 f"**Timezone:** `{timezone}`\n"
                 f"**Offset:** {formatted_offset}\n"
                 f"**Current Time:** {current_time}\n\n"
@@ -146,7 +143,7 @@ class InvalidTimezoneView(discord.ui.LayoutView):
 class CurrentTimezoneView(discord.ui.LayoutView):
     """View for displaying current timezone"""
     
-    def __init__(self, timezone: Optional[str], translator, auto_detected: bool = False):
+    def __init__(self, timezone: Optional[str], translator):
         super().__init__()
         
         if timezone:
@@ -157,10 +154,7 @@ class CurrentTimezoneView(discord.ui.LayoutView):
                 formatted_offset = f"UTC{offset[:3]}:{offset[3:]}" if offset else "UTC"
                 current_time = now.strftime("%I:%M %p on %B %d, %Y")
                 
-                if auto_detected:
-                    status_msg = translator.get("commands.timezone.current.auto_detected", timezone=timezone)
-                else:
-                    status_msg = translator.get("commands.timezone.current.manually_set", timezone=timezone)
+                status_msg = translator.get("commands.timezone.current.timezone", timezone=timezone)
                 
                 lines = [
                     f"🌍 **{translator.get('commands.timezone.current.title')}**\n",
