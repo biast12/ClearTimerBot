@@ -55,7 +55,13 @@ class ClearTimerBot(commands.Bot):
     @tasks.loop(seconds=2.0)
     async def rotate_activity(self):
         dots = "." * self.activity_dots
-        activity = discord.CustomActivity(name=f"🧹 Cleaning up the mess{dots}")
+        
+        total_subscriptions = 0
+        all_servers = await self.data_service.get_all_servers()
+        for server in all_servers.values():
+            total_subscriptions += len(server.channels)
+        
+        activity = discord.CustomActivity(name=f"🧹 Cleaning up {total_subscriptions} channels{dots}")
         await self.change_presence(activity=activity)
         self.activity_dots = (self.activity_dots + 1) % 4
 
