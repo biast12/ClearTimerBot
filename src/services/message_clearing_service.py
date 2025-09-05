@@ -189,7 +189,10 @@ class MessageService:
         self, channel: discord.TextChannel, job_id: str
     ) -> None:
         from src.components.errors import MissedClearView
+        from src.localization import get_translator
         
         config = get_global_config()
-        view = MissedClearView()
+        server_id = str(channel.guild.id)
+        translator = await get_translator(server_id, self.data_service)
+        view = MissedClearView(translator)
         await channel.send(view=view, delete_after=config.missed_clear_notification_timeout)

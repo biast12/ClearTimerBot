@@ -125,6 +125,9 @@ class DataService:
                     if detected_tz:
                         server.timezone = detected_tz
                         server.timezone_auto_detected = True
+                # Set default language to English if not set
+                if not server.language:
+                    server.language = "en"
                 self._servers_cache[server_id] = server
 
                 servers_collection = db_manager.servers
@@ -308,6 +311,23 @@ class DataService:
         server = await self.get_server(server_id)
         if server and server.timezone:
             return server.timezone
+        return None
+    
+    async def set_server_language(self, server_id: str, language: str) -> None:
+        """Set or update the language for a specific server"""
+        server = await self.get_server(server_id)
+        if server:
+            server.language = language
+            await self.save_servers()
+            # Invalidate cache for this server
+            cache_key = f"server:{server_id}"
+            await self._cache.invalidate(cache_key)
+    
+    async def get_server_language(self, server_id: str) -> Optional[str]:
+        """Get the language setting for a specific server"""
+        server = await self.get_server(server_id)
+        if server and server.language:
+            return server.language
         return None
     
     def get_timezone_for_server(self, server_id: str, timezone_abbr: str = None) -> Optional[str]:

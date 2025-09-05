@@ -1,0 +1,396 @@
+{
+  "language_name": "Danish",
+  "language_native_name": "Dansk",
+  "language_code": "da",
+  "common": {
+    "yes": "Ja",
+    "no": "Nej",
+    "enabled": "Aktiveret",
+    "disabled": "Deaktiveret",
+    "error": "Fejl",
+    "success": "Succes",
+    "warning": "Advarsel",
+    "info": "Info",
+    "none": "Ingen",
+    "unknown": "Ukendt",
+    "channel": "Kanal",
+    "server": "Server",
+    "user": "Bruger",
+    "message": "Besked",
+    "permission_denied": "❌ Du skal have **{permission}** tilladelse for at bruge denne kommando.",
+    "blacklisted_server": "❌ **Server Sortlistet**\n\nDenne server er blevet sortlistet og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kan du appellere sortlistningen på vores [Support Server](https://biast12.com/botsupport)."
+  },
+  "commands": {
+    "help": {
+      "title": "Hjælp",
+      "description": "Ryd automatisk beskeder i Discord-kanaler efter en tidsplan.",
+      "subscription_commands": "📝 Abonnementskommandoer",
+      "other_commands": "🔧 Andre Kommandoer",
+      "timer_formats": "⏱️ Timerformater",
+      "timer_intervals": "**Intervaller:** `1d2h3m` (dage, timer, minutter)",
+      "timer_daily": "**Daglig Plan:** `15:30 EST` (tid + tidszone)",
+      "timer_examples": "**Eksempler:** `24h`, `1d`, `30m`, `09:00 PST`",
+      "required_permissions": "🔒 Påkrævede Tilladelser",
+      "permissions_for_you": "**For Dig:** Administrer Beskeder",
+      "permissions_for_bot": "**For Bot:** Se Kanal, Send Beskeder, Send Beskeder i Tråde, Læs Beskedhistorik, Administrer Beskeder, Indlejr Links, Brug Applikationskommandoer",
+      "links": "🔗 Links"
+    },
+    "ping": {
+      "title": "🏓 Pong!",
+      "websocket_latency": "**WebSocket Latenstid:** {latency}ms",
+      "response_time": "**Svartid:** {time}ms",
+      "status": "**Status:** {status}",
+      "status_excellent": "🟢 Fremragende",
+      "status_good": "🟡 God",
+      "status_fair": "🟠 Rimelig",
+      "status_poor": "🔴 Dårlig"
+    },
+    "timezone": {
+      "change": {
+        "success": "✅ Serverens tidszone er blevet sat til **{timezone}**",
+        "success_auto": "✅ Serverens tidszone er automatisk blevet opdaget og sat til **{timezone}**",
+        "invalid": "❌ Ugyldig tidszone: `{timezone}`",
+        "suggestion": "Mente du: `{suggestion}`?"
+      },
+      "list": {
+        "title": "🌍 Tilgængelige Tidszoner",
+        "description": "Her er de konfigurerede tidszoneforkortelser og deres fulde navne:"
+      },
+      "current": {
+        "title": "Nuværende Server Tidszone",
+        "auto_detected": "**Tidszone:** `{timezone}` (Auto-opdaget)",
+        "manually_set": "**Tidszone:** `{timezone}` (Manuelt indstillet)",
+        "timezone": "**Tidszone:** `{timezone}`",
+        "offset": "**Forskydning:** {offset}",
+        "time": "**Nuværende Tid:** {time}",
+        "how_it_works": "Dette betyder:",
+        "benefit_1": "• Brugere kan indstille timere med kun tid: `/subscription add 21:30`",
+        "benefit_2": "• Serverens tidszone vil blive brugt automatisk",
+        "benefit_3": "• Brugere kan stadig tilsidesætte: `/subscription add 21:30 PST`",
+        "change_hint": "For at ændre tidszonen, brug `/timezone change <tidszone>`",
+        "error": "**Fejl:** Kunne ikke indlæse tidszonedetaljer",
+        "no_timezone_title": "Ingen Tidszone Indstillet",
+        "no_timezone_description": "Denne server har ikke en standard tidszone konfigureret. Når brugere opretter timere uden at angive en tidszone, vil UTC blive brugt.",
+        "set_timezone_benefits": "Indstil en tidszone for at:",
+        "set_hint": "Brug `/timezone change <tidszone>` for at indstille en standard tidszone.",
+        "list_hint": "Brug `/timezone list` for at se tilgængelige tidszoner."
+      }
+    },
+    "language": {
+      "list": {
+        "title": "🌐 Tilgængelige Sprog",
+        "description": "Botten understøtter i øjeblikket følgende sprog:",
+        "current": "Nuværende sprog: **{language}**",
+        "change_hint": "Brug `/language change <sprog>` for at ændre serverens sprog"
+      },
+      "change": {
+        "success": "✅ Serverens sprog er blevet ændret til **{language}**",
+        "already_set": "ℹ️ Serverens sprog er allerede sat til **{language}**",
+        "invalid": "❌ Ugyldigt sprog: `{language}`",
+        "available": "Tilgængelige sprog: {languages}"
+      }
+    },
+    "subscription": {
+      "add": {
+        "success": "✅ Tilmeldte {channel} til automatisk beskedrydning hver **{timer}**",
+        "success_with_ignored": "✅ Tilmeldte {channel} til automatisk beskedrydning hver **{timer}**\n\n**Ignorerede mål tilføjet:** {count}",
+        "already_subscribed": "❌ {channel} er allerede tilmeldt med en {timer} timer.\nBrug `/subscription update` for at ændre timeren.",
+        "invalid_timer": "❌ Ugyldigt timerformat: `{timer}`"
+      },
+      "remove": {
+        "success": "✅ Afmeldte {channel} fra automatisk beskedrydning",
+        "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning"
+      },
+      "list": {
+        "title": "📋 Aktive Abonnementer",
+        "no_subscriptions": "Ingen aktive abonnementer på denne server",
+        "subscription_item": "• {channel} - Hver **{timer}** (Næste: {next_clear})",
+        "subscription_item_with_ignored": "• {channel} - Hver **{timer}** (Næste: {next_clear}) - {ignored_count} ignoreret",
+        "tip": "💡 Brug `/subscription info [kanal]` for detaljeret information"
+      },
+      "info": {
+        "title": "Abonnementsinformation",
+        "subscribed": "✅ Tilmeldt",
+        "not_subscribed": "❌ Ikke Tilmeldt",
+        "timer": "**Timer:** {timer}",
+        "next_clear": "**Næste Rydning:** {time}",
+        "ignored_messages": "**Ignorerede Beskeder:** {count}",
+        "ignored_users": "**Ignorerede Brugere:** {count}",
+        "commands_hint": "Brug `/subscription` kommandoer til at administrere dette abonnement"
+      },
+      "update": {
+        "success": "✅ Opdaterede timeren for {channel} til **{timer}**",
+        "success_with_ignored": "✅ Opdaterede timeren for {channel} til **{timer}**\n\n**Ignorerede mål tilføjet:** {count}",
+        "no_change": "ℹ️ Timeren for {channel} er allerede sat til **{timer}**",
+        "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning"
+      },
+      "clear": {
+        "in_progress": "⏳ Rydder beskeder i {channel}...",
+        "success": "✅ Ryddede **{count}** beskeder i {channel}",
+        "success_with_skipped": "✅ Ryddede **{count}** beskeder i {channel}\n⚠️ Sprang over **{skipped}** beskeder (ignoreret eller fejl)",
+        "no_messages": "ℹ️ Ingen beskeder at rydde i {channel}",
+        "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning"
+      },
+      "skip": {
+        "success": "✅ Springer næste planlagte rydning over for {channel}\n\n**Næste rydning:** {next_clear}",
+        "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning"
+      },
+      "ignore": {
+        "message_added": "✅ Tilføjede besked til ignorerlisten for {channel}",
+        "message_removed": "✅ Fjernede besked fra ignorerlisten for {channel}",
+        "message_not_found": "❌ Besked ikke fundet",
+        "user_added": "✅ Tilføjede {user} til ignorerlisten for {channel}",
+        "user_removed": "✅ Fjernede {user} fra ignorerlisten for {channel}",
+        "invalid_target": "❌ Ugyldigt mål. Angiv venligst et gyldigt besked-ID/link eller brugeromtale/ID."
+      },
+      "errors": {
+        "channel_required": "❌ Angiv venligst en kanal for denne kommando",
+        "invalid_channel": "❌ Ugyldig kanal: {channel}",
+        "missing_permissions": "❌ Jeg mangler tilladelser i {channel}",
+        "already_clearing": "⏳ En rydning er allerede i gang for {channel}. Vent venligst på at den bliver færdig."
+      }
+    }
+  },
+  
+  "subscription": {
+    "list": {
+      "title": "📋 Aktive Abonnementer",
+      "header": "Her er alle aktive abonnementer for denne server:",
+      "no_subscriptions": "Der er ingen aktive abonnementer i denne server.",
+      "channel_info": "**#{channel}**\nTimer: {timer}\nNæste rydning: {next_clear}",
+      "ignored_count": "Ignorerede: {count}",
+      "total_subscriptions": "Total abonnementer: {count}"
+    },
+    "info": {
+      "title": "ℹ️ Abonnementsinformation",
+      "status": "**Status:** {status}",
+      "subscribed": "✅ Tilmeldt",
+      "not_subscribed": "❌ Ikke Tilmeldt",
+      "channel": "**Kanal:** {channel}",
+      "timer": "**Timer:** {timer}",
+      "next_clear": "**Næste Rydning:** {time}",
+      "no_next_clear": "Ikke planlagt",
+      "ignored_section": "**Ignorerede Mål**",
+      "ignored_messages": "Beskeder: {count}",
+      "ignored_users": "Brugere: {count}",
+      "no_ignored": "Ingen ignorerede mål",
+      "footer": "Brug `/subscription` kommandoer til at administrere dette abonnement"
+    },
+    "add": {
+      "success_title": "✅ Abonnement Tilføjet",
+      "success_description": "{channel} vil nu få beskeder ryddet automatisk",
+      "timer_label": "Timer",
+      "next_clear_label": "Næste Rydning",
+      "ignored_added": "Ignorerede mål tilføjet",
+      "tip": "💡 Tip: Brug `/subscription info` for at se detaljerede oplysninger"
+    },
+    "remove": {
+      "confirm_title": "⚠️ Bekræft Fjernelse",
+      "confirm_description": "Er du sikker på at du vil afmelde {channel} fra automatisk beskedrydning?",
+      "confirm_info": "Dette vil stoppe alle planlagte rydninger for denne kanal.",
+      "button_confirm": "Ja, fjern",
+      "button_cancel": "Annuller",
+      "cancelled": "Fjernelse annulleret",
+      "success": "✅ Abonnement fjernet for {channel}",
+      "expired": "Denne interaktion er udløbet. Brug venligst kommandoen igen."
+    },
+    "update": {
+      "success_title": "✅ Abonnement Opdateret",
+      "success_description": "Timer for {channel} er blevet opdateret",
+      "old_timer": "Gammel Timer",
+      "new_timer": "Ny Timer",
+      "next_clear": "Næste Rydning",
+      "ignored_added": "Ignorerede mål tilføjet"
+    },
+    "clear": {
+      "progress_title": "⏳ Rydder Beskeder",
+      "progress_description": "Rydder beskeder i {channel}...",
+      "scanning": "Scanner beskeder...",
+      "clearing": "Rydder {count} beskeder...",
+      "success_title": "✅ Beskeder Ryddet",
+      "success_description": "Ryddede {count} beskeder i {channel}",
+      "partial_success": "Ryddede {cleared} af {total} beskeder",
+      "skipped_info": "Sprang over {count} beskeder (ignoreret eller fejl)",
+      "no_messages": "Ingen beskeder at rydde",
+      "error_title": "❌ Rydning Fejlede",
+      "error_description": "Kunne ikke rydde beskeder i {channel}"
+    },
+    "skip": {
+      "success_title": "⏩ Næste Rydning Sprunget Over",
+      "success_description": "Den næste planlagte rydning for {channel} vil blive sprunget over",
+      "next_clear": "Følgende rydning",
+      "info": "Timeren vil fortsætte normalt efter denne springning"
+    },
+    "ignore": {
+      "message_added_title": "✅ Besked Ignoreret",
+      "message_added_description": "Besked vil ikke blive slettet under rydninger",
+      "message_removed_title": "✅ Besked Ikke Længere Ignoreret",
+      "message_removed_description": "Besked vil nu blive slettet under rydninger",
+      "user_added_title": "✅ Bruger Ignoreret",
+      "user_added_description": "{user} beskeder vil ikke blive slettet under rydninger",
+      "user_removed_title": "✅ Bruger Ikke Længere Ignoreret",
+      "user_removed_description": "{user} beskeder vil nu blive slettet under rydninger",
+      "list_title": "📋 Ignorerede Mål",
+      "messages_section": "**Ignorerede Beskeder** ({count})",
+      "users_section": "**Ignorerede Brugere** ({count})",
+      "no_ignored": "Ingen ignorerede mål for denne kanal"
+    },
+    "status": {
+      "active": "✅ Aktiv",
+      "inactive": "❌ Inaktiv",
+      "in_progress": "⏳ I Gang",
+      "scheduled": "📅 Planlagt",
+      "skipped": "⏩ Sprunget Over"
+    },
+    "errors": {
+      "invalid_timer": "❌ Ugyldigt timerformat. Brug formater som `24h`, `1d12h30m`, eller `15:30 EST`",
+      "channel_not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning",
+      "already_subscribed": "❌ {channel} er allerede tilmeldt",
+      "missing_permissions": "❌ Jeg mangler tilladelser til at administrere beskeder i {channel}",
+      "clear_in_progress": "⏳ En rydning er allerede i gang for {channel}",
+      "invalid_target": "❌ Ugyldigt mål. Angiv et besked-ID/link eller brugeromtale/ID",
+      "message_not_found": "❌ Besked ikke fundet",
+      "user_not_found": "❌ Bruger ikke fundet"
+    },
+    "view_footer": "ClearTimer Bot • Automatisk Beskedrydning"
+  },
+  
+  "errors": {
+    "generic": "❌ Der opstod en fejl: {error}",
+    "command_failed": "❌ Kommando fejlede: {error}",
+    "invalid_channel": "❌ Ugyldig kanal: {channel}",
+    "invalid_user": "❌ Ugyldig bruger: {user}",
+    "missing_permissions": "❌ Mangler påkrævede tilladelser: {permissions}",
+    "bot_missing_permissions": "❌ Botten mangler påkrævede tilladelser: {permissions}",
+    "invalid_timer": "❌ Ugyldigt timerformat: `{timer}`\n\nBrug venligst formater som:\n• `24h` for 24 timer\n• `1d12h30m` for 1 dag, 12 timer, 30 minutter\n• `15:30 EST` for dagligt kl. 15:30 EST",
+    "invalid_target": "❌ Ugyldigt mål. Angiv venligst et gyldigt besked-ID/link eller brugeromtale/ID.",
+    "channel_in_progress": "⏳ En rydning er allerede i gang for {channel}. Vent venligst på at den bliver færdig.",
+    "job_not_found": "❌ Ingen planlagt job fundet for {channel}",
+    "next_time_not_found": "❌ Kunne ikke bestemme næste planlagte tid for {channel}",
+    "missed_clear_notification": "⚠️ **Meddelelse om Oversprunget Rydning**\n\nEn planlagt beskedrydning blev oversprunget for denne kanal.\nTimeren er blevet genplanlagt."
+  },
+  "admin": {
+    "stats": {
+      "title": "📊 Bot Statistik",
+      "total_servers": "**Total Servere:** {count}",
+      "total_channels": "**Tilmeldte Kanaler:** {count}",
+      "blacklisted_servers": "**Sortlistede Servere:** {count}",
+      "total_errors": "**Total Fejl:** {count}"
+    },
+    "blacklist": {
+      "added": "✅ Server `{server_id}` er blevet sortlistet",
+      "removed": "✅ Server `{server_id}` er blevet fjernet fra sortlisten",
+      "already_blacklisted": "⚠️ Server `{server_id}` er allerede sortlistet",
+      "not_blacklisted": "⚠️ Server `{server_id}` er ikke sortlistet",
+      "info": "**Server ID:** `{server_id}`\n**Server Navn:** {name}\n**Sortlistet:** {date}\n**Grund:** {reason}\n**Af:** {by}"
+    },
+    "error": {
+      "check": {
+        "title": "Fejldetaljer",
+        "error_id": "**Fejl ID:** `{id}`",
+        "timestamp": "**Tidsstempel:** {time}",
+        "level": "**Niveau:** {level}",
+        "area": "**Område:** {area}",
+        "message": "**Besked:** {message}",
+        "not_found": "❌ Fejl `{id}` ikke fundet"
+      },
+      "list": {
+        "title": "Seneste Fejl",
+        "no_errors": "✅ Ingen fejl fundet",
+        "showing": "Viser {count} seneste fejl"
+      },
+      "delete": {
+        "success": "✅ Fejl `{id}` er blevet slettet",
+        "not_found": "❌ Fejl `{id}` ikke fundet"
+      },
+      "clear": {
+        "success": "✅ Alle fejl er blevet ryddet",
+        "confirm": "Er du sikker på at du vil rydde alle fejl?"
+      }
+    }
+  },
+  "owner": {
+    "server": {
+      "list": {
+        "title": "📊 Server Liste",
+        "showing": "Viser {count} servere",
+        "server_info": "**{name}**\nID: `{id}`\nMedlemmer: {members}\nTilmeldte: {subscriptions}"
+      },
+      "info": {
+        "title": "Server Information",
+        "id": "**ID:** `{id}`",
+        "name": "**Navn:** {name}",
+        "members": "**Medlemmer:** {count}",
+        "subscriptions": "**Abonnementer:** {count}",
+        "blacklisted": "**Sortlistet:** {status}",
+        "created": "**Oprettet:** {date}",
+        "joined": "**Tilsluttet:** {date}"
+      },
+      "leave": {
+        "confirm": "Er du sikker på at du vil forlade server `{server_id}`?",
+        "success": "✅ Forlod server `{server_id}`",
+        "not_found": "❌ Server `{server_id}` ikke fundet"
+      }
+    },
+    "reload": {
+      "data": {
+        "success": "✅ Data genindlæst succesfuldt",
+        "error": "❌ Fejl ved genindlæsning af data: {error}"
+      }
+    },
+    "shutdown": {
+      "confirm": "⚠️ Er du sikker på at du vil lukke botten ned?",
+      "initiated": "🔴 Nedlukning påbegyndt...",
+      "cancelled": "Nedlukning annulleret"
+    },
+    "shard": {
+      "status": {
+        "title": "Shard Status",
+        "shard_info": "**Shard {id}:** {status}\nServere: {guilds}\nLatenstid: {latency}ms",
+        "total": "**Total Shards:** {count}"
+      },
+      "restart": {
+        "confirm": "Er du sikker på at du vil genstarte shard {id}?",
+        "success": "✅ Shard {id} genstartet",
+        "invalid_id": "❌ Ugyldig shard ID: {id}"
+      }
+    }
+  },
+  "validation": {
+    "blacklisted": "❌ Denne server er blokeret og kan ikke bruge denne bot.",
+    "blacklisted_detailed": "❌ **Server Blokeret**\n\nDenne server er blokeret og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kontakt venligst support.",
+    "insufficient_permissions": "❌ Du skal have `Administrer beskeder` tilladelsen for at bruge denne kommando.",
+    "insufficient_permissions_detailed": "❌ **Utilstrækkelige Tilladelser**\n\nDu skal have følgende tilladelse for at bruge denne kommando:\n{permissions}\n\nKontakt venligst en serveradministrator hvis du har brug for adgang.",
+    "bot_missing_permissions": "❌ Jeg mangler følgende tilladelser i {channel}: {permissions}",
+    "bot_missing_permissions_detailed": "❌ **Bot Mangler Tilladelser**\n\nJeg mangler følgende tilladelser i {channel}:\n{permissions}\n\nGiv venligst disse tilladelser og prøv igen.",
+    "channel_not_subscribed": "❌ {channel} er ikke tilmeldt beskedsletning.\nBrug `/subscription add` for at opsætte automatisk rydning først.",
+    "channel_not_subscribed_detailed": "❌ **Kanal Ikke Tilmeldt**\n\n{channel} er ikke tilmeldt beskedsletning.\n\nBrug `/subscription add` for at opsætte automatisk rydning først.",
+    "channel_already_subscribed": "❌ {channel} har allerede en timer indstillet. Brug `/subscription update` for at opdatere abonnementet i stedet.",
+    "channel_already_subscribed_detailed": "❌ **Kanal Allerede Tilmeldt**\n\n{channel} har allerede en timer indstillet.\n\nBrug `/subscription update` for at opdatere abonnementet i stedet.",
+    "error_titles": {
+      "blacklisted": "Server Blokeret",
+      "insufficient_permissions": "Utilstrækkelige Tilladelser",
+      "bot_missing_permissions": "Bot Mangler Tilladelser",
+      "channel_not_subscribed": "Kanal Ikke Tilmeldt",
+      "channel_already_subscribed": "Kanal Allerede Tilmeldt",
+      "general": "Valideringsfejl"
+    },
+    "no_permissions": "❌ Du skal have **{permission}** tilladelsen for at bruge denne kommando.",
+    "bot_no_permissions": "❌ Jeg skal bruge følgende tilladelser i {channel}: {permissions}",
+    "already_subscribed": "❌ {channel} er allerede tilmeldt med en {timer} timer.\nBrug `/subscription update` for at ændre timeren.",
+    "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning.",
+    "invalid_channel": "❌ Angiv venligst en gyldig tekstkanal."
+  },
+  "components": {
+    "footer": {
+      "text": "ClearTimer Bot"
+    },
+    "buttons": {
+      "confirm": "Bekræft",
+      "cancel": "Annuller",
+      "yes": "Ja",
+      "no": "Nej"
+    },
+    "no_data": "❌ Ingen data fundet for {channel}"
+  }
+}

@@ -12,6 +12,7 @@ from src.utils.ignore_target_parser import (
     validate_and_add_multiple_ignore_targets
 )
 from src.utils.command_validation import CommandValidator, ValidationCheck
+from src.localization import get_translator
 
 
 class SubscriptionCommands(commands.Cog):
@@ -35,9 +36,12 @@ class SubscriptionCommands(commands.Cog):
             await self.handle_ignore_user_context(interaction, user)
     
     async def handle_ignore_message_context(self, interaction: discord.Interaction, message: discord.Message) -> None:
+        server_id = str(interaction.guild.id)
+        translator = await get_translator(server_id, self.data_service)
+        
         if not interaction.user.guild_permissions.manage_messages:
             await interaction.response.send_message(
-                "❌ You need the **Manage Messages** permission to use this command.",
+                translator.get("common.permission_denied", permission="Manage Messages"),
                 ephemeral=True
             )
             return
@@ -49,8 +53,7 @@ class SubscriptionCommands(commands.Cog):
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
             await interaction.response.send_message(
-                f"❌ {message.channel.mention} is not subscribed to automatic message clearing.\n"
-                f"Use `/subscription add` to subscribe the channel first.",
+                translator.get("commands.subscription.ignore.not_subscribed", channel=message.channel.mention),
                 ephemeral=True
             )
             return
@@ -65,7 +68,9 @@ class SubscriptionCommands(commands.Cog):
             await self.data_service.save_servers()
             
             await interaction.response.send_message(
-                f"✅ Message from {message.author.mention} will **no longer be ignored** during clearing in {message.channel.mention}",
+                translator.get("commands.subscription.ignore.message_removed", 
+                              author=message.author.mention, 
+                              channel=message.channel.mention),
                 ephemeral=True
             )
         else:
@@ -74,17 +79,22 @@ class SubscriptionCommands(commands.Cog):
             await self.data_service.save_servers()
             
             await interaction.response.send_message(
-                f"✅ Message from {message.author.mention} will be **ignored** during clearing in {message.channel.mention}\n"
-                f"Message ID: `{message_id}`",
+                translator.get("commands.subscription.ignore.message_added",
+                              author=message.author.mention,
+                              channel=message.channel.mention,
+                              message_id=message_id),
                 ephemeral=True
             )
     
     async def handle_ignore_user_context(self, interaction: discord.Interaction, user: discord.User) -> None:
         """Handle the ignore user context menu command"""
+        server_id = str(interaction.guild.id)
+        translator = await get_translator(server_id, self.data_service)
+        
         # Check if user has manage_messages permission
         if not interaction.user.guild_permissions.manage_messages:
             await interaction.response.send_message(
-                "❌ You need the **Manage Messages** permission to use this command.",
+                translator.get("common.permission_denied", permission="Manage Messages"),
                 ephemeral=True
             )
             return
@@ -93,7 +103,7 @@ class SubscriptionCommands(commands.Cog):
         channel = interaction.channel
         if not isinstance(channel, discord.TextChannel):
             await interaction.response.send_message(
-                "❌ This command can only be used in text channels.",
+                translator.get("validation.invalid_channel"),
                 ephemeral=True
             )
             return
@@ -105,8 +115,7 @@ class SubscriptionCommands(commands.Cog):
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
             await interaction.response.send_message(
-                f"❌ {channel.mention} is not subscribed to automatic message clearing.\n"
-                f"Use `/subscription add` to subscribe the channel first.",
+                translator.get("commands.subscription.ignore.not_subscribed", channel=channel.mention),
                 ephemeral=True
             )
             return
@@ -121,7 +130,9 @@ class SubscriptionCommands(commands.Cog):
             await self.data_service.save_servers()
             
             await interaction.response.send_message(
-                f"✅ Messages from {user.mention} will **no longer be ignored** during clearing in {channel.mention}",
+                translator.get("commands.subscription.ignore.user_removed",
+                              user=user.mention,
+                              channel=channel.mention),
                 ephemeral=True
             )
         else:
@@ -130,8 +141,9 @@ class SubscriptionCommands(commands.Cog):
             await self.data_service.save_servers()
             
             await interaction.response.send_message(
-                f"✅ Messages from {user.mention} will be **ignored** during clearing in {channel.mention}\n"
-                f"User ID: `{user_id}`",
+                translator.get("commands.subscription.ignore.user_added",
+                              user=user.mention,
+                              channel=channel.mention),
                 ephemeral=True
             )
 
@@ -175,13 +187,14 @@ class SubscriptionCommands(commands.Cog):
         
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
+        translator = await get_translator(server_id, self.data_service)
 
         # Parse timer
         try:
             trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer, server_id)
         except ScheduleParseError as e:
             from src.components.subscription import InvalidTimerView
-            view = InvalidTimerView(str(e))
+            view = InvalidTimerView(str(e), translator)
             await interaction.response.send_message(view=view, ephemeral=True)
             return
         
@@ -219,7 +232,7 @@ class SubscriptionCommands(commands.Cog):
         view_message = None
         if view:
             from src.components.subscription import TimerViewMessage
-            timer_view = TimerViewMessage(channel, timer_to_store, next_run_time)
+            timer_view = TimerViewMessage(channel, timer_to_store, next_run_time, translator)
             view_message = await channel.send(view=timer_view)
             
             # Store the view message ID
@@ -239,17 +252,16 @@ class SubscriptionCommands(commands.Cog):
         )
 
         # Send success message using followup since we deferred
-        from src.components.subscription import SubscriptionSuccessView
+        from src.components.subscription import SubscriptionSuccessView, SubscriptionSuccessWithMultipleIgnoresView
         
         # For backward compatibility, pass first target if there's only one
         if len(added_targets) == 1:
-            success_view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, added_targets[0][0], added_targets[0][1])
+            success_view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, translator, added_targets[0][0], added_targets[0][1])
         elif len(added_targets) > 1:
             # Use a new view for multiple targets
-            from src.components.subscription import SubscriptionSuccessWithMultipleIgnoresView
-            success_view = SubscriptionSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets)
+            success_view = SubscriptionSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets, translator)
         else:
-            success_view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, None, None)
+            success_view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, translator, None, None)
         
         # Edit the deferred response - send just the view without extra content
         try:
@@ -301,6 +313,7 @@ class SubscriptionCommands(commands.Cog):
         
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
+        translator = await get_translator(server_id, self.data_service)
 
         # Remove from scheduler
         self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
@@ -334,7 +347,7 @@ class SubscriptionCommands(commands.Cog):
         # Send success message
         from src.components.subscription import UnsubscribeSuccessView
         
-        view = UnsubscribeSuccessView(channel)
+        view = UnsubscribeSuccessView(channel, translator)
         await interaction.response.send_message(view=view)
 
     @subscription_group.command(
@@ -360,18 +373,19 @@ class SubscriptionCommands(commands.Cog):
             return
 
         server_id = str(interaction.guild.id)
+        translator = await get_translator(server_id, self.data_service)
         server = await self.data_service.get_server(server_id)
         
         if not server or not server.channels:
             from src.components.subscription import NoActiveSubscriptionsView
-            view = NoActiveSubscriptionsView()
+            view = NoActiveSubscriptionsView(translator)
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
         # Build list of subscriptions
         from src.components.subscription import SubscriptionListView
         
-        view = SubscriptionListView(interaction.guild, server.channels, self.scheduler_service)
+        view = SubscriptionListView(interaction.guild, server.channels, self.scheduler_service, translator)
         await interaction.response.send_message(view=view)
 
     @subscription_group.command(
@@ -402,13 +416,14 @@ class SubscriptionCommands(commands.Cog):
         
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
+        translator = await get_translator(server_id, self.data_service)
 
         # Get next run time
         next_run_time = self.scheduler_service.get_channel_next_clear_time(server_id, channel_id)
 
         if not next_run_time:
             from src.components.subscription import ChannelNotSubscribedView
-            view = ChannelNotSubscribedView(channel)
+            view = ChannelNotSubscribedView(channel, translator)
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
@@ -419,7 +434,7 @@ class SubscriptionCommands(commands.Cog):
         # Subscription info display
         from src.components.subscription import SubscriptionInfoView
         
-        view = SubscriptionInfoView(channel, next_run_time, timer_info)
+        view = SubscriptionInfoView(channel, next_run_time, timer_info, translator)
         await interaction.response.send_message(view=view)
 
     @subscription_group.command(
@@ -459,13 +474,14 @@ class SubscriptionCommands(commands.Cog):
         
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
+        translator = await get_translator(server_id, self.data_service)
 
         # Parse new timer
         try:
             trigger, next_run_time = self.schedule_parser.parse_schedule_expression(timer, server_id)
         except ScheduleParseError as e:
             from src.components.subscription import InvalidTimerView
-            view = InvalidTimerView(str(e))
+            view = InvalidTimerView(str(e), translator)
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
@@ -519,7 +535,7 @@ class SubscriptionCommands(commands.Cog):
             # Handle view message BEFORE responding
             view_message = None
             from src.components.subscription import TimerViewMessage
-            timer_view = TimerViewMessage(channel, timer_to_store, next_run_time)
+            timer_view = TimerViewMessage(channel, timer_to_store, next_run_time, translator)
             
             if view:
                 # Delete old view message if it exists
@@ -568,17 +584,16 @@ class SubscriptionCommands(commands.Cog):
         )
 
         # Send success message
-        from src.components.subscription import UpdateSuccessView
+        from src.components.subscription import UpdateSuccessView, UpdateSuccessWithMultipleIgnoresView
         
         # For backward compatibility, pass first target if there's only one
         if len(added_targets) == 1:
-            success_view = UpdateSuccessView(channel, timer_to_store, next_run_time, added_targets[0][0], added_targets[0][1])
+            success_view = UpdateSuccessView(channel, timer_to_store, next_run_time, translator, added_targets[0][0], added_targets[0][1])
         elif len(added_targets) > 1:
             # Use a new view for multiple targets
-            from src.components.subscription import UpdateSuccessWithMultipleIgnoresView
-            success_view = UpdateSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets)
+            success_view = UpdateSuccessWithMultipleIgnoresView(channel, timer_to_store, next_run_time, added_targets, translator)
         else:
-            success_view = UpdateSuccessView(channel, timer_to_store, next_run_time, None, None)
+            success_view = UpdateSuccessView(channel, timer_to_store, next_run_time, translator, None, None)
         
         # Edit the deferred response - send just the view without extra content
         try:
@@ -632,13 +647,14 @@ class SubscriptionCommands(commands.Cog):
         
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
+        translator = await get_translator(server_id, self.data_service)
 
         # Parse and validate multiple targets
         validated_targets = await identify_and_validate_multiple_ignore_targets(target, channel, interaction.guild)
         
         if not validated_targets:
             from src.components.subscription import InvalidTargetView
-            view = InvalidTargetView()
+            view = InvalidTargetView(translator)
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
@@ -646,7 +662,7 @@ class SubscriptionCommands(commands.Cog):
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
             from src.components.subscription import NoSubscriptionDataView
-            view = NoSubscriptionDataView(channel)
+            view = NoSubscriptionDataView(channel, translator)
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
@@ -689,7 +705,8 @@ class SubscriptionCommands(commands.Cog):
             added_users,
             removed_users,
             added_messages,
-            removed_messages
+            removed_messages,
+            translator
         )
         await interaction.response.send_message(view=view)
 
@@ -724,6 +741,7 @@ class SubscriptionCommands(commands.Cog):
         
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
+        translator = await get_translator(server_id, self.data_service)
 
         # Defer the response as clearing might take time
         await interaction.response.defer(ephemeral=True)
@@ -744,7 +762,7 @@ class SubscriptionCommands(commands.Cog):
 
         # Send result
         from src.components.subscription import ManualClearSuccessView
-        view = ManualClearSuccessView(deleted_count, channel)
+        view = ManualClearSuccessView(deleted_count, channel, translator)
         await interaction.followup.send(view=view, ephemeral=True)
 
     @subscription_group.command(
@@ -778,12 +796,13 @@ class SubscriptionCommands(commands.Cog):
         
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
+        translator = await get_translator(server_id, self.data_service)
 
         # Get the current job to retrieve its trigger
         job = self.scheduler_service.get_channel_clear_job(server_id, channel_id)
         if not job:
             from src.components.subscription import JobNotFoundView
-            view = JobNotFoundView(channel)
+            view = JobNotFoundView(channel, translator)
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
@@ -801,11 +820,11 @@ class SubscriptionCommands(commands.Cog):
             
             # Send success message with new time
             from src.components.subscription import SkipSuccessView
-            view = SkipSuccessView(channel, job.next_run_time)
+            view = SkipSuccessView(channel, job.next_run_time, translator)
             await interaction.response.send_message(view=view)
         else:
             from src.components.subscription import NextTimeNotFoundView
-            view = NextTimeNotFoundView(channel)
+            view = NextTimeNotFoundView(channel, translator)
             await interaction.response.send_message(view=view, ephemeral=True)
 
 

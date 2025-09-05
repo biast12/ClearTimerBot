@@ -1,6 +1,7 @@
 import discord
 from typing import Optional, Dict, Any, Tuple, TYPE_CHECKING
 from enum import Enum
+from src.localization import get_translator
 
 if TYPE_CHECKING:
     from discord.ext.commands import Bot
@@ -63,7 +64,8 @@ class CommandValidator:
         if ValidationCheck.CHANNEL_SUBSCRIBED in checks:
             config = checks[ValidationCheck.CHANNEL_SUBSCRIBED]
             if not is_subscribed:
-                error_msg = self._get_subscription_error_message(
+                error_msg = await self._get_subscription_error_message(
+                    interaction,
                     channel, 
                     required=True, 
                     custom_message=config if isinstance(config, str) else None
@@ -73,7 +75,8 @@ class CommandValidator:
         if ValidationCheck.CHANNEL_NOT_SUBSCRIBED in checks:
             config = checks[ValidationCheck.CHANNEL_NOT_SUBSCRIBED]
             if is_subscribed:
-                error_msg = self._get_subscription_error_message(
+                error_msg = await self._get_subscription_error_message(
+                    interaction,
                     channel, 
                     required=False, 
                     custom_message=config if isinstance(config, str) else None
@@ -85,7 +88,8 @@ class CommandValidator:
     async def _check_blacklist(self, interaction: discord.Interaction) -> Tuple[bool, Optional[str]]:
         server_id = str(interaction.guild.id)
         if await self.data_service.is_blacklisted(server_id):
-            return True, "❌ This server has been blacklisted and cannot use this bot."
+            translator = await get_translator(server_id, self.data_service)
+            return True, translator.get("validation.blacklisted")
         return False, None
 
     async def _check_user_permissions(self, interaction: discord.Interaction) -> Tuple[bool, Optional[str]]:
@@ -95,7 +99,9 @@ class CommandValidator:
             return True, None
         
         if not member.guild_permissions.manage_messages:
-            return False, "❌ You need the `Manage Messages` permission to use this command."
+            server_id = str(interaction.guild.id)
+            translator = await get_translator(server_id, self.data_service)
+            return False, translator.get("validation.insufficient_permissions")
         
         return True, None
 
@@ -123,12 +129,16 @@ class CommandValidator:
         ]
         
         if missing_perms:
-            return False, f"❌ I'm missing the following permissions in {channel.mention}: {', '.join(missing_perms)}"
+            server_id = str(interaction.guild.id)
+            translator = await get_translator(server_id, self.data_service)
+            perms_list = ', '.join(missing_perms)
+            return False, translator.get("validation.bot_missing_permissions", channel=channel.mention, permissions=perms_list)
         
         return True, None
 
-    def _get_subscription_error_message(
+    async def _get_subscription_error_message(
         self, 
+        interaction: discord.Interaction,
         channel: discord.TextChannel, 
         required: bool, 
         custom_message: Optional[str] = None
@@ -136,16 +146,13 @@ class CommandValidator:
         if custom_message:
             return custom_message.format(channel=channel.mention)
         
+        server_id = str(interaction.guild.id)
+        translator = await get_translator(server_id, self.data_service)
+        
         if required:
-            return (
-                f"❌ {channel.mention} is not subscribed to message deletion.\n"
-                f"Use `/subscription add` to set up automatic clearing first."
-            )
+            return translator.get("validation.channel_not_subscribed", channel=channel.mention)
         else:
-            return (
-                f"❌ {channel.mention} already has a timer set. "
-                f"Use `/subscription update` to update the subscription instead."
-            )
+            return translator.get("validation.channel_already_subscribed", channel=channel.mention)
 
     async def send_validation_error(
         self, 
@@ -155,7 +162,9 @@ class CommandValidator:
     ) -> None:
         from src.components.validation import ValidationErrorView
         
-        view = ValidationErrorView(error_message)
+        server_id = str(interaction.guild.id)
+        translator = await get_translator(server_id, self.data_service)
+        view = ValidationErrorView(error_message, translator)
         
         if interaction.response.is_done():
             await interaction.followup.send(view=view, ephemeral=ephemeral)

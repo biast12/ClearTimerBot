@@ -205,6 +205,13 @@ class ClearTimerBot(commands.Bot):
             logger.info(LogArea.DISCORD, f"Bot joined new server: {guild.name} (ID: {server_id})")
 
         await self.data_service.add_server(guild)
+        
+        # Auto-detect and set language for the server
+        from src.localization import get_i18n
+        i18n = get_i18n()
+        detected_language = i18n.detect_server_language(guild)
+        await self.data_service.set_server_language(server_id, detected_language)
+        logger.info(LogArea.DISCORD, f"Set language for {guild.name}: {detected_language}")
 
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         """Handle when bot leaves or is removed from a server"""

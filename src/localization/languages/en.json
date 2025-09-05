@@ -1,0 +1,454 @@
+{
+  "language_name": "English",
+  "language_native_name": "English",
+  "language_code": "en",
+  
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "none": "None",
+    "unknown": "Unknown",
+    "channel": "Channel",
+    "server": "Server",
+    "user": "User",
+    "message": "Message",
+    "permission_denied": "❌ You need the **{permission}** permission to use this command.",
+    "blacklisted_server": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/botsupport)."
+  },
+  
+  "commands": {
+    "help": {
+      "title": "Help",
+      "description": "Automatically clear messages in Discord channels on a schedule.",
+      "subscription_commands": "📝 Subscription Commands",
+      "other_commands": "🔧 Other Commands",
+      "timer_formats": "⏱️ Timer Formats",
+      "timer_intervals": "**Intervals:** `1d2h3m` (days, hours, minutes)",
+      "timer_daily": "**Daily Schedule:** `15:30 EST` (time + timezone)",
+      "timer_examples": "**Examples:** `24h`, `1d`, `30m`, `09:00 PST`",
+      "required_permissions": "🔒 Required Permissions",
+      "permissions_for_you": "**For You:** Manage Messages",
+      "permissions_for_bot": "**For Bot:** View Channel, Send Messages, Send Messages in Threads, Read Message History, Manage Messages, Embed Links, Use Application Commands",
+      "links": "🔗 Links"
+    },
+    
+    "ping": {
+      "title": "🏓 Pong!",
+      "websocket_latency": "**WebSocket Latency:** {latency}ms",
+      "response_time": "**Response Time:** {time}ms",
+      "status": "**Status:** {status}",
+      "status_excellent": "🟢 Excellent",
+      "status_good": "🟡 Good",
+      "status_fair": "🟠 Fair",
+      "status_poor": "🔴 Poor"
+    },
+    
+    "timezone": {
+      "change": {
+        "success": "✅ Server timezone has been set to **{timezone}**",
+        "success_auto": "✅ Server timezone has been automatically detected and set to **{timezone}**",
+        "invalid": "❌ Invalid timezone: `{timezone}`",
+        "suggestion": "Did you mean: `{suggestion}`?"
+      },
+      "list": {
+        "title": "🌍 Available Timezones",
+        "description": "Here are the configured timezone abbreviations and their full names:"
+      },
+      "current": {
+        "title": "Current Server Timezone",
+        "auto_detected": "**Timezone:** `{timezone}` (Auto-detected)",
+        "manually_set": "**Timezone:** `{timezone}` (Manually set)",
+        "timezone": "**Timezone:** `{timezone}`",
+        "offset": "**Offset:** {offset}",
+        "time": "**Current Time:** {time}",
+        "how_it_works": "This means:",
+        "benefit_1": "• Users can set timers with just time: `/subscription add 21:30`",
+        "benefit_2": "• The server timezone will be used automatically",
+        "benefit_3": "• Users can still override: `/subscription add 21:30 PST`",
+        "change_hint": "To change the timezone, use `/timezone change <timezone>`",
+        "error": "**Error:** Could not load timezone details",
+        "no_timezone_title": "No Timezone Set",
+        "no_timezone_description": "This server doesn't have a default timezone configured. When users create timers without specifying a timezone, UTC will be used.",
+        "set_timezone_benefits": "Set a timezone to:",
+        "set_hint": "Use `/timezone change <timezone>` to set a default timezone.",
+        "list_hint": "Use `/timezone list` to see available timezones."
+      }
+    },
+    
+    "language": {
+      "list": {
+        "title": "🌐 Available Languages",
+        "description": "The bot currently supports the following languages:",
+        "current": "Current language: **{language}**",
+        "change_hint": "Use `/language change <language>` to change the server language"
+      },
+      "change": {
+        "success": "✅ Server language has been changed to **{language}**",
+        "already_set": "ℹ️ The server language is already set to **{language}**",
+        "invalid": "❌ Invalid language: `{language}`",
+        "available": "Available languages: {languages}"
+      }
+    },
+    
+    "subscription": {
+      "add": {
+        "success": "✅ Successfully subscribed {channel} to automatic message clearing every **{timer}**",
+        "success_with_ignored": "✅ Successfully subscribed {channel} to automatic message clearing every **{timer}**\n\n**Ignored targets added:** {count}",
+        "already_subscribed": "❌ {channel} is already subscribed with a {timer} timer.\nUse `/subscription update` to change the timer.",
+        "invalid_timer": "❌ Invalid timer format: `{timer}`"
+      },
+      "remove": {
+        "success": "✅ Successfully unsubscribed {channel} from automatic message clearing",
+        "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing"
+      },
+      "list": {
+        "title": "📋 Active Subscriptions",
+        "no_subscriptions": "No active subscriptions in this server",
+        "subscription_item": "• {channel} - Every **{timer}** (Next: {next_clear})",
+        "subscription_item_with_ignored": "• {channel} - Every **{timer}** (Next: {next_clear}) - {ignored_count} ignored",
+        "tip": "💡 Use `/subscription info [channel]` for detailed information"
+      },
+      "info": {
+        "title": "Subscription Information",
+        "subscribed": "✅ Subscribed",
+        "not_subscribed": "❌ Not Subscribed",
+        "timer": "**Timer:** {timer}",
+        "next_clear": "**Next Clear:** {time}",
+        "ignored_messages": "**Ignored Messages:** {count}",
+        "ignored_users": "**Ignored Users:** {count}",
+        "commands_hint": "Use `/subscription` commands to manage this subscription"
+      },
+      "update": {
+        "success": "✅ Successfully updated timer for {channel} to **{timer}**",
+        "success_with_ignored": "✅ Successfully updated timer for {channel} to **{timer}**\n\n**Ignored targets added:** {count}",
+        "not_subscribed": "❌ {channel} is not subscribed. Use `/subscription add` first."
+      },
+      "clear": {
+        "success": "✅ Manual clear triggered for {channel}",
+        "in_progress": "⏳ A clear is already in progress for {channel}. Please wait for it to complete.",
+        "no_messages": "📭 No messages to clear in {channel}",
+        "error": "❌ Failed to clear messages in {channel}: {error}",
+        "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing"
+      },
+      "ignore": {
+        "message_added": "✅ Message will be **ignored** during clearing in {channel}",
+        "message_removed": "✅ Message will **no longer be ignored** during clearing in {channel}",
+        "user_added": "✅ User's messages will be **ignored** during clearing in {channel}",
+        "user_removed": "✅ User's messages will **no longer be ignored** during clearing in {channel}",
+        "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing.\nUse `/subscription add` to subscribe the channel first."
+      },
+      "skip": {
+        "success": "✅ Next scheduled clear for {channel} has been skipped.\n**New next clear:** {next_clear}",
+        "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing",
+        "no_scheduled": "❌ No scheduled clear found for {channel}"
+      }
+    }
+  },
+  
+  "subscription": {
+    "subscribe": {
+      "success": {
+        "title": "Channel Subscribed",
+        "description": "Messages in {channel} will be cleared automatically.",
+        "timer": "Timer",
+        "next_clear": "Next Clear",
+        "time_until": "Time Until",
+        "ignored_users": "Ignored Users",
+        "ignored_messages": "Ignored Messages"
+      }
+    },
+    "unsubscribe": {
+      "success": {
+        "title": "Channel Unsubscribed",
+        "description": "{channel} has been unsubscribed from automatic message clearing."
+      }
+    },
+    "no_subscriptions": {
+      "title": "No Active Subscriptions",
+      "description": "This server doesn't have any active channel subscriptions.",
+      "help": "Use `/subscription add` to subscribe a channel."
+    },
+    "list": {
+      "title": "Active Subscriptions",
+      "channel": "Channel",
+      "timer": "Timer",
+      "next_clear": "Next Clear",
+      "ignored": "Ignored"
+    },
+    "not_subscribed": {
+      "title": "Channel Not Subscribed",
+      "description": "{channel} is not subscribed to automatic message clearing.",
+      "help": "Use `/subscription add` to subscribe this channel."
+    },
+    "info": {
+      "title": "Subscription Information for {channel}",
+      "status": "Status",
+      "subscribed": "Subscribed",
+      "timer": "Timer",
+      "next_clear": "Next Clear",
+      "time_until": "Time Until",
+      "ignored_users": "Ignored Users",
+      "ignored_messages": "Ignored Messages",
+      "none": "None"
+    },
+    "update": {
+      "success": {
+        "title": "Subscription Updated",
+        "description": "Timer for {channel} has been updated.",
+        "new_timer": "New Timer",
+        "next_clear": "Next Clear",
+        "time_until": "Time Until",
+        "newly_added": "Newly Added to Ignore List",
+        "users": "Users",
+        "messages": "Messages"
+      }
+    },
+    "invalid_target": {
+      "title": "Invalid Target",
+      "description": "Could not find the specified {type}.",
+      "help_message": "Please provide a valid message ID or link.",
+      "help_user": "Please provide a valid user mention or ID."
+    },
+    "no_data": {
+      "title": "No Subscription Data",
+      "description": "No subscription data found for {channel}.",
+      "help": "This channel may not be subscribed or the data might be corrupted."
+    },
+    "errors": {
+      "user_not_found": {
+        "title": "User Not Found",
+        "description": "User with ID `{user_id}` not found in this server.",
+        "help": "Please make sure the user is a member of this server."
+      },
+      "message_not_found": {
+        "title": "Message Not Found",
+        "description": "Message with ID `{message_id}` not found in {channel}.",
+        "help": "Please make sure the message exists in the specified channel."
+      },
+      "job_not_found": {
+        "title": "Scheduled Job Not Found",
+        "description": "Could not find the scheduled job for {channel}.",
+        "reason": "The channel may not be subscribed or the scheduler may need to be refreshed.",
+        "help": "Try using `/subscription info` to check the subscription status"
+      },
+      "schedule_error": {
+        "title": "Schedule Error",
+        "description": "Could not determine the next scheduled time for {channel}.",
+        "reason": "This may be a temporary issue with the scheduler.",
+        "help": "Try again in a few moments or contact support if the issue persists"
+      }
+    },
+    "ignore": {
+      "user_added": {
+        "title": "User Added to Ignore List",
+        "description": "User `{entity_id}` will be ignored during clearing in {channel}."
+      },
+      "user_removed": {
+        "title": "User Removed from Ignore List",
+        "description": "User `{entity_id}` will no longer be ignored in {channel}."
+      },
+      "message_added": {
+        "title": "Message Added to Ignore List",
+        "description": "Message `{entity_id}` will be ignored during clearing in {channel}."
+      },
+      "message_removed": {
+        "title": "Message Removed from Ignore List",
+        "description": "Message `{entity_id}` will no longer be ignored in {channel}."
+      },
+      "multiple": {
+        "title": "Ignore List Updated for {channel}",
+        "added_users": "Added Users to Ignore List",
+        "removed_users": "Removed Users from Ignore List",
+        "added_messages": "Added Messages to Ignore List",
+        "removed_messages": "Removed Messages from Ignore List",
+        "messages": "message(s)",
+        "ids": "IDs",
+        "no_changes": "No changes made - All targets were already in their respective states"
+      }
+    },
+    "manual_clear": {
+      "success": {
+        "title": "Messages Cleared",
+        "description": "Manually cleared {count} message{count, plural, =1 {} other {s}} from {channel}."
+      }
+    },
+    "skip": {
+      "success": {
+        "title": "Next Clear Skipped",
+        "description": "Skipped the next scheduled clear for {channel}.",
+        "new_next_clear": "New Next Clear",
+        "time_until": "Time Until"
+      }
+    },
+    "timer_view": {
+      "title": "Active Timer for {channel}",
+      "timer_setting": "Timer Setting",
+      "next_clear": "Next Clear",
+      "time_remaining": "Time Remaining",
+      "auto_update": "This message updates automatically after each clear."
+    },
+    "invalid_timer": {
+      "title": "Invalid Timer Format",
+      "description": "The timer format **{timer}** is not valid.",
+      "help": "Please use formats like:",
+      "examples": [
+        "`24h` for 24 hours",
+        "`1d12h30m` for 1 day, 12 hours, 30 minutes",
+        "`15:30 EST` for daily at 3:30 PM EST"
+      ]
+    }
+  },
+  
+  "errors": {
+    "generic": "❌ An error occurred: {error}",
+    "command_failed": "❌ Command failed: {error}",
+    "invalid_channel": "❌ Invalid channel: {channel}",
+    "invalid_user": "❌ Invalid user: {user}",
+    "missing_permissions": "❌ Missing required permissions: {permissions}",
+    "bot_missing_permissions": "❌ The bot is missing required permissions: {permissions}",
+    "invalid_timer": "❌ Invalid timer format: `{timer}`\n\nPlease use formats like:\n• `24h` for 24 hours\n• `1d12h30m` for 1 day, 12 hours, 30 minutes\n• `15:30 EST` for daily at 3:30 PM EST",
+    "invalid_target": "❌ Invalid target. Please provide a valid message ID/link or user mention/ID.",
+    "channel_in_progress": "⏳ A clear is already in progress for {channel}. Please wait for it to complete.",
+    "job_not_found": "❌ No scheduled job found for {channel}",
+    "next_time_not_found": "❌ Could not determine the next scheduled time for {channel}",
+    "missed_clear_notification": "⚠️ **Missed Clear Notification**\n\nA scheduled message clear was missed for this channel.\nThe timer has been rescheduled."
+  },
+  
+  "admin": {
+    "stats": {
+      "title": "📊 Bot Statistics",
+      "total_servers": "**Total Servers:** {count}",
+      "total_channels": "**Subscribed Channels:** {count}",
+      "blacklisted_servers": "**Blacklisted Servers:** {count}",
+      "total_errors": "**Total Errors:** {count}"
+    },
+    "blacklist": {
+      "added": "✅ Server `{server_id}` has been blacklisted",
+      "removed": "✅ Server `{server_id}` has been removed from blacklist",
+      "already_blacklisted": "⚠️ Server `{server_id}` is already blacklisted",
+      "not_blacklisted": "⚠️ Server `{server_id}` is not blacklisted",
+      "info": "**Server ID:** `{server_id}`\n**Server Name:** {name}\n**Blacklisted:** {date}\n**Reason:** {reason}\n**By:** {by}"
+    },
+    "error": {
+      "check": {
+        "title": "Error Details",
+        "error_id": "**Error ID:** `{id}`",
+        "timestamp": "**Timestamp:** {time}",
+        "level": "**Level:** {level}",
+        "area": "**Area:** {area}",
+        "message": "**Message:** {message}",
+        "not_found": "❌ Error `{id}` not found"
+      },
+      "list": {
+        "title": "Recent Errors",
+        "no_errors": "✅ No errors found",
+        "showing": "Showing {count} most recent errors"
+      },
+      "delete": {
+        "success": "✅ Error `{id}` has been deleted",
+        "not_found": "❌ Error `{id}` not found"
+      },
+      "clear": {
+        "success": "✅ All errors have been cleared",
+        "confirm": "Are you sure you want to clear all errors?"
+      }
+    },
+    "force": {
+      "remove_server": {
+        "success": "✅ Removed all subscriptions for server `{id}`",
+        "not_found": "⚠️ No subscriptions found for server `{id}`"
+      },
+      "remove_channel": {
+        "success": "✅ Removed subscription for channel `{id}`",
+        "not_found": "⚠️ Channel `{id}` is not subscribed"
+      }
+    },
+    "recache": {
+      "success": "✅ Successfully recached all data",
+      "in_progress": "⏳ Recaching data..."
+    }
+  },
+  
+  "owner": {
+    "admin": {
+      "list": {
+        "title": "Bot Administrators",
+        "no_admins": "No administrators configured",
+        "admin_item": "• <@{id}> (`{id}`)"
+      },
+      "add": {
+        "success": "✅ User <@{id}> has been added as an administrator",
+        "already_admin": "⚠️ User <@{id}> is already an administrator"
+      },
+      "remove": {
+        "success": "✅ User <@{id}> has been removed from administrators",
+        "not_admin": "⚠️ User <@{id}> is not an administrator",
+        "cannot_remove_owner": "❌ Cannot remove the bot owner from administrators"
+      }
+    },
+    "recache": {
+      "config": {
+        "success": "✅ Bot configuration has been recached",
+        "error": "❌ Failed to recache configuration: {error}"
+      }
+    },
+    "shard": {
+      "status": {
+        "title": "Shard Status",
+        "shard_info": "**Shard {id}/{total}**\n• Guilds: {guilds}\n• Latency: {latency}ms\n• Status: {status}",
+        "total_guilds": "**Total Guilds:** {count}",
+        "average_latency": "**Average Latency:** {latency}ms"
+      },
+      "reload": {
+        "all_success": "✅ All shards are being reloaded",
+        "single_success": "✅ Shard {id} is being reloaded",
+        "invalid_id": "❌ Invalid shard ID: {id}"
+      }
+    }
+  },
+  
+  "validation": {
+    "blacklisted": "❌ This server has been blacklisted and cannot use this bot.",
+    "blacklisted_detailed": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, please contact support.",
+    "insufficient_permissions": "❌ You need the `Manage Messages` permission to use this command.",
+    "insufficient_permissions_detailed": "❌ **Insufficient Permissions**\n\nYou need the following permission to use this command:\n{permissions}\n\nPlease contact a server administrator if you need access.",
+    "bot_missing_permissions": "❌ I'm missing the following permissions in {channel}: {permissions}",
+    "bot_missing_permissions_detailed": "❌ **Bot Missing Permissions**\n\nI'm missing the following permissions in {channel}:\n{permissions}\n\nPlease grant these permissions and try again.",
+    "channel_not_subscribed": "❌ {channel} is not subscribed to message deletion.\nUse `/subscription add` to set up automatic clearing first.",
+    "channel_not_subscribed_detailed": "❌ **Channel Not Subscribed**\n\n{channel} is not subscribed to message deletion.\n\nUse `/subscription add` to set up automatic clearing first.",
+    "channel_already_subscribed": "❌ {channel} already has a timer set. Use `/subscription update` to update the subscription instead.",
+    "channel_already_subscribed_detailed": "❌ **Channel Already Subscribed**\n\n{channel} already has a timer set.\n\nUse `/subscription update` to update the subscription instead.",
+    "error_titles": {
+      "blacklisted": "Server Blacklisted",
+      "insufficient_permissions": "Insufficient Permissions",
+      "bot_missing_permissions": "Bot Missing Permissions",
+      "channel_not_subscribed": "Channel Not Subscribed",
+      "channel_already_subscribed": "Channel Already Subscribed",
+      "general": "Validation Error"
+    },
+    "no_permissions": "❌ You need the **{permission}** permission to use this command.",
+    "bot_no_permissions": "❌ I need the following permissions in {channel}: {permissions}",
+    "already_subscribed": "❌ {channel} is already subscribed with a {timer} timer.\nUse `/subscription update` to change the timer.",
+    "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing.",
+    "invalid_channel": "❌ Please provide a valid text channel."
+  },
+  
+  "components": {
+    "footer": {
+      "text": "ClearTimer Bot"
+    },
+    "buttons": {
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "no_data": "❌ No data found for {channel}"
+  }
+}

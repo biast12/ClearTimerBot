@@ -10,27 +10,27 @@ from src.utils.footer import add_footer
 class ValidationErrorView(discord.ui.LayoutView):
     """View for validation error messages"""
     
-    def __init__(self, error_message: str):
+    def __init__(self, error_message: str, translator):
         super().__init__()
         
-        # Parse the error message to determine type and format
-        if "blacklisted" in error_message.lower():
-            title = "Server Blacklisted"
+        # Parse the error message to determine type
+        if "validation.blacklisted" in error_message or "blacklisted" in error_message.lower():
+            title = translator.get("validation.error_titles.blacklisted")
             color = discord.Color.red()
-        elif "permission" in error_message.lower() and "You need" in error_message:
-            title = "Insufficient Permissions"
+        elif "validation.insufficient_permissions" in error_message or ("permission" in error_message.lower() and "need" in error_message.lower()):
+            title = translator.get("validation.error_titles.insufficient_permissions")
             color = discord.Color.orange()
-        elif "missing the following permissions" in error_message:
-            title = "Bot Missing Permissions"
+        elif "validation.bot_missing_permissions" in error_message or "missing the following permissions" in error_message:
+            title = translator.get("validation.error_titles.bot_missing_permissions")
             color = discord.Color.orange()
-        elif "not subscribed" in error_message:
-            title = "Channel Not Subscribed"
+        elif "validation.channel_not_subscribed" in error_message or "not subscribed" in error_message:
+            title = translator.get("validation.error_titles.channel_not_subscribed")
             color = discord.Color.yellow()
-        elif "already has a timer" in error_message:
-            title = "Channel Already Subscribed"
+        elif "validation.channel_already_subscribed" in error_message or "already has a timer" in error_message:
+            title = translator.get("validation.error_titles.channel_already_subscribed")
             color = discord.Color.yellow()
         else:
-            title = "Validation Error"
+            title = translator.get("validation.error_titles.general")
             color = discord.Color.red()
         
         # Clean up the message for better formatting
@@ -48,14 +48,10 @@ class ValidationErrorView(discord.ui.LayoutView):
 class BlacklistErrorView(discord.ui.LayoutView):
     """Specialized view for blacklist errors"""
     
-    def __init__(self):
+    def __init__(self, translator):
         super().__init__()
         
-        content = add_footer(
-            "❌ **Server Blacklisted**\n\n"
-            "This server has been blacklisted and cannot use this bot.\n\n"
-            "If you believe this is a mistake, please contact support."
-        )
+        content = add_footer(translator.get("validation.blacklisted_detailed"))
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -67,22 +63,19 @@ class BlacklistErrorView(discord.ui.LayoutView):
 class PermissionErrorView(discord.ui.LayoutView):
     """Specialized view for permission errors"""
     
-    def __init__(self, missing_permissions: str, channel: Optional[discord.TextChannel] = None):
+    def __init__(self, missing_permissions: str, translator, channel: Optional[discord.TextChannel] = None):
         super().__init__()
         
         if channel:
             content = add_footer(
-                f"❌ **Bot Missing Permissions**\n\n"
-                f"I'm missing the following permissions in {channel.mention}:\n"
-                f"{missing_permissions}\n\n"
-                f"Please grant these permissions and try again."
+                translator.get("validation.bot_missing_permissions_detailed", 
+                             channel=channel.mention, 
+                             permissions=missing_permissions)
             )
         else:
             content = add_footer(
-                f"❌ **Insufficient Permissions**\n\n"
-                f"You need the following permission to use this command:\n"
-                f"{missing_permissions}\n\n"
-                f"Please contact a server administrator if you need access."
+                translator.get("validation.insufficient_permissions_detailed", 
+                             permissions=missing_permissions)
             )
         
         container = discord.ui.Container(
@@ -95,20 +88,18 @@ class PermissionErrorView(discord.ui.LayoutView):
 class SubscriptionStatusErrorView(discord.ui.LayoutView):
     """Specialized view for subscription status errors"""
     
-    def __init__(self, channel: discord.TextChannel, is_subscribed: bool):
+    def __init__(self, channel: discord.TextChannel, is_subscribed: bool, translator):
         super().__init__()
-        
+
         if is_subscribed:
             content = add_footer(
-                f"❌ **Channel Already Subscribed**\n\n"
-                f"{channel.mention} already has a timer set.\n\n"
-                f"Use `/subscription update` to update the subscription instead."
+                translator.get("validation.channel_already_subscribed_detailed", 
+                             channel=channel.mention)
             )
         else:
             content = add_footer(
-                f"❌ **Channel Not Subscribed**\n\n"
-                f"{channel.mention} is not subscribed to message deletion.\n\n"
-                f"Use `/subscription add` to set up automatic clearing first."
+                translator.get("validation.channel_not_subscribed_detailed", 
+                             channel=channel.mention)
             )
         
         container = discord.ui.Container(

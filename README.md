@@ -11,6 +11,7 @@ You can add the bot to your server using [this link](https://discord.com/oauth2/
 - ⏰ **Flexible Scheduling**: Set timers using intervals (e.g., `24h`, `1d2h3m`) or specific daily times with timezone support
 - 🔄 **Automatic Message Cleanup**: Reliably clears messages at scheduled intervals
 - 🌍 **Timezone Support**: Schedule cleanups at specific times in any timezone
+- 🌐 **Multi-Language Support**: Automatic language detection on server join with support for multiple languages (English, Danish, and more)
 - 🛡️ **Server Blacklist System**: Prevent specific servers from using the bot
 - 📊 **Comprehensive Management**: Track all subscribed channels and schedules
 - 🔐 **Owner Controls**: Advanced administrative commands for bot management
@@ -232,6 +233,15 @@ Commands for managing server timezone settings under `/timezone`:
 - **`/timezone change [timezone]`**: Set the default timezone for your server (requires Manage Server permission)
   - Examples: `/timezone change America/New_York`, `/timezone change EST`, `/timezone change Europe/London`
 - **`/timezone list`**: Display all available timezones from the configuration
+
+#### Language Management
+
+Commands for managing server language settings under `/language`:
+
+- **`/language list`**: Display all available languages and the current server language
+- **`/language change [language]`**: Change the language for your server (requires Manage Server permission)
+  - Select from a dropdown list of available languages
+  - Currently supports: English, Danish (Dansk)
 
 </details>
 

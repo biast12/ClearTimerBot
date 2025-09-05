@@ -30,14 +30,10 @@ class ErrorView(discord.ui.LayoutView):
 class MissedClearView(discord.ui.LayoutView):
     """View for missed clear notification"""
     
-    def __init__(self):
+    def __init__(self, translator):
         super().__init__()
         
-        content = add_footer(
-            "⚠️ **Missed Clear Notification**\n\n"
-            "A scheduled message clear was missed for this channel.\n"
-            "The timer has been rescheduled."
-        )
+        content = add_footer(translator.get("errors.missed_clear_notification"))
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
