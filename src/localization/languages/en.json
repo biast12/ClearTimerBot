@@ -35,7 +35,8 @@
       "required_permissions": "🔒 Required Permissions",
       "permissions_for_you": "**For You:** Manage Messages",
       "permissions_for_bot": "**For Bot:** View Channel, Send Messages, Send Messages in Threads, Read Message History, Manage Messages, Embed Links, Use Application Commands",
-      "links": "🔗 Links"
+      "links": "🔗 Links",
+      "select_command": "Select a command to learn more..."
     },
     
     "ping": {

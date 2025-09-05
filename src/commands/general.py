@@ -27,9 +27,80 @@ class GeneralCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
             return
         
+        # Dynamically collect all commands from cogs
+        commands_dict = {
+            'subscription': [],
+            'general': []
+        }
+        
+        try:
+            # Iterate through loaded cogs to get commands  
+            for cog_name, cog in self.bot.cogs.items():
+                # Skip admin/owner cogs entirely
+                if cog_name in ['AdminCommands', 'OwnerCommands']:
+                    continue
+                    
+                # Get only the GROUP commands from the cog, not all commands
+                for attr_name in dir(cog):
+                    attr = getattr(cog, attr_name, None)
+                    
+                    # Check if it's a group
+                    if isinstance(attr, app_commands.Group):
+                        group_name = attr.name
+                        
+                        # Skip admin/owner groups
+                        if group_name in ['blacklist', 'error', 'force', 'admin', 'recache', 'shard']:
+                            continue
+                        
+                        # Add each subcommand from the group
+                        for subcommand in attr.commands:
+                            cmd_info = {
+                                'name': f"{group_name} {subcommand.name}",
+                                'description': subcommand.description or "No description"
+                            }
+                            
+                            if group_name == 'subscription':
+                                commands_dict['subscription'].append(cmd_info)
+                            elif group_name in ['timezone', 'language']:
+                                commands_dict['general'].append(cmd_info)
+                            else:
+                                commands_dict['general'].append(cmd_info)
+                
+                # Now get standalone commands that are NOT part of groups
+                for command in cog.walk_app_commands():
+                    # Skip if it's not a standalone command
+                    if not isinstance(command, app_commands.Command):
+                        continue
+                    
+                    # Skip if it's a group or context menu
+                    if isinstance(command, (app_commands.Group, app_commands.ContextMenu)):
+                        continue
+                        
+                    # Check if this command has a parent (meaning it's a subcommand)
+                    # We only want top-level commands
+                    if hasattr(command, 'parent') and command.parent is not None:
+                        continue
+                    
+                    # Skip admin commands
+                    if command.name in ['stats', 'server_info']:
+                        continue
+                    
+                    # Only add truly standalone commands (help, ping)
+                    if command.name in ['help', 'ping']:
+                        cmd_info = {
+                            'name': command.name,
+                            'description': command.description or "No description"
+                        }
+                        commands_dict['general'].append(cmd_info)
+                        
+        except Exception as e:
+            # Log error but continue
+            import traceback
+            traceback.print_exc()
+        
         from src.components.general import HelpView
         
-        view = HelpView(translator)
+        view = HelpView(translator, commands_dict)
         await interaction.response.send_message(view=view)
 
     @app_commands.command(name="ping", description="Check the bot's latency")
