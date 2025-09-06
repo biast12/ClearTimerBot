@@ -143,10 +143,7 @@ class LanguageListView(discord.ui.LayoutView):
         
         # Available languages
         for code, name in sorted(languages.items()):
-            if code == current_language:
-                language_lines.append(f"• **{name}** (`{code}`) ✓")
-            else:
-                language_lines.append(f"• {name} (`{code}`)")
+            language_lines.append(f"• {name} (`{code}`)")
         
         language_lines.append("")
         language_lines.append(translator.get("commands.language.list.change_hint"))
