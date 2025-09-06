@@ -105,7 +105,7 @@
         "no_subscriptions": "Ingen aktive abonnementer på denne server",
         "subscription_item": "• {channel} - Hver **{timer}** (Næste: {next_clear})",
         "subscription_item_with_ignored": "• {channel} - Hver **{timer}** (Næste: {next_clear}) - {ignored_count} ignoreret",
-        "tip": "💡 Brug `/subscription info [kanal]` for detaljeret information"
+        "tip": "💡 Brug `/subscription info` for detaljeret information"
       },
       "info": {
         "title": "Abonnementsinformation",

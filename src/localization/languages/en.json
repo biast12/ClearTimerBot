@@ -111,7 +111,7 @@
         "no_subscriptions": "No active subscriptions in this server",
         "subscription_item": "• {channel} - Every **{timer}** (Next: {next_clear})",
         "subscription_item_with_ignored": "• {channel} - Every **{timer}** (Next: {next_clear}) - {ignored_count} ignored",
-        "tip": "💡 Use `/subscription info [channel]` for detailed information"
+        "tip": "💡 Use `/subscription info` for detailed information"
       },
       "info": {
         "title": "Subscription Information",
