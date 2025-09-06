@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 import discord
@@ -27,7 +28,6 @@ class I18n:
                     lang_data = json.load(f)
                     self.languages[lang_code] = lang_data
                     self.language_names[lang_code] = lang_data.get("language_name", lang_code)
-                    logger.info(LogArea.STARTUP, f"Loaded language: {lang_code} ({self.language_names[lang_code]})")
             except Exception as e:
                 logger.error(LogArea.STARTUP, f"Failed to load language file {lang_file}: {e}")
     
@@ -60,18 +60,39 @@ class I18n:
         # Fallback to English if not found
         if text is None and lang_code != self.default_language:
             text = self._get_nested_value(self.languages.get(self.default_language, {}), key)
+            if text is not None:
+                logger.warning(LogArea.GENERAL, 
+                    f"Translation key '{key}' not found in language '{lang_code}', falling back to English")
         
         # If still not found, return the key itself
         if text is None:
-            logger.warning(LogArea.STARTUP, f"Translation key not found: {key}")
-            return key
+            logger.error(LogArea.GENERAL, 
+                f"Translation key not found: '{key}' (requested language: '{lang_code}'). "
+                f"This key doesn't exist in any language file.")
+            return f"[MISSING: {key}]"  # Make it obvious in the UI that a translation is missing
         
         # Format the string with provided variables
         try:
-            return text.format(**kwargs) if kwargs else text
+            formatted = text.format(**kwargs) if kwargs else text
+            return formatted
         except KeyError as e:
-            logger.error(LogArea.STARTUP, f"Missing variable in translation: {e} for key: {key}")
+            missing_param = str(e).strip("'")
+            logger.error(LogArea.GENERAL, 
+                f"Missing parameter '{missing_param}' when formatting translation key '{key}'. "
+                f"Expected parameters: {self._extract_parameters(text)}, "
+                f"Provided parameters: {list(kwargs.keys())}")
             return text
+        except Exception as e:
+            logger.error(LogArea.GENERAL, 
+                f"Error formatting translation key '{key}': {e}")
+            return text
+    
+    def _extract_parameters(self, text: str) -> list:
+        """Extract parameter names from a format string"""
+        # Find all {param} style parameters
+        params = re.findall(r'\{([^}]+)\}', text)
+        # Filter out format specifiers and special syntax
+        return [p for p in params if ':' not in p and ',' not in p and ' ' not in p]
     
     def _get_nested_value(self, data: Dict[str, Any], key: str) -> Optional[str]:
         """Get a value from nested dictionary using dot notation"""
