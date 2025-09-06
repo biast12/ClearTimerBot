@@ -17,9 +17,7 @@
     "channel": "Channel",
     "server": "Server",
     "user": "User",
-    "message": "Message",
-    "permission_denied": "❌ You need the **{permission}** permission to use this command.",
-    "blacklisted_server": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/botsupport)."
+    "message": "Message"
   },
   
   "commands": {
@@ -103,8 +101,7 @@
         "invalid_timer": "❌ Invalid timer format: `{timer}`"
       },
       "remove": {
-        "success": "✅ Successfully unsubscribed {channel} from automatic message clearing",
-        "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing"
+        "success": "✅ Successfully unsubscribed {channel} from automatic message clearing"
       },
       "list": {
         "title": "📋 Active Subscriptions",
@@ -116,7 +113,6 @@
       "info": {
         "title": "Subscription Information",
         "subscribed": "✅ Subscribed",
-        "not_subscribed": "❌ Not Subscribed",
         "timer": "**Timer:** {timer}",
         "next_clear": "**Next Clear:** {time}",
         "ignored_messages": "**Ignored Messages:** {count}",
@@ -125,26 +121,22 @@
       },
       "update": {
         "success": "✅ Successfully updated timer for {channel} to **{timer}**",
-        "success_with_ignored": "✅ Successfully updated timer for {channel} to **{timer}**\n\n**Ignored targets added:** {count}",
-        "not_subscribed": "❌ {channel} is not subscribed. Use `/subscription add` first."
+        "success_with_ignored": "✅ Successfully updated timer for {channel} to **{timer}**\n\n**Ignored targets added:** {count}"
       },
       "clear": {
         "success": "✅ Manual clear triggered for {channel}",
         "in_progress": "⏳ A clear is already in progress for {channel}. Please wait for it to complete.",
         "no_messages": "📭 No messages to clear in {channel}",
-        "error": "❌ Failed to clear messages in {channel}: {error}",
-        "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing"
+        "error": "❌ Failed to clear messages in {channel}: {error}"
       },
       "ignore": {
         "message_added": "✅ Message will be **ignored** during clearing in {channel}",
         "message_removed": "✅ Message will **no longer be ignored** during clearing in {channel}",
         "user_added": "✅ User's messages will be **ignored** during clearing in {channel}",
-        "user_removed": "✅ User's messages will **no longer be ignored** during clearing in {channel}",
-        "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing.\nUse `/subscription add` to subscribe the channel first."
+        "user_removed": "✅ User's messages will **no longer be ignored** during clearing in {channel}"
       },
       "skip": {
         "success": "✅ Next scheduled clear for {channel} has been skipped.\n**New next clear:** {next_clear}",
-        "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing",
         "no_scheduled": "❌ No scheduled clear found for {channel}"
       }
     }
@@ -179,11 +171,6 @@
       "timer": "Timer",
       "next_clear": "Next Clear",
       "ignored": "Ignored"
-    },
-    "not_subscribed": {
-      "title": "Channel Not Subscribed",
-      "description": "{channel} is not subscribed to automatic message clearing.",
-      "help": "Use `/subscription add` to subscribe this channel."
     },
     "info": {
       "title": "Subscription Information for {channel}",
@@ -411,30 +398,29 @@
       }
     }
   },
-  
   "validation": {
+    "error_titles": {
+      "blacklisted": "Server Blacklisted",
+      "insufficient_permissions": "Insufficient Permissions",
+      "bot_missing_permissions": "Bot Missing Permissions",
+      "channel_already_subscribed": "Channel Already Subscribed",
+      "general": "Validation Error"
+    },
     "blacklisted": "❌ This server has been blacklisted and cannot use this bot.",
     "blacklisted_detailed": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, please contact support.",
     "insufficient_permissions": "❌ You need the `Manage Messages` permission to use this command.",
     "insufficient_permissions_detailed": "❌ **Insufficient Permissions**\n\nYou need the following permission to use this command:\n{permissions}\n\nPlease contact a server administrator if you need access.",
     "bot_missing_permissions": "❌ I'm missing the following permissions in {channel}: {permissions}",
     "bot_missing_permissions_detailed": "❌ **Bot Missing Permissions**\n\nI'm missing the following permissions in {channel}:\n{permissions}\n\nPlease grant these permissions and try again.",
-    "channel_not_subscribed": "❌ {channel} is not subscribed to message deletion.\nUse `/subscription add` to set up automatic clearing first.",
-    "channel_not_subscribed_detailed": "❌ **Channel Not Subscribed**\n\n{channel} is not subscribed to message deletion.\n\nUse `/subscription add` to set up automatic clearing first.",
     "channel_already_subscribed": "❌ {channel} already has a timer set. Use `/subscription update` to update the subscription instead.",
     "channel_already_subscribed_detailed": "❌ **Channel Already Subscribed**\n\n{channel} already has a timer set.\n\nUse `/subscription update` to update the subscription instead.",
-    "error_titles": {
-      "blacklisted": "Server Blacklisted",
-      "insufficient_permissions": "Insufficient Permissions",
-      "bot_missing_permissions": "Bot Missing Permissions",
-      "channel_not_subscribed": "Channel Not Subscribed",
-      "channel_already_subscribed": "Channel Already Subscribed",
-      "general": "Validation Error"
-    },
+    "not_subscribed": "❌ **Channel Not Subscribed**\n\n{channel} is not subscribed to automatic message clearing.\n\nUse `/subscription add` to set up automatic clearing first.",
+    "not_subscribed_status": "❌ Not Subscribed",
+    "permission_denied": "❌ You need the **{permission}** permission to use this command.",
+    "blacklisted_server": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/botsupport).",
     "no_permissions": "❌ You need the **{permission}** permission to use this command.",
     "bot_no_permissions": "❌ I need the following permissions in {channel}: {permissions}",
     "already_subscribed": "❌ {channel} is already subscribed with a {timer} timer.\nUse `/subscription update` to change the timer.",
-    "not_subscribed": "❌ {channel} is not subscribed to automatic message clearing.",
     "invalid_channel": "❌ Please provide a valid text channel."
   },
   

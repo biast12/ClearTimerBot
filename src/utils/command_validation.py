@@ -184,7 +184,7 @@ class CommandValidator:
         translator = await get_translator(server_id, self.data_service)
         
         if required:
-            return translator.get("validation.channel_not_subscribed", channel=channel.mention)
+            return translator.get("validation.not_subscribed", channel=channel.mention)
         else:
             return translator.get("validation.channel_already_subscribed", channel=channel.mention)
 

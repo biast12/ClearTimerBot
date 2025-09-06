@@ -16,9 +16,7 @@
     "channel": "Kanal",
     "server": "Server",
     "user": "Bruger",
-    "message": "Besked",
-    "permission_denied": "❌ Du skal have **{permission}** tilladelse for at bruge denne kommando.",
-    "blacklisted_server": "❌ **Server Sortlistet**\n\nDenne server er blevet sortlistet og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kan du appellere sortlistningen på vores [Support Server](https://biast12.com/botsupport)."
+    "message": "Besked"
   },
   "commands": {
     "help": {
@@ -97,8 +95,7 @@
         "invalid_timer": "❌ Ugyldigt timerformat: `{timer}`"
       },
       "remove": {
-        "success": "✅ Afmeldte {channel} fra automatisk beskedrydning",
-        "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning"
+        "success": "✅ Afmeldte {channel} fra automatisk beskedrydning"
       },
       "list": {
         "title": "📋 Aktive Abonnementer",
@@ -110,7 +107,6 @@
       "info": {
         "title": "Abonnementsinformation",
         "subscribed": "✅ Tilmeldt",
-        "not_subscribed": "❌ Ikke Tilmeldt",
         "timer": "**Timer:** {timer}",
         "next_clear": "**Næste Rydning:** {time}",
         "ignored_messages": "**Ignorerede Beskeder:** {count}",
@@ -120,19 +116,16 @@
       "update": {
         "success": "✅ Opdaterede timeren for {channel} til **{timer}**",
         "success_with_ignored": "✅ Opdaterede timeren for {channel} til **{timer}**\n\n**Ignorerede mål tilføjet:** {count}",
-        "no_change": "ℹ️ Timeren for {channel} er allerede sat til **{timer}**",
-        "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning"
+        "no_change": "ℹ️ Timeren for {channel} er allerede sat til **{timer}**"
       },
       "clear": {
         "in_progress": "⏳ Rydder beskeder i {channel}...",
         "success": "✅ Ryddede **{count}** beskeder i {channel}",
         "success_with_skipped": "✅ Ryddede **{count}** beskeder i {channel}\n⚠️ Sprang over **{skipped}** beskeder (ignoreret eller fejl)",
-        "no_messages": "ℹ️ Ingen beskeder at rydde i {channel}",
-        "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning"
+        "no_messages": "ℹ️ Ingen beskeder at rydde i {channel}"
       },
       "skip": {
-        "success": "✅ Springer næste planlagte rydning over for {channel}\n\n**Næste rydning:** {next_clear}",
-        "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning"
+        "success": "✅ Springer næste planlagte rydning over for {channel}\n\n**Næste rydning:** {next_clear}"
       },
       "ignore": {
         "message_added": "✅ Tilføjede besked til ignorerlisten for {channel}",
@@ -164,7 +157,6 @@
       "title": "ℹ️ Abonnementsinformation",
       "status": "**Status:** {status}",
       "subscribed": "✅ Tilmeldt",
-      "not_subscribed": "❌ Ikke Tilmeldt",
       "channel": "**Kanal:** {channel}",
       "timer": "**Timer:** {timer}",
       "next_clear": "**Næste Rydning:** {time}",
@@ -243,7 +235,6 @@
     },
     "errors": {
       "invalid_timer": "❌ Ugyldigt timerformat. Brug formater som `24h`, `1d12h30m`, eller `15:30 EST`",
-      "channel_not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning",
       "already_subscribed": "❌ {channel} er allerede tilmeldt",
       "missing_permissions": "❌ Jeg mangler tilladelser til at administrere beskeder i {channel}",
       "clear_in_progress": "⏳ En rydning er allerede i gang for {channel}",
@@ -356,28 +347,28 @@
     }
   },
   "validation": {
+    "error_titles": {
+      "blacklisted": "Server Blokeret",
+      "insufficient_permissions": "Utilstrækkelige Tilladelser",
+      "bot_missing_permissions": "Bot Mangler Tilladelser",
+      "channel_already_subscribed": "Kanal Allerede Tilmeldt",
+      "general": "Valideringsfejl"
+    },
     "blacklisted": "❌ Denne server er blokeret og kan ikke bruge denne bot.",
     "blacklisted_detailed": "❌ **Server Blokeret**\n\nDenne server er blokeret og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kontakt venligst support.",
     "insufficient_permissions": "❌ Du skal have `Administrer beskeder` tilladelsen for at bruge denne kommando.",
     "insufficient_permissions_detailed": "❌ **Utilstrækkelige Tilladelser**\n\nDu skal have følgende tilladelse for at bruge denne kommando:\n{permissions}\n\nKontakt venligst en serveradministrator hvis du har brug for adgang.",
     "bot_missing_permissions": "❌ Jeg mangler følgende tilladelser i {channel}: {permissions}",
     "bot_missing_permissions_detailed": "❌ **Bot Mangler Tilladelser**\n\nJeg mangler følgende tilladelser i {channel}:\n{permissions}\n\nGiv venligst disse tilladelser og prøv igen.",
-    "channel_not_subscribed": "❌ {channel} er ikke tilmeldt beskedsletning.\nBrug `/subscription add` for at opsætte automatisk rydning først.",
-    "channel_not_subscribed_detailed": "❌ **Kanal Ikke Tilmeldt**\n\n{channel} er ikke tilmeldt beskedsletning.\n\nBrug `/subscription add` for at opsætte automatisk rydning først.",
     "channel_already_subscribed": "❌ {channel} har allerede en timer indstillet. Brug `/subscription update` for at opdatere abonnementet i stedet.",
     "channel_already_subscribed_detailed": "❌ **Kanal Allerede Tilmeldt**\n\n{channel} har allerede en timer indstillet.\n\nBrug `/subscription update` for at opdatere abonnementet i stedet.",
-    "error_titles": {
-      "blacklisted": "Server Blokeret",
-      "insufficient_permissions": "Utilstrækkelige Tilladelser",
-      "bot_missing_permissions": "Bot Mangler Tilladelser",
-      "channel_not_subscribed": "Kanal Ikke Tilmeldt",
-      "channel_already_subscribed": "Kanal Allerede Tilmeldt",
-      "general": "Valideringsfejl"
-    },
+    "not_subscribed": "❌ **Kanal Ikke Tilmeldt**\n\n{channel} er ikke tilmeldt automatisk beskedrydning.\n\nBrug `/subscription add` for at opsætte automatisk rydning først.",
+    "not_subscribed_status": "❌ Ikke Tilmeldt",
+    "permission_denied": "❌ Du skal have **{permission}** tilladelse for at bruge denne kommando.",
+    "blacklisted_server": "❌ **Server Sortlistet**\n\nDenne server er blevet sortlistet og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kan du appellere sortlistningen på vores [Support Server](https://biast12.com/botsupport).",
     "no_permissions": "❌ Du skal have **{permission}** tilladelsen for at bruge denne kommando.",
     "bot_no_permissions": "❌ Jeg skal bruge følgende tilladelser i {channel}: {permissions}",
     "already_subscribed": "❌ {channel} er allerede tilmeldt med en {timer} timer.\nBrug `/subscription update` for at ændre timeren.",
-    "not_subscribed": "❌ {channel} er ikke tilmeldt automatisk beskedrydning.",
     "invalid_channel": "❌ Angiv venligst en gyldig tekstkanal."
   },
   "components": {

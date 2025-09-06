@@ -117,7 +117,7 @@ class BlacklistedServerView(discord.ui.LayoutView):
     def __init__(self, translator):
         super().__init__()
         
-        content = add_footer(translator.get("common.blacklisted_server"), translator)
+        content = add_footer(translator.get("validation.blacklisted_server"), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),

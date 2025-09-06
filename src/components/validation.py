@@ -23,8 +23,8 @@ class ValidationErrorView(discord.ui.LayoutView):
         elif "validation.bot_missing_permissions" in error_message or "missing the following permissions" in error_message:
             title = translator.get("validation.error_titles.bot_missing_permissions")
             color = discord.Color.orange()
-        elif "validation.channel_not_subscribed" in error_message or "not subscribed" in error_message:
-            title = translator.get("validation.error_titles.channel_not_subscribed")
+        elif "validation.not_subscribed" in error_message or "not subscribed" in error_message:
+            title = "Channel Not Subscribed"
             color = discord.Color.yellow()
         elif "validation.channel_already_subscribed" in error_message or "already has a timer" in error_message:
             title = translator.get("validation.error_titles.channel_already_subscribed")
@@ -101,7 +101,7 @@ class SubscriptionStatusErrorView(discord.ui.LayoutView):
             )
         else:
             content = add_footer(
-                translator.get("validation.channel_not_subscribed_detailed", 
+                translator.get("validation.not_subscribed", 
                              channel=channel.mention),
                 translator
             )

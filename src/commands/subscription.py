@@ -61,7 +61,7 @@ class SubscriptionCommands(commands.Cog):
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
             await interaction.response.send_message(
-                translator.get("commands.subscription.ignore.not_subscribed", channel=message.channel.mention),
+                translator.get("validation.not_subscribed", channel=message.channel.mention),
                 ephemeral=True
             )
             return
@@ -129,7 +129,7 @@ class SubscriptionCommands(commands.Cog):
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
             await interaction.response.send_message(
-                translator.get("commands.subscription.ignore.not_subscribed", channel=channel.mention),
+                translator.get("validation.not_subscribed", channel=channel.mention),
                 ephemeral=True
             )
             return
@@ -301,7 +301,7 @@ class SubscriptionCommands(commands.Cog):
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: True,
             ValidationCheck.BOT_PERMISSIONS: True,
-            ValidationCheck.CHANNEL_SUBSCRIBED: "❌ {channel} is not subscribed to message deletion.",
+            ValidationCheck.CHANNEL_SUBSCRIBED: True,
         }
         
         is_valid, error_msg, channel = await self.validator.validate_command(
@@ -624,7 +624,7 @@ class SubscriptionCommands(commands.Cog):
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: True,
             ValidationCheck.BOT_PERMISSIONS: True,
-            ValidationCheck.CHANNEL_SUBSCRIBED: "❌ {channel} is not subscribed to message deletion. Use `/subscription add` to subscribe first.",
+            ValidationCheck.CHANNEL_SUBSCRIBED: True,
         }
         
         is_valid, error_msg, channel = await self.validator.validate_command(

@@ -151,7 +151,7 @@ class ChannelNotSubscribedView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel, translator):
         super().__init__()
         
-        content = add_footer(translator.get("commands.subscription.info.not_subscribed").replace("{channel}", channel.mention), translator)
+        content = add_footer(translator.get("validation.not_subscribed", channel=channel.mention), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -188,7 +188,7 @@ class SubscriptionInfoView(discord.ui.LayoutView):
                     lines.append(translator.get("commands.subscription.info.ignored_users", 
                                                count=len(timer_info.ignored.users)))
         else:
-            lines.append(translator.get("commands.subscription.info.not_subscribed"))
+            lines.append(translator.get("validation.not_subscribed_status"))
         
         lines.append("")
         lines.append(translator.get("commands.subscription.info.commands_hint"))
