@@ -377,7 +377,11 @@
       "confirm": "Bekræft",
       "cancel": "Annuller",
       "yes": "Ja",
-      "no": "Nej"
+      "no": "Nej",
+      "clear_now": "Ryd Nu"
+    },
+    "messages": {
+      "channel_cleared_manually": "Kanalen blev ryddet med succes!"
     },
     "no_data": "❌ Ingen data fundet for {channel}"
   }

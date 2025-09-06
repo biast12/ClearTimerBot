@@ -41,6 +41,7 @@ class ClearTimerBot(commands.Bot):
         self.data_service = DataService()
         self.scheduler_service = SchedulerService(self.data_service)
         self.message_service = MessageService(self.data_service, self.scheduler_service)
+        self.message_service.set_bot(self)  # Set the bot instance
         
         self.activity_dots = 0
 

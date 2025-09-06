@@ -15,6 +15,11 @@ class MessageService:
         self.data_service = data_service
         self.scheduler_service = scheduler_service
         self.rate_limit_delay = 1.0  # Delay between message deletions
+        self.bot = None  # Will be set by the bot during initialization
+    
+    def set_bot(self, bot):
+        """Set the bot instance after initialization"""
+        self.bot = bot
 
     async def execute_channel_message_clear(self, channel: discord.TextChannel) -> None:
         if not await self._validate_bot_channel_permissions(channel):
@@ -197,5 +202,8 @@ class MessageService:
         config = get_global_config()
         server_id = str(channel.guild.id)
         translator = await get_translator(server_id, self.data_service)
-        view = MissedClearView(translator)
+        
+        # Create the view with notification message and Clear Now button
+        view = MissedClearView(translator, channel, self, self.bot)
+        
         await channel.send(view=view, delete_after=config.missed_clear_notification_timeout)
