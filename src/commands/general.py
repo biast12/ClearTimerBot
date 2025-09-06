@@ -123,6 +123,49 @@ class GeneralCommands(commands.Cog):
         view = PingView(ws_latency, response_time, translator)
         await interaction.followup.send(view=view)
 
+    async def timezone_autocomplete(
+        self, 
+        interaction: discord.Interaction, 
+        current: str
+    ) -> list[app_commands.Choice[str]]:
+        try:
+            if not hasattr(self.bot, 'data_service') or not self.bot.data_service:
+                from src.utils.logger import logger, LogArea
+                logger.warning(LogArea.COMMANDS, "data_service not available in autocomplete")
+                return []
+            
+            timezone_mappings = self.bot.data_service.get_timezones_list()
+            
+            if not timezone_mappings:
+                from src.utils.logger import logger, LogArea
+                logger.warning(LogArea.COMMANDS, "No timezone mappings found in database")
+                return []
+            
+            choices = []
+            current_lower = current.lower() if current else ""
+            
+            for abbr, full_tz in timezone_mappings.items():
+                display_name = f"{abbr} ({full_tz})"
+                if len(display_name) > 100:
+                    display_name = f"{abbr} ({full_tz[:90]}...)"
+                
+                if not current or (
+                    abbr.lower().startswith(current_lower) or
+                    full_tz.lower().startswith(current_lower) or
+                    current_lower in abbr.lower() or
+                    current_lower in full_tz.lower()
+                ):
+                    choices.append(app_commands.Choice(name=display_name, value=abbr))
+            
+            choices.sort(key=lambda x: x.value)
+            return choices[:25]
+        except Exception as e:
+            from src.utils.logger import logger, LogArea
+            import traceback
+            logger.error(LogArea.COMMANDS, f"Error in timezone_autocomplete: {e}")
+            logger.debug(LogArea.COMMANDS, traceback.format_exc())
+            return []
+    
     timezone_group = app_commands.Group(
         name="timezone",
         description="Manage server timezone preferences"
@@ -159,15 +202,7 @@ class GeneralCommands(commands.Cog):
         view = TimezoneListView(timezones, translator)
         await interaction.response.send_message(view=view)
 
-    @timezone_group.command(
-        name="change",
-        description="Change the default timezone for your server"
-    )
-    @app_commands.default_permissions(manage_guild=True)
-    @app_commands.describe(
-        timezone="The timezone to set (e.g., America/New_York, Europe/London, or abbreviation like EST)"
-    )
-    async def timezone_change(
+    async def timezone_change_impl(
         self,
         interaction: discord.Interaction,
         timezone: str
@@ -221,6 +256,29 @@ class GeneralCommands(commands.Cog):
         from src.components.timezone import TimezoneChangeSuccessView
         view = TimezoneChangeSuccessView(timezone, translator)
         await interaction.response.send_message(view=view)
+    
+    @timezone_group.command(
+        name="change",
+        description="Change the default timezone for your server"
+    )
+    @app_commands.default_permissions(manage_guild=True)
+    @app_commands.describe(
+        timezone="Select or type a timezone (e.g., PST, EST, GMT, Europe/London)"
+    )
+    async def timezone_change(
+        self,
+        interaction: discord.Interaction,
+        timezone: str
+    ):
+        await self.timezone_change_impl(interaction, timezone)
+    
+    @timezone_change.autocomplete('timezone')
+    async def timezone_change_autocomplete(
+        self,
+        interaction: discord.Interaction,
+        current: str
+    ) -> list[app_commands.Choice[str]]:
+        return await self.timezone_autocomplete(interaction, current)
 
     language_group = app_commands.Group(
         name="language",

@@ -34,7 +34,9 @@ class MockSchedulerService:
 class MockDataService:
     """Mock data service for command registration"""
 
-    pass
+    def get_timezones_list(self):
+        """Return empty dict for command registration"""
+        return {}
 
 
 class MockMessageService:
