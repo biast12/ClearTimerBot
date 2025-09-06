@@ -12,14 +12,15 @@ class AdminCommands(
         self.data_service = bot.data_service
         self.scheduler_service = bot.scheduler_service
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+    async def _check_admin_permission_before_defer(self, interaction: discord.Interaction) -> bool:
+        """Check if user has admin permissions"""
         is_owner = self.bot.is_owner(interaction.user)
         is_admin = await self.bot.is_admin(interaction.user)
         
         if not (is_owner or is_admin):
             from src.components.admin import AdminOnlyView
             view = AdminOnlyView()
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return False
         return True
     
@@ -48,7 +49,10 @@ class AdminCommands(
         server_id="Server ID to get specific stats for (optional)"
     )
     async def stats(self, interaction: discord.Interaction, server_id: str = None):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
         
         if server_id:
             server = await self.data_service.get_server(server_id)
@@ -127,6 +131,11 @@ class AdminCommands(
         reason="Reason for blacklisting (optional)"
     )
     async def blacklist_add(self, interaction: discord.Interaction, server_id: str, reason: str = "No reason provided"):
+        await interaction.response.defer(ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
+        
         guild = self.bot.get_guild(int(server_id))
         server_name = guild.name if guild else "Unknown"
         blacklisted_by = str(interaction.user.id)
@@ -143,38 +152,48 @@ class AdminCommands(
 
             from src.components.admin import BlacklistAddSuccessView
             view = BlacklistAddSuccessView(server_name, server_id, reason)
-            await interaction.response.send_message(view=view)
+            await interaction.followup.send(view=view)
         else:
             from src.components.admin import BlacklistAddAlreadyView
             view = BlacklistAddAlreadyView(server_id)
-            await interaction.response.send_message(view=view)
+            await interaction.followup.send(view=view)
 
     @blacklist_group.command(
         name="remove", description="Remove a server from the blacklist"
     )
     @app_commands.describe(server_id="Server ID to remove from blacklist")
     async def blacklist_remove(self, interaction: discord.Interaction, server_id: str):
+        await interaction.response.defer(ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
+        
         if await self.data_service.remove_from_blacklist(server_id):
             await self.data_service.save_blacklist()
             from src.components.admin import BlacklistRemoveSuccessView
             view = BlacklistRemoveSuccessView(server_id)
-            await interaction.response.send_message(view=view)
+            await interaction.followup.send(view=view)
         else:
             from src.components.admin import BlacklistRemoveNotFoundView
             view = BlacklistRemoveNotFoundView(server_id)
-            await interaction.response.send_message(view=view)
+            await interaction.followup.send(view=view)
 
     @blacklist_group.command(
         name="check", description="Check if a server is blacklisted"
     )
     @app_commands.describe(server_id="Server ID to check blacklist status")
     async def blacklist_check(self, interaction: discord.Interaction, server_id: str):
+        await interaction.response.defer(ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
+        
         blacklist_entries = await self.data_service.get_blacklist_entries()
         
         if server_id not in blacklist_entries:
             from src.components.admin import BlacklistCheckNotFoundView
             view = BlacklistCheckNotFoundView(server_id)
-            await interaction.response.send_message(view=view)
+            await interaction.followup.send(view=view)
             return
         
         entry = blacklist_entries[server_id]
@@ -183,14 +202,17 @@ class AdminCommands(
         
         from src.components.admin import BlacklistCheckFoundView
         view = BlacklistCheckFoundView(server_id, server_name, entry)
-        await interaction.response.send_message(view=view)
+        await interaction.followup.send(view=view)
 
     @app_commands.command(
         name="recache",
         description="Recache all data from database (except config)"
     )
     async def recache(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
         
         try:
             await self.data_service.reload_all_caches()
@@ -221,7 +243,10 @@ class AdminCommands(
     )
     @app_commands.describe(error_id="The error ID to check")
     async def error_check(self, interaction: discord.Interaction, error_id: str):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
         
         error_doc = await logger.get_error(error_id)
         
@@ -242,7 +267,10 @@ class AdminCommands(
     )
     @app_commands.describe(error_id="The error ID to delete")
     async def error_delete(self, interaction: discord.Interaction, error_id: str):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
         
         success = await logger.delete_error(error_id)
         
@@ -260,7 +288,10 @@ class AdminCommands(
     )
     @app_commands.describe(limit="Number of errors to show (default: 10, max: 25)")
     async def error_list(self, interaction: discord.Interaction, limit: int = 10):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
         
         limit = min(max(1, limit), 25)
         errors = await logger.get_recent_errors(limit)
@@ -281,7 +312,10 @@ class AdminCommands(
         name="clear", description="Clear all errors from the database"
     )
     async def error_clear(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
         
         from src.services.database_connection_manager import db_manager
         
@@ -307,7 +341,10 @@ class AdminCommands(
     )
     @app_commands.describe(id="Server ID to remove all subscriptions from")
     async def force_remove_server(self, interaction: discord.Interaction, id: str):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
 
         servers = await self.data_service.get_all_servers()
 
@@ -335,7 +372,10 @@ class AdminCommands(
     )
     @app_commands.describe(id="Channel ID to unsubscribe")
     async def force_remove_channel(self, interaction: discord.Interaction, id: str):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if not await self._check_admin_permission_before_defer(interaction):
+            return
 
         servers = await self.data_service.get_all_servers()
 

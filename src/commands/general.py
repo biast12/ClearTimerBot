@@ -18,14 +18,20 @@ class GeneralCommands(commands.Cog):
         name="help", description="Display help information about the bot"
     )
     async def help_command(self, interaction: discord.Interaction):
+        checks = {
+            ValidationCheck.BLACKLIST: True,
+        }
+        
+        is_valid, error_msg, _ = await self.validator.validate_command(
+            interaction, None, checks
+        )
+        
+        if not is_valid:
+            await self.validator.send_validation_error(interaction, error_msg)
+            return
+        
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
-        
-        if await self.data_service.is_blacklisted(server_id):
-            from src.components.general import BlacklistedServerView
-            view = BlacklistedServerView(translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
-            return
         
         commands_dict = {
             'subscription': [],
@@ -126,12 +132,14 @@ class GeneralCommands(commands.Cog):
         name="list",
         description="List available timezones from the configuration"
     )
+    @app_commands.default_permissions(manage_guild=True)
     async def timezone_list(
         self,
         interaction: discord.Interaction
     ):
         checks = {
             ValidationCheck.BLACKLIST: True,
+            ValidationCheck.USER_PERMISSIONS: "manage_guild",
         }
         
         is_valid, error_msg, _ = await self.validator.validate_command(
@@ -166,6 +174,7 @@ class GeneralCommands(commands.Cog):
     ):
         checks = {
             ValidationCheck.BLACKLIST: True,
+            ValidationCheck.USER_PERMISSIONS: "manage_guild",
         }
         
         is_valid, error_msg, _ = await self.validator.validate_command(
@@ -222,12 +231,14 @@ class GeneralCommands(commands.Cog):
         name="list",
         description="Display all supported languages"
     )
+    @app_commands.default_permissions(manage_guild=True)
     async def language_list(
         self,
         interaction: discord.Interaction
     ):
         checks = {
             ValidationCheck.BLACKLIST: True,
+            ValidationCheck.USER_PERMISSIONS: "manage_guild",
         }
         
         is_valid, error_msg, _ = await self.validator.validate_command(
@@ -270,6 +281,7 @@ class GeneralCommands(commands.Cog):
     ):
         checks = {
             ValidationCheck.BLACKLIST: True,
+            ValidationCheck.USER_PERMISSIONS: "manage_guild",
         }
         
         is_valid, error_msg, _ = await self.validator.validate_command(

@@ -16,8 +16,7 @@ class AdminOnlyView(discord.ui.LayoutView):
         
         content = (
             "❌ **Admin Only**\n\n"
-            "This command is restricted to the bot admins.\n\n"
-            "_If you need assistance, please contact the bot admin_"
+            "This command is restricted to the bot admins."
         )
         
         container = discord.ui.Container(

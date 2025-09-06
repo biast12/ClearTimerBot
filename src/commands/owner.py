@@ -13,12 +13,15 @@ class OwnerCommands(
         self.bot = bot
         self.data_service = bot.data_service
     
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+    async def _check_owner_permission(self, interaction: discord.Interaction) -> bool:
         """Check if user is the bot owner (using OWNER_ID from config)"""
         if not self.bot.is_owner(interaction.user):
             from src.components.owner import OwnerOnlyView
             view = OwnerOnlyView()
-            await interaction.response.send_message(view=view, ephemeral=True)
+            if not interaction.response.is_done():
+                await interaction.response.send_message(view=view, ephemeral=True)
+            else:
+                await interaction.followup.send(view=view, ephemeral=True)
             return False
         return True
     
@@ -45,7 +48,10 @@ class OwnerCommands(
         description="List all bot administrators"
     )
     async def admin_list(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(ephemeral=True)
+        
+        if not await self._check_owner_permission(interaction):
+            return
         
         admins = await self.data_service.get_admins()
         
@@ -68,7 +74,10 @@ class OwnerCommands(
         user_id="Discord user ID to add as admin"
     )
     async def admin_add(self, interaction: discord.Interaction, user_id: str):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(ephemeral=True)
+        
+        if not await self._check_owner_permission(interaction):
+            return
         
         try:
             if str(interaction.user.id) == user_id:
@@ -114,7 +123,10 @@ class OwnerCommands(
         user_id="Discord user ID to remove from admins"
     )
     async def admin_remove(self, interaction: discord.Interaction, user_id: str):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(ephemeral=True)
+        
+        if not await self._check_owner_permission(interaction):
+            return
         
         if await self.data_service.remove_admin(user_id):
             from src.components.owner import AdminRemoveSuccessView
@@ -130,7 +142,10 @@ class OwnerCommands(
         description="Recache bot configuration from database"
     )
     async def recache_config(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(ephemeral=True)
+        
+        if not await self._check_owner_permission(interaction):
+            return
         
         try:
             await self.data_service.reload_admins_cache()
@@ -155,7 +170,10 @@ class OwnerCommands(
         shard_id="Specific shard ID to reload (leave empty to reload all)"
     )
     async def shard_reload(self, interaction: discord.Interaction, shard_id: Optional[int] = None):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(ephemeral=True)
+        
+        if not await self._check_owner_permission(interaction):
+            return
         
         try:
             if self.bot.shard_id is None and shard_id is not None:
@@ -205,7 +223,10 @@ class OwnerCommands(
         description="View current shard status"
     )
     async def shard_status(self, interaction: discord.Interaction):
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(ephemeral=True)
+        
+        if not await self._check_owner_permission(interaction):
+            return
         
         try:
             from src.components.owner import ShardStatusCompleteView

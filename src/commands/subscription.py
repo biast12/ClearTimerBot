@@ -37,15 +37,22 @@ class SubscriptionCommands(commands.Cog):
             await self.handle_ignore_user_context(interaction, user)
     
     async def handle_ignore_message_context(self, interaction: discord.Interaction, message: discord.Message) -> None:
+        # Validate command with blacklist and permission checks
+        checks = {
+            ValidationCheck.BLACKLIST: True,
+            ValidationCheck.USER_PERMISSIONS: True,
+        }
+        
+        is_valid, error_msg, _ = await self.validator.validate_command(
+            interaction, None, checks
+        )
+        
+        if not is_valid:
+            await self.validator.send_validation_error(interaction, error_msg)
+            return
+        
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
-        
-        if not interaction.user.guild_permissions.manage_messages:
-            await interaction.response.send_message(
-                translator.get("common.permission_denied", permission="Manage Messages"),
-                ephemeral=True
-            )
-            return
         
         # Check if channel is subscribed
         server_id = str(interaction.guild.id)
@@ -89,16 +96,22 @@ class SubscriptionCommands(commands.Cog):
     
     async def handle_ignore_user_context(self, interaction: discord.Interaction, user: discord.User) -> None:
         """Handle the ignore user context menu command"""
+        # Validate command with blacklist and permission checks
+        checks = {
+            ValidationCheck.BLACKLIST: True,
+            ValidationCheck.USER_PERMISSIONS: True,
+        }
+        
+        is_valid, error_msg, _ = await self.validator.validate_command(
+            interaction, None, checks
+        )
+        
+        if not is_valid:
+            await self.validator.send_validation_error(interaction, error_msg)
+            return
+        
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
-        
-        # Check if user has manage_messages permission
-        if not interaction.user.guild_permissions.manage_messages:
-            await interaction.response.send_message(
-                translator.get("common.permission_denied", permission="Manage Messages"),
-                ephemeral=True
-            )
-            return
         
         # Get the channel where the context menu was invoked
         channel = interaction.channel
@@ -359,9 +372,10 @@ class SubscriptionCommands(commands.Cog):
         self,
         interaction: discord.Interaction,
     ):
-        # Validate command - only blacklist check for list
+        # Validate command with permission check
         checks = {
             ValidationCheck.BLACKLIST: True,
+            ValidationCheck.USER_PERMISSIONS: True,
         }
         
         is_valid, error_msg, _ = await self.validator.validate_command(
@@ -401,9 +415,10 @@ class SubscriptionCommands(commands.Cog):
         interaction: discord.Interaction,
         target_channel: Optional[discord.TextChannel] = None,
     ):
-        # Validate command - only blacklist check for info
+        # Validate command with permission check
         checks = {
             ValidationCheck.BLACKLIST: True,
+            ValidationCheck.USER_PERMISSIONS: True,
         }
         
         is_valid, error_msg, channel = await self.validator.validate_command(

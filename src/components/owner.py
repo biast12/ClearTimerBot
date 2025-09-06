@@ -14,8 +14,7 @@ class OwnerOnlyView(discord.ui.LayoutView):
         
         content = (
             "🔒 **Owner Only**\n\n"
-            "This command is restricted to the bot owner.\n\n"
-            "_Only the original bot owner can use this command_"
+            "This command is restricted to the bot owner."
         )
         
         container = discord.ui.Container(

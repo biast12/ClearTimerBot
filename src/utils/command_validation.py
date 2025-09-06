@@ -2,6 +2,7 @@ import discord
 from typing import Optional, Dict, Any, Tuple, TYPE_CHECKING
 from enum import Enum
 from src.localization import get_translator
+from src.utils.logger import logger, LogArea
 
 if TYPE_CHECKING:
     from discord.ext.commands import Bot
@@ -47,8 +48,9 @@ class CommandValidator:
             if is_blacklisted:
                 return False, error_msg, channel
         
-        if checks.get(ValidationCheck.USER_PERMISSIONS, False):
-            has_perms, error_msg = await self._check_user_permissions(interaction)
+        if ValidationCheck.USER_PERMISSIONS in checks:
+            permission_config = checks[ValidationCheck.USER_PERMISSIONS]
+            has_perms, error_msg = await self._check_user_permissions(interaction, permission_config)
             if not has_perms:
                 return False, error_msg, channel
         
@@ -92,13 +94,35 @@ class CommandValidator:
             return True, translator.get("validation.blacklisted")
         return False, None
 
-    async def _check_user_permissions(self, interaction: discord.Interaction) -> Tuple[bool, Optional[str]]:
-        member = interaction.guild.get_member(interaction.user.id)
+    async def _check_user_permissions(self, interaction: discord.Interaction, permission_config: Any = None) -> Tuple[bool, Optional[str]]:
+        if isinstance(interaction.user, discord.Member):
+            member = interaction.user
+        else:
+            member = interaction.guild.get_member(interaction.user.id)
+        
+        if not member:
+            server_id = str(interaction.guild.id)
+            translator = await get_translator(server_id, self.data_service)
+            return False, translator.get("validation.insufficient_permissions")
         
         if self.bot.is_owner(interaction.user):
             return True, None
         
-        if not member.guild_permissions.manage_messages:
+        # Determine which permission to check
+        if permission_config is True or permission_config is None:
+            # Default to manage_messages for backward compatibility
+            required_permission = "manage_messages"
+        elif isinstance(permission_config, str):
+            # Use the specified permission
+            required_permission = permission_config
+        else:
+            # Default to manage_messages
+            required_permission = "manage_messages"
+        
+        # Check if the member has the required permission
+        has_permission = getattr(member.guild_permissions, required_permission, False)
+        
+        if not has_permission:
             server_id = str(interaction.guild.id)
             translator = await get_translator(server_id, self.data_service)
             return False, translator.get("validation.insufficient_permissions")
