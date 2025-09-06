@@ -68,7 +68,7 @@ class HelpView(discord.ui.LayoutView):
             f"[GitHub]({config.github_url})"
         )
         
-        content = add_footer("\n".join(sections))
+        content = add_footer("\n".join(sections, translator))
 
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -102,7 +102,7 @@ class PingView(discord.ui.LayoutView):
             translator.get("commands.ping.status", status=translator.get(status_key))
         ]
         
-        content = add_footer("\n".join(lines))
+        content = add_footer("\n".join(lines, translator))
 
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -117,7 +117,7 @@ class BlacklistedServerView(discord.ui.LayoutView):
     def __init__(self, translator):
         super().__init__()
         
-        content = add_footer(translator.get("common.blacklisted_server"))
+        content = add_footer(translator.get("common.blacklisted_server", translator))
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -151,7 +151,7 @@ class LanguageListView(discord.ui.LayoutView):
         language_lines.append("")
         language_lines.append(translator.get("commands.language.list.change_hint"))
         
-        content = add_footer("\n".join(language_lines))
+        content = add_footer("\n".join(language_lines, translator))
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -167,7 +167,7 @@ class LanguageChangeSuccessView(discord.ui.LayoutView):
         super().__init__()
         
         message = translator.get("commands.language.change.success", language=language_name)
-        content = add_footer(message)
+        content = add_footer(message, translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -183,7 +183,7 @@ class LanguageAlreadySetView(discord.ui.LayoutView):
         super().__init__()
         
         message = translator.get("commands.language.change.already_set", language=language_name)
-        content = add_footer(message)
+        content = add_footer(message, translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),

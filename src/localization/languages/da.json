@@ -381,9 +381,7 @@
     "invalid_channel": "❌ Angiv venligst en gyldig tekstkanal."
   },
   "components": {
-    "footer": {
-      "text": "ClearTimer Bot"
-    },
+    "powered_by": "**Drevet af {bot_name}**",
     "buttons": {
       "confirm": "Bekræft",
       "cancel": "Annuller",

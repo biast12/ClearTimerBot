@@ -18,7 +18,7 @@ class ErrorView(discord.ui.LayoutView):
         if error_id:
             content += f"\n\nError ID: `{error_id}`"
         
-        content = add_footer(content)
+        content = add_footer(content, translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -33,7 +33,7 @@ class MissedClearView(discord.ui.LayoutView):
     def __init__(self, translator):
         super().__init__()
         
-        content = add_footer(translator.get("errors.missed_clear_notification"))
+        content = add_footer(translator.get("errors.missed_clear_notification", translator))
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),

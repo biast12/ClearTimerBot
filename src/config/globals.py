@@ -16,7 +16,7 @@ class GlobalConfig:
     powered_by_emoji_name: str = "logo"
     
     # Bot Branding
-    bot_name: str = "ClearTimer Bot"
+    bot_name: str = "ClearTimerBot"
     bot_color: int = 0x5865F2  # Discord Blurple
     error_color: int = 0xED4245  # Discord Red
     success_color: int = 0x57F287  # Discord Green
@@ -24,7 +24,6 @@ class GlobalConfig:
     
     # Footer Settings
     show_powered_by_footer: bool = True
-    footer_text_template: str = "**Powered by {bot_name}**"
     
     # Rate Limiting
     max_clears_per_minute: int = 5
@@ -70,7 +69,6 @@ class GlobalConfig:
         
         # Footer Settings
         self.show_powered_by_footer = os.getenv("SHOW_POWERED_BY_FOOTER", "true").lower() == "true"
-        self.footer_text_template = os.getenv("FOOTER_TEXT_TEMPLATE", self.footer_text_template)
         
         # Rate Limiting
         self.max_clears_per_minute = int(os.getenv("MAX_CLEARS_PER_MINUTE", str(self.max_clears_per_minute)))
@@ -101,14 +99,6 @@ class GlobalConfig:
         self.bot_invite_url = os.getenv("BOT_INVITE_URL", self.bot_invite_url)
         self.github_url = os.getenv("GITHUB_URL", self.github_url)
     
-    def get_footer_text(self) -> str:
-        """Get the formatted footer text"""
-        if not self.show_powered_by_footer:
-            return ""
-        
-        emoji = f"<:{self.powered_by_emoji_name}:{self.powered_by_emoji_id}> " if self.powered_by_emoji_id else ""
-        text = self.footer_text_template.format(bot_name=self.bot_name)
-        return f"\n\n{emoji}{text}"
 
 
 # Singleton instance

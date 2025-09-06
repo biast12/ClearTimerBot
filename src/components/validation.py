@@ -36,7 +36,7 @@ class ValidationErrorView(discord.ui.LayoutView):
         # Clean up the message for better formatting
         clean_message = error_message.replace("❌ ", "")
         
-        content = add_footer(f"❌ **{title}**\n\n{clean_message}")
+        content = add_footer(f"❌ **{title}**\n\n{clean_message}", translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -51,7 +51,7 @@ class BlacklistErrorView(discord.ui.LayoutView):
     def __init__(self, translator):
         super().__init__()
         
-        content = add_footer(translator.get("validation.blacklisted_detailed"))
+        content = add_footer(translator.get("validation.blacklisted_detailed"), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -70,12 +70,14 @@ class PermissionErrorView(discord.ui.LayoutView):
             content = add_footer(
                 translator.get("validation.bot_missing_permissions_detailed", 
                              channel=channel.mention, 
-                             permissions=missing_permissions)
+                             permissions=missing_permissions),
+                translator
             )
         else:
             content = add_footer(
                 translator.get("validation.insufficient_permissions_detailed", 
-                             permissions=missing_permissions)
+                             permissions=missing_permissions),
+                translator
             )
         
         container = discord.ui.Container(
@@ -94,12 +96,14 @@ class SubscriptionStatusErrorView(discord.ui.LayoutView):
         if is_subscribed:
             content = add_footer(
                 translator.get("validation.channel_already_subscribed_detailed", 
-                             channel=channel.mention)
+                             channel=channel.mention),
+                translator
             )
         else:
             content = add_footer(
                 translator.get("validation.channel_not_subscribed_detailed", 
-                             channel=channel.mention)
+                             channel=channel.mention),
+                translator
             )
         
         container = discord.ui.Container(

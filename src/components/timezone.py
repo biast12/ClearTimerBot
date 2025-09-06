@@ -16,7 +16,7 @@ class TimezoneChangeSuccessView(discord.ui.LayoutView):
         super().__init__()
         
         message = translator.get("commands.timezone.change.success", timezone=timezone)
-        content = add_footer(message)
+        content = add_footer(message, translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -45,14 +45,15 @@ class TimezoneListView(discord.ui.LayoutView):
                 "`Europe/London` - British Time\n"
                 "`Asia/Tokyo` - Japan Time\n"
                 "`Australia/Sydney` - Sydney Time\n\n"
-                "Use `/timezone change <timezone>` with any valid timezone."
+                "Use `/timezone change <timezone>` with any valid timezone.",
+                translator
             )
         else:
             # Format timezone list
             for abbr, full_name in sorted(timezones_dict.items()):
                 lines.append(f"**{abbr}**: {full_name}")
             
-            content = add_footer("\n".join(lines))
+            content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -74,7 +75,7 @@ class TimezoneInvalidView(discord.ui.LayoutView):
             lines.append("")
             lines.append(translator.get("commands.timezone.change.suggestion", suggestion=suggestion))
         
-        content = add_footer("\n".join(lines))
+        content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),

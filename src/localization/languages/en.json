@@ -439,9 +439,7 @@
   },
   
   "components": {
-    "footer": {
-      "text": "ClearTimer Bot"
-    },
+    "powered_by": "**Powered by {bot_name}**",
     "buttons": {
       "confirm": "Confirm",
       "cancel": "Cancel",
