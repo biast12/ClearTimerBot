@@ -218,21 +218,21 @@ Skip the next scheduled clear for a channel. Requires `Manage Messages` permissi
 <details>
 <summary>Click to expand general commands</summary>
 
-#### `/ping`
-
-Check the bot's response latency to Discord servers.
-
 #### `/help`
 
 Display comprehensive help information including commands, timer formats, and useful links.
+
+#### `/ping`
+
+Check the bot's response latency to Discord servers.
 
 #### Timezone Management
 
 Commands for managing server timezone settings under `/timezone`:
 
+- **`/timezone list`**: Display all available timezones from the configuration
 - **`/timezone change [timezone]`**: Set the default timezone for your server (requires Manage Server permission)
   - Examples: `/timezone change America/New_York`, `/timezone change EST`, `/timezone change Europe/London`
-- **`/timezone list`**: Display all available timezones from the configuration
 
 #### Language Management
 

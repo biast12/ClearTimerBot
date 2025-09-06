@@ -138,6 +138,35 @@ class GeneralCommands(commands.Cog):
     )
 
     @timezone_group.command(
+        name="list",
+        description="List available timezones from the configuration"
+    )
+    async def timezone_list(
+        self,
+        interaction: discord.Interaction
+    ):
+        checks = {
+            ValidationCheck.BLACKLIST: True,
+        }
+        
+        is_valid, error_msg, _ = await self.validator.validate_command(
+            interaction, None, checks
+        )
+        
+        if not is_valid:
+            await self.validator.send_validation_error(interaction, error_msg)
+            return
+        
+        server_id = str(interaction.guild.id)
+        translator = await get_translator(server_id, self.data_service)
+        
+        timezones = self.data_service.get_timezones_list()
+        
+        from src.components.timezone import TimezoneListView
+        view = TimezoneListView(timezones, translator)
+        await interaction.response.send_message(view=view)
+
+    @timezone_group.command(
         name="change",
         description="Change the default timezone for your server"
     )
@@ -197,35 +226,6 @@ class GeneralCommands(commands.Cog):
         translator = await get_translator(server_id, self.data_service)
         from src.components.timezone import TimezoneChangeSuccessView
         view = TimezoneChangeSuccessView(timezone, translator)
-        await interaction.response.send_message(view=view)
-
-    @timezone_group.command(
-        name="list",
-        description="List available timezones from the configuration"
-    )
-    async def timezone_list(
-        self,
-        interaction: discord.Interaction
-    ):
-        checks = {
-            ValidationCheck.BLACKLIST: True,
-        }
-        
-        is_valid, error_msg, _ = await self.validator.validate_command(
-            interaction, None, checks
-        )
-        
-        if not is_valid:
-            await self.validator.send_validation_error(interaction, error_msg)
-            return
-        
-        server_id = str(interaction.guild.id)
-        translator = await get_translator(server_id, self.data_service)
-        
-        timezones = self.data_service.get_timezones_list()
-        
-        from src.components.timezone import TimezoneListView
-        view = TimezoneListView(timezones, translator)
         await interaction.response.send_message(view=view)
 
     language_group = app_commands.Group(
