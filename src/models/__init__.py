@@ -1,4 +1,4 @@
-from .channel_subscription import ChannelTimer, Server
+from .channel_subscription import ChannelTimer, Server, IgnoredEntities
 
 from .database_models import (
     CollectionName,
@@ -48,6 +48,7 @@ __all__ = [
     # Timer models
     "ChannelTimer",
     "Server",
+    "IgnoredEntities",
     
     # Database models
     "CollectionName",

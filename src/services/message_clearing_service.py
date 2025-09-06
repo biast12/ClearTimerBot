@@ -173,7 +173,10 @@ class MessageService:
                 message = await channel.fetch_message(int(message_id))
                 await self.data_service._cache.set(cache_key, message, cache_level="warm", ttl=3600)
             from src.components.subscription import TimerViewMessage
-            view = TimerViewMessage(channel, timer, next_run_time)
+            from src.localization import get_translator
+            server_id = str(channel.guild.id)
+            translator = await get_translator(server_id, self.data_service)
+            view = TimerViewMessage(channel, timer, next_run_time, translator)
             await message.edit(view=view)
         except discord.NotFound:
             server_id = str(channel.guild.id)

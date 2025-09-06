@@ -212,20 +212,8 @@ class SubscriptionCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
             return
         
-        # If timer is a time without timezone (e.g., "15:30"), append server timezone
-        timer_to_store = timer
-        if self.schedule_parser.TIMEZONE_PATTERN.match(timer.strip()):
-            match = self.schedule_parser.TIMEZONE_PATTERN.match(timer.strip())
-            if match and not match.group(2):  # No timezone specified
-                server_timezone = self.data_service.get_timezone_for_server(server_id, None)
-                if server_timezone and server_timezone != "UTC":
-                    # Get timezone abbreviation from the full timezone string
-                    import pytz
-                    from datetime import datetime
-                    tz = pytz.timezone(server_timezone)
-                    # Get the current timezone abbreviation (handles DST)
-                    tz_abbr = datetime.now(tz).strftime('%Z')
-                    timer_to_store = f"{timer.strip()} {tz_abbr}"
+        # Store the timer as provided - the parser will handle timezone defaults
+        timer_to_store = timer.strip()
 
         # Save to data service FIRST (before creating scheduler job)
         server = await self.data_service.get_server(server_id)
@@ -509,27 +497,15 @@ class SubscriptionCommands(commands.Cog):
         current_ignored_users = []
         old_view_message_id = None
         if server and channel_id in server.channels:
-            current_ignored_messages = list(server.channels[channel_id].ignored_messages)
+            current_ignored_messages = list(server.channels[channel_id].ignored.messages)
             current_ignored_users = list(server.channels[channel_id].ignored.users)
             old_view_message_id = server.channels[channel_id].view_message_id
         
         # Remove old job first
         self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
 
-        # If timer is a time without timezone (e.g., "15:30"), append server timezone
-        timer_to_store = timer
-        if self.schedule_parser.TIMEZONE_PATTERN.match(timer.strip()):
-            match = self.schedule_parser.TIMEZONE_PATTERN.match(timer.strip())
-            if match and not match.group(2):  # No timezone specified
-                server_timezone = self.data_service.get_timezone_for_server(server_id, None)
-                if server_timezone and server_timezone != "UTC":
-                    # Get timezone abbreviation from the full timezone string
-                    import pytz
-                    from datetime import datetime
-                    tz = pytz.timezone(server_timezone)
-                    # Get the current timezone abbreviation (handles DST)
-                    tz_abbr = datetime.now(tz).strftime('%Z')
-                    timer_to_store = f"{timer.strip()} {tz_abbr}"
+        # Store the timer as provided - the parser will handle timezone defaults
+        timer_to_store = timer.strip()
         
         # Update in data service
         if server:

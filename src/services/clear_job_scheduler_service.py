@@ -104,7 +104,7 @@ class SchedulerService:
             return
 
         try:
-            trigger, _ = self.schedule_parser.parse_schedule_expression(channel_timer.timer)
+            trigger, _ = self.schedule_parser.parse_schedule_expression(channel_timer.timer, server_id)
         except Exception as e:
             logger.error(LogArea.SCHEDULER, f"Error parsing timer for job {job_id}: {e}")
             return
@@ -137,7 +137,7 @@ class SchedulerService:
         job_id = self._create_job_identifier(server_id, channel_id)
 
         try:
-            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(channel_timer.timer)
+            trigger, next_run_time = self.schedule_parser.parse_schedule_expression(channel_timer.timer, server_id)
         except Exception as e:
             logger.error(LogArea.SCHEDULER, f"Error parsing timer for missed job {job_id}: {e}")
             return
