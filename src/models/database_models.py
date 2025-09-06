@@ -186,8 +186,6 @@ class ErrorDocument:
 @dataclass
 class BotConfigDocument:
     admins: List[str] = field(default_factory=list)  # Just store user IDs
-    settings: Dict[str, Any] = field(default_factory=dict)
-    feature_flags: Dict[str, bool] = field(default_factory=dict)
     timezones: Dict[str, str] = field(default_factory=dict)
     updated_at: Optional[datetime] = None
     
@@ -216,8 +214,6 @@ class BotConfigDocument:
         return {
             "_id": "bot_config",
             "admins": self.admins,
-            "settings": self.settings,
-            "feature_flags": self.feature_flags,
             "timezones": self.timezones,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
@@ -232,8 +228,6 @@ class BotConfigDocument:
         
         return cls(
             admins=admins,
-            settings=data.get("settings", {}),
-            feature_flags=data.get("feature_flags", {}),
             timezones=data.get("timezones", {}),
             updated_at=updated_at
         )
