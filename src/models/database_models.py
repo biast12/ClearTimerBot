@@ -228,15 +228,7 @@ class BotConfigDocument:
         if updated_at and isinstance(updated_at, str):
             updated_at = datetime.fromisoformat(updated_at)
         
-        # Handle both old format (dict) and new format (list)
-        admins_data = data.get("admins", [])
-        if isinstance(admins_data, dict):
-            # Convert old format (dict with user data) to new format (list of IDs)
-            admins = list(admins_data.keys())
-        elif isinstance(admins_data, list):
-            admins = admins_data
-        else:
-            admins = []
+        admins = data.get("admins", [])
         
         return cls(
             admins=admins,

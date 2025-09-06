@@ -517,7 +517,7 @@ class RecacheErrorView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-# ==================== LEGACY/UTILITY VIEWS ====================
+# ==================== UTILITY VIEWS ====================
 
 class ServerListView(discord.ui.LayoutView):
     """View for listing servers"""

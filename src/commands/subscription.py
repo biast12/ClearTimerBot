@@ -254,7 +254,6 @@ class SubscriptionCommands(commands.Cog):
         # Send success message using followup since we deferred
         from src.components.subscription import SubscriptionSuccessView, SubscriptionSuccessWithMultipleIgnoresView
         
-        # For backward compatibility, pass first target if there's only one
         if len(added_targets) == 1:
             success_view = SubscriptionSuccessView(channel, timer_to_store, next_run_time, translator, added_targets[0][0], added_targets[0][1])
         elif len(added_targets) > 1:
@@ -586,7 +585,6 @@ class SubscriptionCommands(commands.Cog):
         # Send success message
         from src.components.subscription import UpdateSuccessView, UpdateSuccessWithMultipleIgnoresView
         
-        # For backward compatibility, pass first target if there's only one
         if len(added_targets) == 1:
             success_view = UpdateSuccessView(channel, timer_to_store, next_run_time, translator, added_targets[0][0], added_targets[0][1])
         elif len(added_targets) > 1:

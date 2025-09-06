@@ -171,7 +171,7 @@ class ClearTimerBot(commands.Bot):
         return await self.data_service.is_admin(user_id)
     
     def is_owner(self, user: discord.User) -> bool:
-        """Legacy method for backward compatibility - now checks admin status"""
+        """Check if user is the bot owner"""
         if self.config.owner_id:
             return user.id == self.config.owner_id
         return False
