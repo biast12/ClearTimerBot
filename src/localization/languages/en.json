@@ -126,6 +126,7 @@
       "clear": {
         "success": "✅ Manual clear triggered for {channel}",
         "in_progress": "⏳ A clear is already in progress for {channel}. Please wait for it to complete.",
+        "messages_cleared": "Messages Cleared",
         "no_messages": "📭 No messages to clear in {channel}",
         "error": "❌ Failed to clear messages in {channel}: {error}"
       },

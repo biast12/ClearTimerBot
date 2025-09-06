@@ -119,9 +119,9 @@
         "no_change": "ℹ️ Timeren for {channel} er allerede sat til **{timer}**"
       },
       "clear": {
-        "in_progress": "⏳ Rydder beskeder i {channel}...",
         "success": "✅ Ryddede **{count}** beskeder i {channel}",
-        "success_with_skipped": "✅ Ryddede **{count}** beskeder i {channel}\n⚠️ Sprang over **{skipped}** beskeder (ignoreret eller fejl)",
+        "in_progress": "⏳ Rydder beskeder i {channel}...",
+        "messages_cleared": "Beskeder Ryddet",
         "no_messages": "ℹ️ Ingen beskeder at rydde i {channel}"
       },
       "skip": {

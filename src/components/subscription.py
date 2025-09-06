@@ -326,13 +326,6 @@ class IgnoreEntityView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class IgnoreMessageView(IgnoreEntityView):
-    """Ignore message view"""
-    
-    def __init__(self, title: str, message_id: str, channel: discord.TextChannel, added: bool, translator):
-        super().__init__("Message", message_id, channel, added, translator)
-
-
 class ManualClearSuccessView(discord.ui.LayoutView):
     """View for manual clear success"""
     
@@ -341,7 +334,7 @@ class ManualClearSuccessView(discord.ui.LayoutView):
         
         if deleted_count > 0:
             content = translator.get("commands.subscription.clear.success", channel=channel.mention)
-            content += f"\n\n**{translator.get('common.message', 'Messages')}:** {deleted_count}"
+            content += f"\n\n**{translator.get("commands.subscription.clear.messages_cleared")}:** {deleted_count}"
             color = discord.Color.green()
         else:
             content = translator.get("commands.subscription.clear.no_messages", channel=channel.mention)
