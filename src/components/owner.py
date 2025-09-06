@@ -173,43 +173,6 @@ class AdminRemoveNotFoundView(discord.ui.LayoutView):
 
 
 
-class ConfigReloadSuccessView(discord.ui.LayoutView):
-    """View for successful config reload"""
-    
-    def __init__(self, admin_count: int):
-        super().__init__()
-        
-        content = (
-            "✅ **Configuration Reloaded**\n\n"
-            f"Successfully reloaded bot configuration from database.\n\n"
-            f"**Active Administrators:** {admin_count}"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value
-        )
-        self.add_item(container)
-
-
-class ConfigReloadErrorView(discord.ui.LayoutView):
-    """View for config reload error"""
-    
-    def __init__(self, error: str):
-        super().__init__()
-        
-        content = (
-            "❌ **Configuration Reload Failed**\n\n"
-            f"Failed to reload configuration from database.\n\n"
-            f"**Error:** {error}"
-        )
-        
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value
-        )
-        self.add_item(container)
-
 
 
 

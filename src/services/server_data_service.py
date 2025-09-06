@@ -502,21 +502,6 @@ class DataService:
                 return True
             return False
     
-    async def reload_admins_cache(self) -> None:
-        """Reload admins cache from database"""
-        async with self._lock:
-            config_collection = db_manager.config
-            config_doc = await config_collection.find_one({"_id": "bot_config"})
-            
-            if config_doc:
-                self._bot_config = BotConfigDocument.from_dict(config_doc)
-                self._admins_cache = set(self._bot_config.admins)
-                logger.info(LogArea.DATABASE, f"Reloaded {len(self._admins_cache)} admin(s) from database")
-            else:
-                self._bot_config = BotConfigDocument()
-                self._admins_cache = set()
-                logger.warning(LogArea.DATABASE, "No bot config found in database during reload")
-    
     async def reload_timezones_cache(self) -> None:
         """Reload timezones cache from database"""
         async with self._lock:

@@ -49,7 +49,7 @@ class GeneralCommands(commands.Cog):
                     if isinstance(attr, app_commands.Group):
                         group_name = attr.name
                         
-                        if group_name in ['blacklist', 'error', 'force', 'admin', 'recache', 'shard']:
+                        if group_name in ['blacklist', 'error', 'force', 'admin', 'shard']:
                             continue
                         
                         for subcommand in attr.commands:

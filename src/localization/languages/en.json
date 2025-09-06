@@ -354,10 +354,6 @@
         "success": "✅ Removed subscription for channel `{id}`",
         "not_found": "⚠️ Channel `{id}` is not subscribed"
       }
-    },
-    "recache": {
-      "success": "✅ Successfully recached all data",
-      "in_progress": "⏳ Recaching data..."
     }
   },
   
@@ -376,12 +372,6 @@
         "success": "✅ User <@{id}> has been removed from administrators",
         "not_admin": "⚠️ User <@{id}> is not an administrator",
         "cannot_remove_owner": "❌ Cannot remove the bot owner from administrators"
-      }
-    },
-    "recache": {
-      "config": {
-        "success": "✅ Bot configuration has been recached",
-        "error": "❌ Failed to recache configuration: {error}"
       }
     },
     "shard": {

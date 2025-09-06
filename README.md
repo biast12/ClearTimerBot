@@ -301,12 +301,6 @@ Commands for managing bot administrators under `/owner admin`:
 - **`/owner admin add [user_id]`**: Add a new bot administrator
 - **`/owner admin remove [user_id]`**: Remove a bot administrator
 
-#### Configuration Management
-
-Commands for recaching configuration under `/owner recache`:
-
-- **`/owner recache config`**: Recache bot configuration from database
-
 #### Shard Management
 
 Commands for managing bot shards under `/owner shard` (if bot is sharded):

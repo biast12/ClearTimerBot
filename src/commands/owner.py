@@ -31,11 +31,6 @@ class OwnerCommands(
         parent=None
     )
     
-    recache_group = app_commands.Group(
-        name="recache",
-        description="Recache bot configuration",
-        parent=None
-    )
     
     shard_group = app_commands.Group(
         name="shard",
@@ -135,30 +130,6 @@ class OwnerCommands(
         else:
             from src.components.owner import AdminRemoveNotFoundView
             view = AdminRemoveNotFoundView(user_id)
-            await interaction.followup.send(view=view)
-    
-    @recache_group.command(
-        name="config",
-        description="Recache bot configuration from database"
-    )
-    async def recache_config(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
-        
-        if not await self._check_owner_permission(interaction):
-            return
-        
-        try:
-            await self.data_service.reload_admins_cache()
-            admin_count = len(await self.data_service.get_admins())
-            
-            from src.components.owner import ConfigReloadSuccessView
-            view = ConfigReloadSuccessView(admin_count)
-            await interaction.followup.send(view=view)
-            
-        except Exception as e:
-            logger.error(LogArea.COMMANDS, f"Error reloading config: {e}")
-            from src.components.owner import ConfigReloadErrorView
-            view = ConfigReloadErrorView(str(e))
             await interaction.followup.send(view=view)
     
     
