@@ -1,5 +1,5 @@
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Callable, Dict, Any, TYPE_CHECKING
 import discord
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -99,10 +99,6 @@ class SchedulerService:
         
         self._stats.total_tasks_scheduled += 1
 
-        if channel_timer.next_run_time < datetime.now(pytz.UTC):
-            await self._reschedule_missed_clear_job(bot, server_id, channel_id, channel_timer)
-            return
-
         try:
             trigger, _ = self.schedule_parser.parse_schedule_expression(channel_timer.timer, server_id)
         except Exception as e:
@@ -114,12 +110,50 @@ class SchedulerService:
             logger.warning(LogArea.SCHEDULER, f"Channel {channel_id} not found for job {job_id}")
             return
 
+        # Calculate the proper next run time based on the interval
+        now = datetime.now(pytz.UTC)
+        stored_next_run = channel_timer.next_run_time
+        
+        # Check if this is an interval trigger
+        from apscheduler.triggers.interval import IntervalTrigger
+        if isinstance(trigger, IntervalTrigger):
+            # For interval triggers, calculate based on when it should have run
+            if stored_next_run < now:
+                # Calculate how many intervals have passed
+                interval_seconds = trigger.interval.total_seconds()
+                time_passed = (now - stored_next_run).total_seconds()
+                intervals_missed = int(time_passed // interval_seconds)
+                
+                # Calculate the next run time that maintains the original schedule
+                actual_next_run = stored_next_run + timedelta(seconds=interval_seconds * (intervals_missed + 1))
+                
+                # If we missed runs, notify and update
+                if intervals_missed > 0:
+                    logger.info(LogArea.SCHEDULER, f"Job {job_id} missed {intervals_missed} runs while offline")
+                    if self._notify_callback:
+                        await self._notify_callback(channel, job_id)
+                    
+                    # Update the stored next run time
+                    server = await self.data_service.get_server(server_id)
+                    if server and channel_id in server.channels:
+                        server.channels[channel_id].next_run_time = actual_next_run
+                        await self.data_service.save_servers()
+            else:
+                # Timer hasn't expired yet, use the stored time
+                actual_next_run = stored_next_run
+        else:
+            # For cron triggers, use the stored next run time or recalculate if missed
+            if stored_next_run < now:
+                await self._reschedule_missed_clear_job(bot, server_id, channel_id, channel_timer)
+                return
+            actual_next_run = stored_next_run
+
         task = ScheduledTask(
             task_id=job_id,
             name=f"clear_{channel_id}",
             channel_id=channel_id,
             guild_id=server_id,
-            scheduled_time=channel_timer.next_run_time
+            scheduled_time=actual_next_run
         )
         
         self.scheduler.add_job(
@@ -127,7 +161,7 @@ class SchedulerService:
             trigger,
             args=[channel],
             id=job_id,
-            next_run_time=channel_timer.next_run_time,
+            next_run_time=actual_next_run,
             replace_existing=True,
         )
 
