@@ -61,7 +61,17 @@ class CommandValidator:
         
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
-        is_subscribed = self.scheduler_service.channel_has_active_job(server_id, channel_id)
+        
+        # Check both scheduler AND database for subscription status
+        # This prevents race conditions where data is saved but job isn't created yet
+        has_scheduler_job = self.scheduler_service.channel_has_active_job(server_id, channel_id)
+        
+        # Also check database for subscription
+        server = await self.data_service.get_server(server_id)
+        has_database_entry = server and channel_id in server.channels if server else False
+        
+        # Channel is considered subscribed if it exists in either scheduler OR database
+        is_subscribed = has_scheduler_job or has_database_entry
         
         if ValidationCheck.CHANNEL_SUBSCRIBED in checks:
             config = checks[ValidationCheck.CHANNEL_SUBSCRIBED]
