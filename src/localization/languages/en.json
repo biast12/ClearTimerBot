@@ -131,10 +131,10 @@
         "error": "❌ Failed to clear messages in {channel}: {error}"
       },
       "ignore": {
-        "message_added": "✅ Message will be **ignored** during clearing in {channel}",
-        "message_removed": "✅ Message will **no longer be ignored** during clearing in {channel}",
-        "user_added": "✅ User's messages will be **ignored** during clearing in {channel}",
-        "user_removed": "✅ User's messages will **no longer be ignored** during clearing in {channel}"
+        "message_added": "✅ Message from {author} will be **ignored** during clearing in {channel}",
+        "message_removed": "✅ Message from {author} will **no longer be ignored** during clearing in {channel}",
+        "user_added": "✅ {user}'s messages will be **ignored** during clearing in {channel}",
+        "user_removed": "✅ {user}'s messages will **no longer be ignored** during clearing in {channel}"
       },
       "skip": {
         "success": "✅ Next scheduled clear for {channel} has been skipped.\n**New next clear:** {next_clear}",
@@ -144,68 +144,26 @@
   },
   
   "subscription": {
-    "subscribe": {
-      "success": {
-        "title": "Channel Subscribed",
-        "description": "Messages in {channel} will be cleared automatically.",
-        "timer": "Timer",
-        "next_clear": "Next Clear",
-        "time_until": "Time Until",
-        "ignored_users": "Ignored Users",
-        "ignored_messages": "Ignored Messages"
-      }
-    },
-    "unsubscribe": {
-      "success": {
-        "title": "Channel Unsubscribed",
-        "description": "{channel} has been unsubscribed from automatic message clearing."
-      }
-    },
-    "no_subscriptions": {
-      "title": "No Active Subscriptions",
-      "description": "This server doesn't have any active channel subscriptions.",
-      "help": "Use `/subscription add` to subscribe a channel."
-    },
-    "list": {
-      "title": "Active Subscriptions",
-      "channel": "Channel",
-      "timer": "Timer",
+    "timer_view": {
+      "title": "Active Timer for {channel}",
+      "timer_setting": "Timer Setting",
       "next_clear": "Next Clear",
-      "ignored": "Ignored"
+      "time_remaining": "Time Remaining",
+      "auto_update": "This message updates automatically after each clear."
     },
-    "info": {
-      "title": "Subscription Information for {channel}",
-      "status": "Status",
-      "subscribed": "Subscribed",
-      "timer": "Timer",
-      "next_clear": "Next Clear",
-      "time_until": "Time Until",
-      "ignored_users": "Ignored Users",
-      "ignored_messages": "Ignored Messages",
-      "none": "None"
-    },
-    "update": {
-      "success": {
-        "title": "Subscription Updated",
-        "description": "Timer for {channel} has been updated.",
-        "new_timer": "New Timer",
-        "next_clear": "Next Clear",
-        "time_until": "Time Until",
-        "newly_added": "Newly Added to Ignore List",
-        "users": "Users",
-        "messages": "Messages"
+    "ignore": {
+      "user_added": {
+        "title": "User Added to Ignore List"
+      },
+      "user_removed": {
+        "title": "User Removed from Ignore List"
+      },
+      "message_added": {
+        "title": "Message Added to Ignore List"
+      },
+      "message_removed": {
+        "title": "Message Removed from Ignore List"
       }
-    },
-    "invalid_target": {
-      "title": "Invalid Target",
-      "description": "Could not find the specified {type}.",
-      "help_message": "Please provide a valid message ID or link.",
-      "help_user": "Please provide a valid user mention or ID."
-    },
-    "no_data": {
-      "title": "No Subscription Data",
-      "description": "No subscription data found for {channel}.",
-      "help": "This channel may not be subscribed or the data might be corrupted."
     },
     "errors": {
       "user_not_found": {
@@ -217,78 +175,7 @@
         "title": "Message Not Found",
         "description": "Message with ID `{message_id}` not found in {channel}.",
         "help": "Please make sure the message exists in the specified channel."
-      },
-      "job_not_found": {
-        "title": "Scheduled Job Not Found",
-        "description": "Could not find the scheduled job for {channel}.",
-        "reason": "The channel may not be subscribed or the scheduler may need to be refreshed.",
-        "help": "Try using `/subscription info` to check the subscription status"
-      },
-      "schedule_error": {
-        "title": "Schedule Error",
-        "description": "Could not determine the next scheduled time for {channel}.",
-        "reason": "This may be a temporary issue with the scheduler.",
-        "help": "Try again in a few moments or contact support if the issue persists"
       }
-    },
-    "ignore": {
-      "user_added": {
-        "title": "User Added to Ignore List",
-        "description": "User `{entity_id}` will be ignored during clearing in {channel}."
-      },
-      "user_removed": {
-        "title": "User Removed from Ignore List",
-        "description": "User `{entity_id}` will no longer be ignored in {channel}."
-      },
-      "message_added": {
-        "title": "Message Added to Ignore List",
-        "description": "Message `{entity_id}` will be ignored during clearing in {channel}."
-      },
-      "message_removed": {
-        "title": "Message Removed from Ignore List",
-        "description": "Message `{entity_id}` will no longer be ignored in {channel}."
-      },
-      "multiple": {
-        "title": "Ignore List Updated for {channel}",
-        "added_users": "Added Users to Ignore List",
-        "removed_users": "Removed Users from Ignore List",
-        "added_messages": "Added Messages to Ignore List",
-        "removed_messages": "Removed Messages from Ignore List",
-        "messages": "message(s)",
-        "ids": "IDs",
-        "no_changes": "No changes made - All targets were already in their respective states"
-      }
-    },
-    "manual_clear": {
-      "success": {
-        "title": "Messages Cleared",
-        "description": "Manually cleared {count} message{count, plural, =1 {} other {s}} from {channel}."
-      }
-    },
-    "skip": {
-      "success": {
-        "title": "Next Clear Skipped",
-        "description": "Skipped the next scheduled clear for {channel}.",
-        "new_next_clear": "New Next Clear",
-        "time_until": "Time Until"
-      }
-    },
-    "timer_view": {
-      "title": "Active Timer for {channel}",
-      "timer_setting": "Timer Setting",
-      "next_clear": "Next Clear",
-      "time_remaining": "Time Remaining",
-      "auto_update": "This message updates automatically after each clear."
-    },
-    "invalid_timer": {
-      "title": "Invalid Timer Format",
-      "description": "The timer format **{timer}** is not valid.",
-      "help": "Please use formats like:",
-      "examples": [
-        "`24h` for 24 hours",
-        "`1d12h30m` for 1 day, 12 hours, 30 minutes",
-        "`15:30 EST` for daily at 3:30 PM EST"
-      ]
     }
   },
   
@@ -307,88 +194,6 @@
     "missed_clear_notification": "⚠️ **Missed Clear Notification**\n\nA scheduled message clear was missed for this channel.\nThe timer has been rescheduled."
   },
   
-  "admin": {
-    "stats": {
-      "title": "📊 Bot Statistics",
-      "total_servers": "**Total Servers:** {count}",
-      "total_channels": "**Subscribed Channels:** {count}",
-      "blacklisted_servers": "**Blacklisted Servers:** {count}",
-      "total_errors": "**Total Errors:** {count}"
-    },
-    "blacklist": {
-      "added": "✅ Server `{server_id}` has been blacklisted",
-      "removed": "✅ Server `{server_id}` has been removed from blacklist",
-      "already_blacklisted": "⚠️ Server `{server_id}` is already blacklisted",
-      "not_blacklisted": "⚠️ Server `{server_id}` is not blacklisted",
-      "info": "**Server ID:** `{server_id}`\n**Server Name:** {name}\n**Blacklisted:** {date}\n**Reason:** {reason}\n**By:** {by}"
-    },
-    "error": {
-      "check": {
-        "title": "Error Details",
-        "error_id": "**Error ID:** `{id}`",
-        "timestamp": "**Timestamp:** {time}",
-        "level": "**Level:** {level}",
-        "area": "**Area:** {area}",
-        "message": "**Message:** {message}",
-        "not_found": "❌ Error `{id}` not found"
-      },
-      "list": {
-        "title": "Recent Errors",
-        "no_errors": "✅ No errors found",
-        "showing": "Showing {count} most recent errors"
-      },
-      "delete": {
-        "success": "✅ Error `{id}` has been deleted",
-        "not_found": "❌ Error `{id}` not found"
-      },
-      "clear": {
-        "success": "✅ All errors have been cleared",
-        "confirm": "Are you sure you want to clear all errors?"
-      }
-    },
-    "force": {
-      "remove_server": {
-        "success": "✅ Removed all subscriptions for server `{id}`",
-        "not_found": "⚠️ No subscriptions found for server `{id}`"
-      },
-      "remove_channel": {
-        "success": "✅ Removed subscription for channel `{id}`",
-        "not_found": "⚠️ Channel `{id}` is not subscribed"
-      }
-    }
-  },
-  
-  "owner": {
-    "admin": {
-      "list": {
-        "title": "Bot Administrators",
-        "no_admins": "No administrators configured",
-        "admin_item": "• <@{id}> (`{id}`)"
-      },
-      "add": {
-        "success": "✅ User <@{id}> has been added as an administrator",
-        "already_admin": "⚠️ User <@{id}> is already an administrator"
-      },
-      "remove": {
-        "success": "✅ User <@{id}> has been removed from administrators",
-        "not_admin": "⚠️ User <@{id}> is not an administrator",
-        "cannot_remove_owner": "❌ Cannot remove the bot owner from administrators"
-      }
-    },
-    "shard": {
-      "status": {
-        "title": "Shard Status",
-        "shard_info": "**Shard {id}/{total}**\n• Guilds: {guilds}\n• Latency: {latency}ms\n• Status: {status}",
-        "total_guilds": "**Total Guilds:** {count}",
-        "average_latency": "**Average Latency:** {latency}ms"
-      },
-      "reload": {
-        "all_success": "✅ All shards are being reloaded",
-        "single_success": "✅ Shard {id} is being reloaded",
-        "invalid_id": "❌ Invalid shard ID: {id}"
-      }
-    }
-  },
   "validation": {
     "error_titles": {
       "blacklisted": "Server Blacklisted",

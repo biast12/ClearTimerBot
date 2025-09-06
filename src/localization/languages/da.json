@@ -2,6 +2,7 @@
   "language_name": "Danish",
   "language_native_name": "Dansk",
   "language_code": "da",
+  
   "common": {
     "yes": "Ja",
     "no": "Nej",
@@ -18,6 +19,7 @@
     "user": "Bruger",
     "message": "Besked"
   },
+  
   "commands": {
     "help": {
       "title": "Hjælp",
@@ -34,6 +36,7 @@
       "links": "🔗 Links",
       "select_command": "Vælg en kommando for at lære mere..."
     },
+    
     "ping": {
       "title": "🏓 Pong!",
       "websocket_latency": "**WebSocket Latenstid:** {latency}ms",
@@ -44,6 +47,7 @@
       "status_fair": "🟠 Rimelig",
       "status_poor": "🔴 Dårlig"
     },
+    
     "timezone": {
       "change": {
         "success": "✅ Serverens tidszone er blevet sat til **{timezone}**",
@@ -73,6 +77,7 @@
         "list_hint": "Brug `/timezone list` for at se tilgængelige tidszoner."
       }
     },
+    
     "language": {
       "list": {
         "title": "🌐 Tilgængelige Sprog",
@@ -87,6 +92,7 @@
         "available": "Tilgængelige sprog: {languages}"
       }
     },
+    
     "subscription": {
       "add": {
         "success": "✅ Tilmeldte {channel} til automatisk beskedrydning hver **{timer}**",
@@ -115,134 +121,62 @@
       },
       "update": {
         "success": "✅ Opdaterede timeren for {channel} til **{timer}**",
-        "success_with_ignored": "✅ Opdaterede timeren for {channel} til **{timer}**\n\n**Ignorerede mål tilføjet:** {count}",
-        "no_change": "ℹ️ Timeren for {channel} er allerede sat til **{timer}**"
+        "success_with_ignored": "✅ Opdaterede timeren for {channel} til **{timer}**\n\n**Ignorerede mål tilføjet:** {count}"
       },
       "clear": {
-        "success": "✅ Ryddede **{count}** beskeder i {channel}",
-        "in_progress": "⏳ Rydder beskeder i {channel}...",
+        "success": "✅ Manuel rydning udløst for {channel}",
+        "in_progress": "⏳ En rydning er allerede i gang for {channel}. Vent venligst på at den bliver færdig.",
         "messages_cleared": "Beskeder Ryddet",
-        "no_messages": "ℹ️ Ingen beskeder at rydde i {channel}"
-      },
-      "skip": {
-        "success": "✅ Springer næste planlagte rydning over for {channel}\n\n**Næste rydning:** {next_clear}"
+        "no_messages": "📭 Ingen beskeder at rydde i {channel}",
+        "error": "❌ Kunne ikke rydde beskeder i {channel}: {error}"
       },
       "ignore": {
-        "message_added": "✅ Tilføjede besked til ignorerlisten for {channel}",
-        "message_removed": "✅ Fjernede besked fra ignorerlisten for {channel}",
-        "message_not_found": "❌ Besked ikke fundet",
-        "user_added": "✅ Tilføjede {user} til ignorerlisten for {channel}",
-        "user_removed": "✅ Fjernede {user} fra ignorerlisten for {channel}",
-        "invalid_target": "❌ Ugyldigt mål. Angiv venligst et gyldigt besked-ID/link eller brugeromtale/ID."
+        "message_added": "✅ Besked fra {author} vil blive **ignoreret** under rydning i {channel}",
+        "message_removed": "✅ Besked fra {author} vil **ikke længere blive ignoreret** under rydning i {channel}",
+        "user_added": "✅ {user}s beskeder vil blive **ignoreret** under rydning i {channel}",
+        "user_removed": "✅ {user}s beskeder vil **ikke længere blive ignoreret** under rydning i {channel}"
       },
-      "errors": {
-        "channel_required": "❌ Angiv venligst en kanal for denne kommando",
-        "invalid_channel": "❌ Ugyldig kanal: {channel}",
-        "missing_permissions": "❌ Jeg mangler tilladelser i {channel}",
-        "already_clearing": "⏳ En rydning er allerede i gang for {channel}. Vent venligst på at den bliver færdig."
+      "skip": {
+        "success": "✅ Næste planlagte rydning for {channel} er blevet sprunget over.\n**Ny næste rydning:** {next_clear}",
+        "no_scheduled": "❌ Ingen planlagt rydning fundet for {channel}"
       }
     }
   },
   
   "subscription": {
-    "list": {
-      "title": "📋 Aktive Abonnementer",
-      "header": "Her er alle aktive abonnementer for denne server:",
-      "no_subscriptions": "Der er ingen aktive abonnementer i denne server.",
-      "channel_info": "**#{channel}**\nTimer: {timer}\nNæste rydning: {next_clear}",
-      "ignored_count": "Ignorerede: {count}",
-      "total_subscriptions": "Total abonnementer: {count}"
-    },
-    "info": {
-      "title": "ℹ️ Abonnementsinformation",
-      "status": "**Status:** {status}",
-      "subscribed": "✅ Tilmeldt",
-      "channel": "**Kanal:** {channel}",
-      "timer": "**Timer:** {timer}",
-      "next_clear": "**Næste Rydning:** {time}",
-      "no_next_clear": "Ikke planlagt",
-      "ignored_section": "**Ignorerede Mål**",
-      "ignored_messages": "Beskeder: {count}",
-      "ignored_users": "Brugere: {count}",
-      "no_ignored": "Ingen ignorerede mål",
-      "footer": "Brug `/subscription` kommandoer til at administrere dette abonnement"
-    },
-    "add": {
-      "success_title": "✅ Abonnement Tilføjet",
-      "success_description": "{channel} vil nu få beskeder ryddet automatisk",
-      "timer_label": "Timer",
-      "next_clear_label": "Næste Rydning",
-      "ignored_added": "Ignorerede mål tilføjet",
-      "tip": "💡 Tip: Brug `/subscription info` for at se detaljerede oplysninger"
-    },
-    "remove": {
-      "confirm_title": "⚠️ Bekræft Fjernelse",
-      "confirm_description": "Er du sikker på at du vil afmelde {channel} fra automatisk beskedrydning?",
-      "confirm_info": "Dette vil stoppe alle planlagte rydninger for denne kanal.",
-      "button_confirm": "Ja, fjern",
-      "button_cancel": "Annuller",
-      "cancelled": "Fjernelse annulleret",
-      "success": "✅ Abonnement fjernet for {channel}",
-      "expired": "Denne interaktion er udløbet. Brug venligst kommandoen igen."
-    },
-    "update": {
-      "success_title": "✅ Abonnement Opdateret",
-      "success_description": "Timer for {channel} er blevet opdateret",
-      "old_timer": "Gammel Timer",
-      "new_timer": "Ny Timer",
+    "timer_view": {
+      "title": "Aktiv Timer for {channel}",
+      "timer_setting": "Timer Indstilling",
       "next_clear": "Næste Rydning",
-      "ignored_added": "Ignorerede mål tilføjet"
-    },
-    "clear": {
-      "progress_title": "⏳ Rydder Beskeder",
-      "progress_description": "Rydder beskeder i {channel}...",
-      "scanning": "Scanner beskeder...",
-      "clearing": "Rydder {count} beskeder...",
-      "success_title": "✅ Beskeder Ryddet",
-      "success_description": "Ryddede {count} beskeder i {channel}",
-      "partial_success": "Ryddede {cleared} af {total} beskeder",
-      "skipped_info": "Sprang over {count} beskeder (ignoreret eller fejl)",
-      "no_messages": "Ingen beskeder at rydde",
-      "error_title": "❌ Rydning Fejlede",
-      "error_description": "Kunne ikke rydde beskeder i {channel}"
-    },
-    "skip": {
-      "success_title": "⏩ Næste Rydning Sprunget Over",
-      "success_description": "Den næste planlagte rydning for {channel} vil blive sprunget over",
-      "next_clear": "Følgende rydning",
-      "info": "Timeren vil fortsætte normalt efter denne springning"
+      "time_remaining": "Tid Tilbage",
+      "auto_update": "Denne besked opdateres automatisk efter hver rydning."
     },
     "ignore": {
-      "message_added_title": "✅ Besked Ignoreret",
-      "message_added_description": "Besked vil ikke blive slettet under rydninger",
-      "message_removed_title": "✅ Besked Ikke Længere Ignoreret",
-      "message_removed_description": "Besked vil nu blive slettet under rydninger",
-      "user_added_title": "✅ Bruger Ignoreret",
-      "user_added_description": "{user} beskeder vil ikke blive slettet under rydninger",
-      "user_removed_title": "✅ Bruger Ikke Længere Ignoreret",
-      "user_removed_description": "{user} beskeder vil nu blive slettet under rydninger",
-      "list_title": "📋 Ignorerede Mål",
-      "messages_section": "**Ignorerede Beskeder** ({count})",
-      "users_section": "**Ignorerede Brugere** ({count})",
-      "no_ignored": "Ingen ignorerede mål for denne kanal"
-    },
-    "status": {
-      "active": "✅ Aktiv",
-      "inactive": "❌ Inaktiv",
-      "in_progress": "⏳ I Gang",
-      "scheduled": "📅 Planlagt",
-      "skipped": "⏩ Sprunget Over"
+      "user_added": {
+        "title": "Bruger Tilføjet til Ignoreringsliste"
+      },
+      "user_removed": {
+        "title": "Bruger Fjernet fra Ignoreringsliste"
+      },
+      "message_added": {
+        "title": "Besked Tilføjet til Ignoreringsliste"
+      },
+      "message_removed": {
+        "title": "Besked Fjernet fra Ignoreringsliste"
+      }
     },
     "errors": {
-      "invalid_timer": "❌ Ugyldigt timerformat. Brug formater som `24h`, `1d12h30m`, eller `15:30 EST`",
-      "already_subscribed": "❌ {channel} er allerede tilmeldt",
-      "missing_permissions": "❌ Jeg mangler tilladelser til at administrere beskeder i {channel}",
-      "clear_in_progress": "⏳ En rydning er allerede i gang for {channel}",
-      "invalid_target": "❌ Ugyldigt mål. Angiv et besked-ID/link eller brugeromtale/ID",
-      "message_not_found": "❌ Besked ikke fundet",
-      "user_not_found": "❌ Bruger ikke fundet"
-    },
-    "view_footer": "ClearTimer Bot • Automatisk Beskedrydning"
+      "user_not_found": {
+        "title": "Bruger Ikke Fundet",
+        "description": "Bruger med ID `{user_id}` ikke fundet på denne server.",
+        "help": "Sørg venligst for at brugeren er medlem af denne server."
+      },
+      "message_not_found": {
+        "title": "Besked Ikke Fundet",
+        "description": "Besked med ID `{message_id}` ikke fundet i {channel}.",
+        "help": "Sørg venligst for at beskeden eksisterer i den angivne kanal."
+      }
+    }
   },
   
   "errors": {
@@ -259,93 +193,7 @@
     "next_time_not_found": "❌ Kunne ikke bestemme næste planlagte tid for {channel}",
     "missed_clear_notification": "⚠️ **Meddelelse om Oversprunget Rydning**\n\nEn planlagt beskedrydning blev oversprunget for denne kanal.\nTimeren er blevet genplanlagt."
   },
-  "admin": {
-    "stats": {
-      "title": "📊 Bot Statistik",
-      "total_servers": "**Total Servere:** {count}",
-      "total_channels": "**Tilmeldte Kanaler:** {count}",
-      "blacklisted_servers": "**Sortlistede Servere:** {count}",
-      "total_errors": "**Total Fejl:** {count}"
-    },
-    "blacklist": {
-      "added": "✅ Server `{server_id}` er blevet sortlistet",
-      "removed": "✅ Server `{server_id}` er blevet fjernet fra sortlisten",
-      "already_blacklisted": "⚠️ Server `{server_id}` er allerede sortlistet",
-      "not_blacklisted": "⚠️ Server `{server_id}` er ikke sortlistet",
-      "info": "**Server ID:** `{server_id}`\n**Server Navn:** {name}\n**Sortlistet:** {date}\n**Grund:** {reason}\n**Af:** {by}"
-    },
-    "error": {
-      "check": {
-        "title": "Fejldetaljer",
-        "error_id": "**Fejl ID:** `{id}`",
-        "timestamp": "**Tidsstempel:** {time}",
-        "level": "**Niveau:** {level}",
-        "area": "**Område:** {area}",
-        "message": "**Besked:** {message}",
-        "not_found": "❌ Fejl `{id}` ikke fundet"
-      },
-      "list": {
-        "title": "Seneste Fejl",
-        "no_errors": "✅ Ingen fejl fundet",
-        "showing": "Viser {count} seneste fejl"
-      },
-      "delete": {
-        "success": "✅ Fejl `{id}` er blevet slettet",
-        "not_found": "❌ Fejl `{id}` ikke fundet"
-      },
-      "clear": {
-        "success": "✅ Alle fejl er blevet ryddet",
-        "confirm": "Er du sikker på at du vil rydde alle fejl?"
-      }
-    }
-  },
-  "owner": {
-    "server": {
-      "list": {
-        "title": "📊 Server Liste",
-        "showing": "Viser {count} servere",
-        "server_info": "**{name}**\nID: `{id}`\nMedlemmer: {members}\nTilmeldte: {subscriptions}"
-      },
-      "info": {
-        "title": "Server Information",
-        "id": "**ID:** `{id}`",
-        "name": "**Navn:** {name}",
-        "members": "**Medlemmer:** {count}",
-        "subscriptions": "**Abonnementer:** {count}",
-        "blacklisted": "**Sortlistet:** {status}",
-        "created": "**Oprettet:** {date}",
-        "joined": "**Tilsluttet:** {date}"
-      },
-      "leave": {
-        "confirm": "Er du sikker på at du vil forlade server `{server_id}`?",
-        "success": "✅ Forlod server `{server_id}`",
-        "not_found": "❌ Server `{server_id}` ikke fundet"
-      }
-    },
-    "reload": {
-      "data": {
-        "success": "✅ Data genindlæst succesfuldt",
-        "error": "❌ Fejl ved genindlæsning af data: {error}"
-      }
-    },
-    "shutdown": {
-      "confirm": "⚠️ Er du sikker på at du vil lukke botten ned?",
-      "initiated": "🔴 Nedlukning påbegyndt...",
-      "cancelled": "Nedlukning annulleret"
-    },
-    "shard": {
-      "status": {
-        "title": "Shard Status",
-        "shard_info": "**Shard {id}:** {status}\nServere: {guilds}\nLatenstid: {latency}ms",
-        "total": "**Total Shards:** {count}"
-      },
-      "restart": {
-        "confirm": "Er du sikker på at du vil genstarte shard {id}?",
-        "success": "✅ Shard {id} genstartet",
-        "invalid_id": "❌ Ugyldig shard ID: {id}"
-      }
-    }
-  },
+  
   "validation": {
     "error_titles": {
       "blacklisted": "Server Blokeret",
@@ -371,6 +219,7 @@
     "already_subscribed": "❌ {channel} er allerede tilmeldt med en {timer} timer.\nBrug `/subscription update` for at ændre timeren.",
     "invalid_channel": "❌ Angiv venligst en gyldig tekstkanal."
   },
+  
   "components": {
     "powered_by": "**Drevet af {bot_name}**",
     "buttons": {
