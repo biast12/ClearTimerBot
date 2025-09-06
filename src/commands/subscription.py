@@ -800,17 +800,37 @@ class SubscriptionCommands(commands.Cog):
         next_run_time = job.next_run_time
         if next_run_time:
             # Reschedule to skip one occurrence
-            job.modify(next_run_time=job.trigger.get_next_fire_time(next_run_time, next_run_time))
+            new_next_run_time = job.trigger.get_next_fire_time(next_run_time, next_run_time)
+            self.scheduler_service.scheduler.modify_job(job.id, next_run_time=new_next_run_time)
             
             # Update in data service
             server = await self.data_service.get_server(server_id)
             if server and channel_id in server.channels:
-                server.channels[channel_id].next_run_time = job.next_run_time
+                server.channels[channel_id].next_run_time = new_next_run_time
+                
+                # Update view message if it exists
+                view_message_id = server.channels[channel_id].view_message_id
+                if view_message_id:
+                    try:
+                        # Try to fetch and update the view message
+                        view_message = await channel.fetch_message(int(view_message_id))
+                        from src.components.subscription import TimerViewMessage
+                        timer_view = TimerViewMessage(
+                            channel, 
+                            server.channels[channel_id].timer, 
+                            new_next_run_time, 
+                            translator
+                        )
+                        await view_message.edit(view=timer_view)
+                    except:
+                        # If message doesn't exist, clear the ID
+                        server.channels[channel_id].view_message_id = None
+                
                 await self.data_service.save_servers()
             
             # Send success message with new time
             from src.components.subscription import SkipSuccessView
-            view = SkipSuccessView(channel, job.next_run_time, translator)
+            view = SkipSuccessView(channel, new_next_run_time, translator)
             await interaction.response.send_message(view=view)
         else:
             from src.components.subscription import NextTimeNotFoundView
