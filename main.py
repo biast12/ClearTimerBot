@@ -7,7 +7,7 @@ import asyncio
 import sys
 import os
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, List
 import argparse
 
 sys.path.insert(0, str(Path(__file__).parent))

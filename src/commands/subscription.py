@@ -13,6 +13,7 @@ from src.utils.ignore_target_parser import (
 )
 from src.utils.command_validation import CommandValidator, ValidationCheck
 from src.localization import get_translator
+from src.utils.logger import logger, LogArea
 
 
 class SubscriptionCommands(commands.Cog):
@@ -268,14 +269,14 @@ class SubscriptionCommands(commands.Cog):
                 view=success_view
             )
         except Exception as e:
-            print(f"Error editing response: {e}")
+            logger.error(LogArea.SUBSCRIPTION, f"Error editing response: {e}")
             # Try followup as fallback
             try:
                 await interaction.followup.send(
                     view=success_view
                 )
             except Exception as e2:
-                print(f"Error with followup: {e2}")
+                logger.error(LogArea.SUBSCRIPTION, f"Error with followup: {e2}")
                 # Last resort - send without view
                 await interaction.followup.send(
                     content=f"✅ Subscription {'created with persistent timer view' if view_message else 'created successfully'}."
@@ -599,14 +600,14 @@ class SubscriptionCommands(commands.Cog):
                 view=success_view
             )
         except Exception as e:
-            print(f"Error editing response: {e}")
+            logger.error(LogArea.SUBSCRIPTION, f"Error editing response: {e}")
             # Try followup as fallback
             try:
                 await interaction.followup.send(
                     view=success_view
                 )
             except Exception as e2:
-                print(f"Error with followup: {e2}")
+                logger.error(LogArea.SUBSCRIPTION, f"Error with followup: {e2}")
                 # Last resort - send without view
                 await interaction.followup.send(
                     content=f"✅ Subscription {'updated with persistent timer view' if view_message else 'updated successfully'}."
