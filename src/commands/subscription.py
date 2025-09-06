@@ -740,15 +740,45 @@ class SubscriptionCommands(commands.Cog):
         server = await self.data_service.get_server(server_id)
         ignored_messages = []
         ignored_users = []
+        view_message_id = None
         if server and channel_id in server.channels:
             channel_timer = server.channels[channel_id]
             ignored_messages = list(channel_timer.ignored.messages)
             ignored_users = list(channel_timer.ignored.users)
+            view_message_id = channel_timer.view_message_id
+            
+        # Add view message to ignored list if it exists
+        if view_message_id:
+            ignored_messages.append(view_message_id)
 
         # Trigger the clear using MessageService directly
         from src.services.message_clearing_service import MessageService
         message_service = MessageService(self.bot.data_service, self.bot.scheduler_service)
         deleted_count = await message_service._perform_message_deletion(channel, set(ignored_messages), set(ignored_users))
+
+        # Update view message if it exists
+        if view_message_id:
+            next_run_time = self.scheduler_service.get_channel_next_clear_time(server_id, channel_id)
+            if next_run_time and server and channel_id in server.channels:
+                try:
+                    view_message = await channel.fetch_message(int(view_message_id))
+                    from src.components.subscription import TimerViewMessage
+                    timer_view = TimerViewMessage(
+                        channel, 
+                        server.channels[channel_id].timer, 
+                        next_run_time, 
+                        translator
+                    )
+                    await view_message.edit(view=timer_view)
+                    # Update the next run time in data service
+                    server.channels[channel_id].next_run_time = next_run_time
+                    await self.data_service.save_servers()
+                except discord.NotFound:
+                    # View message was deleted, clear the ID
+                    server.channels[channel_id].view_message_id = None
+                    await self.data_service.save_servers()
+                except Exception:
+                    pass  # Silently ignore other errors
 
         # Send result
         from src.components.subscription import ManualClearSuccessView
