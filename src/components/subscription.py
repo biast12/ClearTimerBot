@@ -30,7 +30,7 @@ class SubscriptionSuccessView(discord.ui.LayoutView):
                 lines.append("")
                 lines.append(translator.get("commands.subscription.info.ignored_messages", count=f"`{ignored_entity_id}`"))
         
-        content = add_footer("\n".join(lines, translator))
+        content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -45,7 +45,7 @@ class InvalidTimerView(discord.ui.LayoutView):
     def __init__(self, error_message: str, translator):
         super().__init__()
         
-        content = add_footer(translator.get("errors.invalid_timer", timer=error_message, translator))
+        content = add_footer(translator.get("errors.invalid_timer", timer=error_message), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -60,7 +60,7 @@ class UnsubscribeSuccessView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel, translator):
         super().__init__()
         
-        content = add_footer(translator.get("commands.subscription.remove.success", channel=channel.mention, translator))
+        content = add_footer(translator.get("commands.subscription.remove.success", channel=channel.mention), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -81,7 +81,7 @@ class NoActiveSubscriptionsView(discord.ui.LayoutView):
             translator.get("commands.subscription.list.no_subscriptions")
         ]
         
-        content = add_footer("\n".join(lines, translator))
+        content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -136,7 +136,7 @@ class SubscriptionListView(discord.ui.LayoutView):
             lines.append("")
             lines.append(translator.get("commands.subscription.list.tip"))
         
-        content = add_footer("\n".join(lines, translator))
+        content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -151,7 +151,7 @@ class ChannelNotSubscribedView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel, translator):
         super().__init__()
         
-        content = add_footer(translator.get("commands.subscription.info.not_subscribed", translator).replace("{channel}", channel.mention))
+        content = add_footer(translator.get("commands.subscription.info.not_subscribed").replace("{channel}", channel.mention), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -193,7 +193,7 @@ class SubscriptionInfoView(discord.ui.LayoutView):
         lines.append("")
         lines.append(translator.get("commands.subscription.info.commands_hint"))
         
-        content = add_footer("\n".join(lines, translator))
+        content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -223,7 +223,7 @@ class UpdateSuccessView(discord.ui.LayoutView):
             else:
                 lines.append(translator.get("commands.subscription.info.ignored_messages", count=f"`{ignored_entity_id}`"))
         
-        content = add_footer("\n".join(lines, translator))
+        content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -238,7 +238,7 @@ class InvalidTargetView(discord.ui.LayoutView):
     def __init__(self, translator):
         super().__init__()
         
-        content = add_footer(translator.get("errors.invalid_target", translator))
+        content = add_footer(translator.get("errors.invalid_target"), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -253,7 +253,7 @@ class NoSubscriptionDataView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel, translator):
         super().__init__()
         
-        content = add_footer(translator.get("components.no_data", channel=channel.mention, translator))
+        content = add_footer(translator.get("components.no_data", channel=channel.mention), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -269,7 +269,7 @@ class UserNotFoundView(discord.ui.LayoutView):
         super().__init__()
         
         content = add_footer(
-            f"❌ **{translator.get('subscription.errors.user_not_found.title', translator)}**\n\n"
+            f"❌ **{translator.get('subscription.errors.user_not_found.title')}**\n\n"
             f"{translator.get('subscription.errors.user_not_found.description', user_id=user_id)}\n\n"
             f"{translator.get('subscription.errors.user_not_found.help')}"
         )
@@ -288,7 +288,7 @@ class MessageNotFoundView(discord.ui.LayoutView):
         super().__init__()
         
         content = add_footer(
-            f"❌ **{translator.get('subscription.errors.message_not_found.title', translator)}**\n\n"
+            f"❌ **{translator.get('subscription.errors.message_not_found.title')}**\n\n"
             f"{translator.get('subscription.errors.message_not_found.description', message_id=message_id, channel=channel.mention)}\n\n"
             f"{translator.get('subscription.errors.message_not_found.help')}"
         )
@@ -310,12 +310,12 @@ class IgnoreEntityView(discord.ui.LayoutView):
         
         if added:
             content = add_footer(
-                f"✅ **{translator.get(f'subscription.ignore.{entity_name}_added.title', translator)}**\n\n"
+                f"✅ **{translator.get(f'subscription.ignore.{entity_name}_added.title')}**\n\n"
                 f"{translator.get(f'subscription.ignore.{entity_name}_added.description', entity_id=entity_id, channel=channel.mention)}"
             )
         else:
             content = add_footer(
-                f"✅ **{translator.get(f'subscription.ignore.{entity_name}_removed.title', translator)}**\n\n"
+                f"✅ **{translator.get(f'subscription.ignore.{entity_name}_removed.title')}**\n\n"
                 f"{translator.get(f'subscription.ignore.{entity_name}_removed.description', entity_id=entity_id, channel=channel.mention)}"
             )
         
@@ -362,7 +362,7 @@ class JobNotFoundView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel, translator):
         super().__init__()
         
-        content = add_footer(translator.get("errors.job_not_found", channel=channel.mention, translator))
+        content = add_footer(translator.get("errors.job_not_found", channel=channel.mention), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -397,7 +397,7 @@ class NextTimeNotFoundView(discord.ui.LayoutView):
     def __init__(self, channel: discord.TextChannel, translator):
         super().__init__()
         
-        content = add_footer(translator.get("errors.next_time_not_found", channel=channel.mention, translator))
+        content = add_footer(translator.get("errors.next_time_not_found", channel=channel.mention), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -438,7 +438,7 @@ class MultipleIgnoreEntityView(discord.ui.LayoutView):
                                           author=translator.get("common.unknown"), 
                                           channel=channel.mention))
         
-        content = add_footer("\n".join(lines, translator))
+        content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -466,7 +466,7 @@ class SubscriptionSuccessWithMultipleIgnoresView(discord.ui.LayoutView):
         lines.append(translator.get("commands.subscription.info.next_clear", 
                                    time=f"<t:{timestamp}:f> (<t:{timestamp}:R>)"))
         
-        content = add_footer("\n".join(lines, translator))
+        content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -493,7 +493,7 @@ class UpdateSuccessWithMultipleIgnoresView(discord.ui.LayoutView):
         lines.append(translator.get("commands.subscription.info.next_clear", 
                                    time=f"<t:{timestamp}:f> (<t:{timestamp}:R>)"))
         
-        content = add_footer("\n".join(lines, translator))
+        content = add_footer("\n".join(lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),

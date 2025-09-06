@@ -68,7 +68,7 @@ class HelpView(discord.ui.LayoutView):
             f"[GitHub]({config.github_url})"
         )
         
-        content = add_footer("\n".join(sections, translator))
+        content = add_footer("\n".join(sections), self.translator)
 
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -102,7 +102,7 @@ class PingView(discord.ui.LayoutView):
             translator.get("commands.ping.status", status=translator.get(status_key))
         ]
         
-        content = add_footer("\n".join(lines, translator))
+        content = add_footer("\n".join(lines), translator)
 
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -117,7 +117,7 @@ class BlacklistedServerView(discord.ui.LayoutView):
     def __init__(self, translator):
         super().__init__()
         
-        content = add_footer(translator.get("common.blacklisted_server", translator))
+        content = add_footer(translator.get("common.blacklisted_server"), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -151,7 +151,7 @@ class LanguageListView(discord.ui.LayoutView):
         language_lines.append("")
         language_lines.append(translator.get("commands.language.list.change_hint"))
         
-        content = add_footer("\n".join(language_lines, translator))
+        content = add_footer("\n".join(language_lines), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),

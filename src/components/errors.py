@@ -10,7 +10,7 @@ from src.utils.footer import add_footer
 class ErrorView(discord.ui.LayoutView):
     """View for error messages"""
     
-    def __init__(self, title: str, description: str, error_id: Optional[str] = None):
+    def __init__(self, title: str, description: str, error_id: Optional[str] = None, translator=None):
         super().__init__()
         
         content = f"{title}\n\n{description}"
@@ -33,7 +33,7 @@ class MissedClearView(discord.ui.LayoutView):
     def __init__(self, translator):
         super().__init__()
         
-        content = add_footer(translator.get("errors.missed_clear_notification", translator))
+        content = add_footer(translator.get("errors.missed_clear_notification"), translator)
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
