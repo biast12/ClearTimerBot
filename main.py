@@ -100,7 +100,7 @@ class ShardManager:
         return process
     
     async def monitor_shard(self, shard_id: int, shard_count: int) -> None:
-            while shard_id in self.processes:
+        while shard_id in self.processes:
             process = self.processes.get(shard_id)
             if process:
                 return_code = await process.wait()
