@@ -1,150 +1,317 @@
 {
-  "language_name": "English",
-  "language_native_name": "English",
-  "language_code": "en",
-  
-  "common": {
-    "yes": "Yes",
-    "no": "No",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "error": "Error",
-    "success": "Success",
-    "warning": "Warning",
-    "info": "Info",
-    "none": "None",
-    "unknown": "Unknown",
-    "channel": "Channel",
-    "server": "Server",
-    "user": "User",
-    "message": "Message"
-  },
-  
   "commands": {
+    "admin": {
+      "blacklist": {
+        "add": {
+          "already_description": "Server `{server_id}` is already blacklisted.",
+          "already_title": "Already Blacklisted",
+          "description": "Add a server to the blacklist",
+          "success_description": "Added server **{server_name}** (`{server_id}`) to blacklist.",
+          "success_note_1": "• All subscriptions have been removed",
+          "success_note_2": "• The server cannot use bot commands",
+          "success_reason": "Reason: {reason}",
+          "success_title": "Server Blacklisted"
+        },
+        "check": {
+          "blacklisted_by": "Blacklisted By",
+          "blacklisted_date": "Blacklisted",
+          "blacklisted_note": "This server cannot use bot commands.",
+          "blacklisted_reason": "Reason",
+          "blacklisted_server_id": "Server ID",
+          "blacklisted_server_name": "Server Name",
+          "blacklisted_title": "Server is Blacklisted",
+          "description": "Check if a server is blacklisted",
+          "not_blacklisted_description": "Server `{server_id}` is not on the blacklist.",
+          "not_blacklisted_note": "This server can use bot commands normally.",
+          "not_blacklisted_title": "Server is NOT Blacklisted",
+          "unknown_date": "Unknown"
+        },
+        "description": "Manage server blacklist",
+        "no_reason_provided": "No reason provided",
+        "remove": {
+          "description": "Remove a server from the blacklist",
+          "not_found_description": "Server `{server_id}` is not blacklisted.",
+          "not_found_title": "Not Blacklisted",
+          "success_description": "Removed server `{server_id}` from blacklist.",
+          "success_note": "The server can now use bot commands again.",
+          "success_title": "Server Unblacklisted"
+        }
+      },
+      "description": "Admin-only management commands",
+      "error": {
+        "check": {
+          "area": "Area",
+          "channel": "Channel",
+          "command": "Command",
+          "description": "Check an error by its ID",
+          "details_title": "Error Details: {error_id}",
+          "level": "Level",
+          "message": "Message",
+          "no_message": "No message",
+          "not_found_description": "No error found with ID: `{error_id}`",
+          "not_found_title": "Error Not Found",
+          "server": "Server",
+          "time": "Time",
+          "traceback": "Traceback",
+          "unknown": "Unknown",
+          "user": "User"
+        },
+        "clear": {
+          "description": "Clear all errors from the database"
+        },
+        "clear_failed_description": "Failed to clear errors from database.",
+        "clear_failed_error_id": "Error ID: `{error_id}`",
+        "clear_failed_note": "Please check the logs for more details",
+        "clear_failed_title": "Clear Failed",
+        "clear_success_description": "Cleared {count} error{s} from the database.",
+        "clear_success_note": "The error log is now empty",
+        "clear_success_title": "Errors Cleared",
+        "delete": {
+          "description": "Delete an error by its ID"
+        },
+        "delete_failed_description": "Could not delete error `{error_id}`.",
+        "delete_failed_note": "It may not exist or has already been deleted.",
+        "delete_failed_title": "Delete Failed",
+        "delete_success_description": "Error `{error_id}` has been deleted from the database.",
+        "delete_success_title": "Error Deleted",
+        "description": "Manage error logs",
+        "details_area": "Area: {area}",
+        "details_channel": "Channel: {name} ({id})",
+        "details_command": "Command: {command}",
+        "details_level": "Level: {level}",
+        "details_message": "Message: {message}",
+        "details_server": "Server: {name} ({id})",
+        "details_time": "Time: <t:{timestamp}:F>",
+        "details_title": "Error Details: {error_id}",
+        "details_traceback": "Traceback:",
+        "details_user": "User: <@{user_id}> ({user_id})",
+        "list": {
+          "description": "List recent errors"
+        },
+        "list_hint": "Use `/admin error check <id>` to see full details",
+        "list_item_area": "Area: {area}",
+        "list_item_id": "ID: `{error_id}` | {level}",
+        "list_item_message": "Message: {message}",
+        "list_item_time": "Time: {timestamp}",
+        "list_more": "... and {count} more errors",
+        "list_title": "Recent Errors",
+        "no_errors_description": "No errors found in the database.",
+        "no_errors_title": "No Errors Found",
+        "not_found_description": "No error found with ID: `{error_id}`",
+        "not_found_title": "Error Not Found"
+      },
+      "force": {
+        "channel_success_description": "Removed channel `{channel_id}` from server `{server_id}`.",
+        "channel_success_note": "The channel can be subscribed again using `/subscription add`",
+        "channel_success_title": "Channel Unsubscribed",
+        "description": "Force management actions",
+        "not_found_description": "No server or channel found with ID: `{target_id}`",
+        "not_found_note": "Please check the ID and try again",
+        "not_found_title": "Not Found",
+        "remove_channel": {
+          "description": "Force remove a specific channel subscription"
+        },
+        "remove_server": {
+          "description": "Force remove all subscriptions for a server"
+        },
+        "server_success_description": "Cleared {count} subscribed channel{s} from server `{server_id}`.",
+        "server_success_note": "The server can subscribe channels again using `/subscription add`",
+        "server_success_title": "Server Unsubscribed"
+      },
+      "permission_denied": {
+        "description": "This command is restricted to the bot admins.",
+        "title": "Admin Only"
+      },
+      "recache": {
+        "description": "Recache all data from database",
+        "error_description": "Failed to reload **{cache_type}** cache.",
+        "error_message": "Error: {error}",
+        "error_title": "Recache Failed",
+        "success_blacklist": "• Blacklisted: {count}",
+        "success_channels": "• Channels: {count}",
+        "success_description": "Successfully reloaded: **{cache_type}**",
+        "success_loaded_data": "Loaded Data",
+        "success_servers": "• Servers: {count}",
+        "success_timezones": "• Timezones: {count}",
+        "success_title": "Cache Reloaded"
+      },
+      "stats": {
+        "blacklisted": "Blacklisted: {status}",
+        "blacklisted_no": "No ✅",
+        "blacklisted_servers": "Blacklisted Servers: {count}",
+        "blacklisted_yes": "Yes ⛔",
+        "channels_label": "Channels:",
+        "description": "View bot statistics",
+        "errors": "Errors: {count}",
+        "more_channels": "... and {count} more channels",
+        "not_found_description": "Server ID `{server_id}` was not found in the database.",
+        "not_found_note": "This server has never been subscribed to the bot.",
+        "not_found_title": "Server Not Found",
+        "removed_servers": "Removed Servers: {count}",
+        "saved_errors": "Saved Errors: {count}",
+        "server_id": "Server ID: {id}",
+        "server_name": "Server: {name}",
+        "server_title": "Server Statistics",
+        "servers": "Servers: {count}",
+        "subscribed_channels": "Subscribed Channels: {count}",
+        "title": "Bot Statistics",
+        "unknown_channel": "Unknown Channel"
+      }
+    },
     "help": {
-      "description": "Display help information about the bot",
-      "title": "Help",
       "content": "Automatically clear messages in Discord channels on a schedule.",
-      "subscription_commands": "📝 Subscription Commands",
+      "description": "Display help information about the bot",
+      "links": "🔗 Links",
       "other_commands": "🔧 Other Commands",
-      "timer_formats": "⏱️ Timer Formats",
-      "timer_intervals": "**Intervals:** `1d2h3m` (days, hours, minutes)",
+      "permissions_for_bot": "**For Bot:** View Channel, Send Messages, Send Messages in Threads, Read Message History, Manage Messages, Embed Links, Use Application Commands",
+      "permissions_for_you": "**For You:** Manage Messages",
+      "required_permissions": "🔒 Required Permissions",
+      "select_command": "Select a command to learn more...",
+      "subscription_commands": "📝 Subscription Commands",
       "timer_daily": "**Daily Schedule:** `15:30 EST` (time + timezone)",
       "timer_examples": "**Examples:** `24h`, `1d`, `30m`, `09:00 PST`",
-      "required_permissions": "🔒 Required Permissions",
-      "permissions_for_you": "**For You:** Manage Messages",
-      "permissions_for_bot": "**For Bot:** View Channel, Send Messages, Send Messages in Threads, Read Message History, Manage Messages, Embed Links, Use Application Commands",
-      "links": "🔗 Links",
-      "select_command": "Select a command to learn more..."
+      "timer_formats": "⏱️ Timer Formats",
+      "timer_intervals": "**Intervals:** `1d2h3m` (days, hours, minutes)",
+      "title": "Help"
     },
-    
+    "language": {
+      "change": {
+        "already_set": "ℹ️ The server language is already set to **{language}**",
+        "available": "Available languages: {languages}",
+        "description": "Change the language for your server",
+        "invalid": "❌ Invalid language: `{language}`",
+        "success": "✅ Server language has been changed to **{language}**"
+      },
+      "description": "Manage server language preferences",
+      "list": {
+        "change_hint": "Use `/language change <language>` to change the server language",
+        "content": "The bot currently supports the following languages:",
+        "current": "Current language: **{language}**",
+        "description": "Display all supported languages",
+        "title": "🌐 Available Languages"
+      }
+    },
+    "owner": {
+      "admin": {
+        "add": {
+          "already_description": "User `{user_id}` is already a bot administrator.",
+          "already_title": "Already Administrator",
+          "description": "Add a new bot administrator",
+          "self_description": "You are the bot owner and already have full permissions.",
+          "self_note": "No need to add yourself as an administrator",
+          "self_title": "Already Owner",
+          "success_description": "Successfully added **{username}** as a bot administrator.",
+          "success_mention": "Mention: <@{user_id}>",
+          "success_note": "This user can now use admin commands",
+          "success_title": "Administrator Added",
+          "success_user_id": "User ID: `{user_id}`"
+        },
+        "description": "Manage bot administrators",
+        "list": {
+          "description": "List all bot administrators",
+          "no_admins_description": "There are no administrators configured.",
+          "no_admins_hint": "Use `/owner admin add` to add administrators",
+          "no_admins_title": "No Admins Configured",
+          "title": "Bot Administrators",
+          "total": "Total: {count} {admin_text}"
+        },
+        "remove": {
+          "description": "Remove a bot administrator",
+          "not_found_description": "User `{user_id}` is not a bot administrator.",
+          "not_found_note": "Cannot remove someone who isn't an admin",
+          "not_found_title": "Not an Administrator",
+          "success_description": "Successfully removed `{user_id}` from administrators.",
+          "success_note": "This user can no longer use admin commands",
+          "success_previous": "Previous admin: <@{user_id}>",
+          "success_title": "Administrator Removed"
+        }
+      },
+      "description": "Owner-only management commands",
+      "permission_denied": {
+        "description": "This command is restricted to the bot owner.",
+        "title": "Owner Only"
+      },
+      "shard": {
+        "description": "Manage bot shards",
+        "reload": {
+          "all_description": "Full bot reload initiated...",
+          "all_hint": "Use `/owner shard reload <id>` to reload single shard only",
+          "all_note_1": "• All shards shut down together",
+          "all_note_2": "• Shard manager restarts",
+          "all_note_3": "• All shards relaunch with fresh state",
+          "all_note_4": "• Bot offline for ~5-10 seconds",
+          "all_title": "Reloading All Shards",
+          "all_what_happens": "What happens:",
+          "description": "Reload all shards or a specific shard",
+          "failed_description": "Failed to reload shard.",
+          "failed_error": "Error: {error}",
+          "failed_note": "Please check the logs for more details",
+          "failed_title": "Reload Failed",
+          "invalid_id_description": "Shard ID `{shard_id}` is invalid.",
+          "invalid_id_note": "Please specify a valid shard ID",
+          "invalid_id_range": "Valid Range: 0 to {max_shard}",
+          "invalid_id_title": "Invalid Shard ID",
+          "not_sharded_description": "Bot is running in single-instance mode (not sharded).",
+          "not_sharded_hint": "Use `/owner shard reload` to reload the bot",
+          "not_sharded_title": "Cannot Reload Shard",
+          "signal_sent_description": "Reload signal sent to shard {shard_id}.",
+          "signal_sent_future": "Future updates will enable automatic cross-shard reloading",
+          "signal_sent_manual": "Please restart the shard manually.",
+          "signal_sent_note": "Note: Cross-shard communication is not yet implemented.",
+          "signal_sent_title": "Reload Signal Sent",
+          "single_description": "Restarting shard {shard_id} only...",
+          "single_note_1": "• Only this specific shard restarts",
+          "single_note_2": "• Other shards continue running",
+          "single_note_3": "• Guilds on this shard temporarily offline",
+          "single_title": "Reloading Single Shard",
+          "single_what_happens": "What happens:"
+        },
+        "status": {
+          "available_commands": "Available Commands:",
+          "cmd_reload_all": "• `/owner shard reload` - Reload all shards",
+          "cmd_reload_single": "• `/owner shard reload <id>` - Reload specific shard",
+          "cmd_status": "• `/owner shard status` - View this status",
+          "current_runtime": "Current Runtime:",
+          "description": "View current shard status",
+          "guilds_on_shard": "• Guilds on This Shard: {count}",
+          "latency": "• Latency: {latency}ms",
+          "process_id": "• Process ID: `{pid}`",
+          "shard_info": "• Shard: {shard_id}/{max_shard}",
+          "single_mode": "• Mode: Single-instance (not sharded)",
+          "title": "Shard Status",
+          "total_guilds": "• Total Guilds: {count}",
+          "total_shards": "• Total Shards: {count}"
+        }
+      }
+    },
     "ping": {
       "description": "Check the bot's latency",
-      "title": "🏓 Pong!",
-      "websocket_latency": "**WebSocket Latency:** {latency}ms",
       "response_time": "**Response Time:** {time}ms",
       "status": "**Status:** {status}",
       "status_excellent": "🟢 Excellent",
-      "status_good": "🟡 Good",
       "status_fair": "🟠 Fair",
-      "status_poor": "🔴 Poor"
+      "status_good": "🟡 Good",
+      "status_poor": "🔴 Poor",
+      "title": "🏓 Pong!",
+      "websocket_latency": "**WebSocket Latency:** {latency}ms"
     },
-    
-    "timezone": {
-      "description": "Manage server timezone preferences",
-      "list": {
-        "description": "List available timezones from the configuration",
-        "title": "🌍 Available Timezones",
-        "content": "Here are the configured timezone abbreviations and their full names:"
-      },
-      "change": {
-        "description": "Change the default timezone for your server",
-        "success": "✅ Server timezone has been set to **{timezone}**",
-        "success_auto": "✅ Server timezone has been automatically detected and set to **{timezone}**",
-        "invalid": "❌ Invalid timezone: `{timezone}`",
-        "suggestion": "Did you mean: `{suggestion}`?"
-      },
-      "current": {
-        "title": "Current Server Timezone",
-        "timezone": "**Timezone:** `{timezone}`",
-        "offset": "**Offset:** {offset}",
-        "time": "**Current Time:** {time}",
-        "how_it_works": "This means:",
-        "benefit_1": "• Users can set timers with just time: `/subscription add 21:30`",
-        "benefit_2": "• The server timezone will be used automatically",
-        "benefit_3": "• Users can still override: `/subscription add 21:30 PST`",
-        "change_hint": "To change the timezone, use `/timezone change <timezone>`",
-        "error": "**Error:** Could not load timezone details",
-        "no_timezone_title": "No Timezone Set",
-        "no_timezone_description": "This server doesn't have a default timezone configured. When users create timers without specifying a timezone, UTC will be used.",
-        "set_timezone_benefits": "Set a timezone to:",
-        "set_hint": "Use `/timezone change <timezone>` to set a default timezone.",
-        "list_hint": "Use `/timezone list` to see available timezones."
-      }
-    },
-    
-    "language": {
-      "description": "Manage server language preferences",
-      "list": {
-        "description": "Display all supported languages",
-        "title": "🌐 Available Languages",
-        "content": "The bot currently supports the following languages:",
-        "current": "Current language: **{language}**",
-        "change_hint": "Use `/language change <language>` to change the server language"
-      },
-      "change": {
-        "description": "Change the language for your server",
-        "success": "✅ Server language has been changed to **{language}**",
-        "already_set": "ℹ️ The server language is already set to **{language}**",
-        "invalid": "❌ Invalid language: `{language}`",
-        "available": "Available languages: {languages}"
-      }
-    },
-    
     "subscription": {
-      "description": "Manage automatic message clearing for channels",
       "add": {
-        "description": "Subscribe a channel to automatic message deletion",
-        "success": "✅ Successfully subscribed {channel} to automatic message clearing every **{timer}**",
-        "success_with_ignored": "✅ Successfully subscribed {channel} to automatic message clearing every **{timer}**\n\n**Ignored targets added:** {count}",
         "already_subscribed": "❌ {channel} is already subscribed with a {timer} timer.\nUse `/subscription update` to change the timer.",
-        "invalid_timer": "❌ Invalid timer format: `{timer}`"
-      },
-      "remove": {
-        "description": "Unsubscribe a channel from automatic message deletion",
-        "success": "✅ Successfully unsubscribed {channel} from automatic message clearing"
-      },
-      "list": {
-        "description": "List all active subscriptions in this server",
-        "title": "📋 Active Subscriptions",
-        "no_subscriptions": "No active subscriptions in this server",
-        "subscription_item": "• {channel} - Every **{timer}** (Next: {next_clear})",
-        "subscription_item_with_ignored": "• {channel} - Every **{timer}** (Next: {next_clear}) - {ignored_count} ignored",
-        "tip": "💡 Use `/subscription info` for detailed information"
-      },
-      "info": {
-        "description": "View detailed subscription information for a channel",
-        "title": "Subscription Information",
-        "subscribed": "✅ Subscribed",
-        "timer": "**Timer:** {timer}",
-        "next_clear": "**Next Clear:** {time}",
-        "ignored_messages": "**Ignored Messages:** {count}",
-        "ignored_users": "**Ignored Users:** {count}",
-        "commands_hint": "Use `/subscription` commands to manage this subscription"
-      },
-      "update": {
-        "description": "Update the timer for an existing subscription",
-        "success": "✅ Successfully updated timer for {channel} to **{timer}**",
-        "success_with_ignored": "✅ Successfully updated timer for {channel} to **{timer}**\n\n**Ignored targets added:** {count}"
+        "description": "Subscribe a channel to automatic message deletion",
+        "invalid_timer": "❌ Invalid timer format: `{timer}`",
+        "success": "✅ Successfully subscribed {channel} to automatic message clearing every **{timer}**",
+        "success_with_ignored": "✅ Successfully subscribed {channel} to automatic message clearing every **{timer}**\n\n**Ignored targets added:** {count}"
       },
       "clear": {
         "description": "Manually trigger a message clear for a subscribed channel",
-        "success": "✅ Manual clear triggered for {channel}",
+        "error": "❌ Failed to clear messages in {channel}: {error}",
         "in_progress": "⏳ A clear is already in progress for {channel}. Please wait for it to complete.",
         "messages_cleared": "Messages Cleared",
         "no_messages": "📭 No messages to clear in {channel}",
-        "error": "❌ Failed to clear messages in {channel}: {error}"
+        "success": "✅ Manual clear triggered for {channel}"
       },
+      "description": "Manage automatic message clearing for channels",
       "ignore": {
         "description": "Toggle messages or users to be ignored during channel clearing",
         "message_added": "✅ Message from {author} will be **ignored** during clearing in {channel}",
@@ -152,356 +319,177 @@
         "user_added": "✅ {user}'s messages will be **ignored** during clearing in {channel}",
         "user_removed": "✅ {user}'s messages will **no longer be ignored** during clearing in {channel}"
       },
+      "info": {
+        "commands_hint": "Use `/subscription` commands to manage this subscription",
+        "description": "View detailed subscription information for a channel",
+        "ignored_messages": "**Ignored Messages:** {count}",
+        "ignored_users": "**Ignored Users:** {count}",
+        "next_clear": "**Next Clear:** {time}",
+        "subscribed": "✅ Subscribed",
+        "timer": "**Timer:** {timer}",
+        "title": "Subscription Information"
+      },
+      "list": {
+        "description": "List all active subscriptions in this server",
+        "no_subscriptions": "No active subscriptions in this server",
+        "subscription_item": "• {channel} - Every **{timer}** (Next: {next_clear})",
+        "subscription_item_with_ignored": "• {channel} - Every **{timer}** (Next: {next_clear}) - {ignored_count} ignored",
+        "tip": "💡 Use `/subscription info` for detailed information",
+        "title": "📋 Active Subscriptions"
+      },
+      "remove": {
+        "description": "Unsubscribe a channel from automatic message deletion",
+        "success": "✅ Successfully unsubscribed {channel} from automatic message clearing"
+      },
       "skip": {
         "description": "Skip the next scheduled clear for a channel",
-        "success": "✅ Next scheduled clear for {channel} has been skipped.\n**New next clear:** {next_clear}",
-        "no_scheduled": "❌ No scheduled clear found for {channel}"
+        "no_scheduled": "❌ No scheduled clear found for {channel}",
+        "success": "✅ Next scheduled clear for {channel} has been skipped.\n**New next clear:** {next_clear}"
+      },
+      "update": {
+        "description": "Update the timer for an existing subscription",
+        "success": "✅ Successfully updated timer for {channel} to **{timer}**",
+        "success_with_ignored": "✅ Successfully updated timer for {channel} to **{timer}**\n\n**Ignored targets added:** {count}"
       }
     },
-    
-    "owner": {
-      "description": "Owner-only management commands",
-      "permission_denied": {
-        "title": "Owner Only",
-        "description": "This command is restricted to the bot owner."
+    "timezone": {
+      "change": {
+        "description": "Change the default timezone for your server",
+        "invalid": "❌ Invalid timezone: `{timezone}`",
+        "success": "✅ Server timezone has been set to **{timezone}**",
+        "success_auto": "✅ Server timezone has been automatically detected and set to **{timezone}**",
+        "suggestion": "Did you mean: `{suggestion}`?"
       },
-      "admin": {
-        "description": "Manage bot administrators",
-        "list": {
-          "description": "List all bot administrators",
-          "title": "Bot Administrators",
-          "no_admins_title": "No Admins Configured",
-          "no_admins_description": "There are no administrators configured.",
-          "no_admins_hint": "Use `/owner admin add` to add administrators",
-          "total": "Total: {count} {admin_text}"
-        },
-        "add": {
-          "description": "Add a new bot administrator",
-          "success_title": "Administrator Added",
-          "success_description": "Successfully added **{username}** as a bot administrator.",
-          "success_user_id": "User ID: `{user_id}`",
-          "success_mention": "Mention: <@{user_id}>",
-          "success_note": "This user can now use admin commands",
-          "already_title": "Already Administrator",
-          "already_description": "User `{user_id}` is already a bot administrator.",
-          "self_title": "Already Owner",
-          "self_description": "You are the bot owner and already have full permissions.",
-          "self_note": "No need to add yourself as an administrator"
-        },
-        "remove": {
-          "description": "Remove a bot administrator",
-          "success_title": "Administrator Removed",
-          "success_description": "Successfully removed `{user_id}` from administrators.",
-          "success_previous": "Previous admin: <@{user_id}>",
-          "success_note": "This user can no longer use admin commands",
-          "not_found_title": "Not an Administrator",
-          "not_found_description": "User `{user_id}` is not a bot administrator.",
-          "not_found_note": "Cannot remove someone who isn't an admin"
-        }
+      "current": {
+        "benefit_1": "• Users can set timers with just time: `/subscription add 21:30`",
+        "benefit_2": "• The server timezone will be used automatically",
+        "benefit_3": "• Users can still override: `/subscription add 21:30 PST`",
+        "change_hint": "To change the timezone, use `/timezone change <timezone>`",
+        "error": "**Error:** Could not load timezone details",
+        "how_it_works": "This means:",
+        "list_hint": "Use `/timezone list` to see available timezones.",
+        "no_timezone_description": "This server doesn't have a default timezone configured. When users create timers without specifying a timezone, UTC will be used.",
+        "no_timezone_title": "No Timezone Set",
+        "offset": "**Offset:** {offset}",
+        "set_hint": "Use `/timezone change <timezone>` to set a default timezone.",
+        "set_timezone_benefits": "Set a timezone to:",
+        "time": "**Current Time:** {time}",
+        "timezone": "**Timezone:** `{timezone}`",
+        "title": "Current Server Timezone"
       },
-      "shard": {
-        "description": "Manage bot shards",
-        "reload": {
-          "description": "Reload all shards or a specific shard",
-          "single_title": "Reloading Single Shard",
-          "single_description": "Restarting shard {shard_id} only...",
-          "single_what_happens": "What happens:",
-          "single_note_1": "• Only this specific shard restarts",
-          "single_note_2": "• Other shards continue running",
-          "single_note_3": "• Guilds on this shard temporarily offline",
-          "all_title": "Reloading All Shards",
-          "all_description": "Full bot reload initiated...",
-          "all_what_happens": "What happens:",
-          "all_note_1": "• All shards shut down together",
-          "all_note_2": "• Shard manager restarts",
-          "all_note_3": "• All shards relaunch with fresh state",
-          "all_note_4": "• Bot offline for ~5-10 seconds",
-          "all_hint": "Use `/owner shard reload <id>` to reload single shard only",
-          "not_sharded_title": "Cannot Reload Shard",
-          "not_sharded_description": "Bot is running in single-instance mode (not sharded).",
-          "not_sharded_hint": "Use `/owner shard reload` to reload the bot",
-          "invalid_id_title": "Invalid Shard ID",
-          "invalid_id_description": "Shard ID `{shard_id}` is invalid.",
-          "invalid_id_range": "Valid Range: 0 to {max_shard}",
-          "invalid_id_note": "Please specify a valid shard ID",
-          "signal_sent_title": "Reload Signal Sent",
-          "signal_sent_description": "Reload signal sent to shard {shard_id}.",
-          "signal_sent_note": "Note: Cross-shard communication is not yet implemented.",
-          "signal_sent_manual": "Please restart the shard manually.",
-          "signal_sent_future": "Future updates will enable automatic cross-shard reloading",
-          "failed_title": "Reload Failed",
-          "failed_description": "Failed to reload shard.",
-          "failed_error": "Error: {error}",
-          "failed_note": "Please check the logs for more details"
-        },
-        "status": {
-          "description": "View current shard status",
-          "title": "Shard Status",
-          "current_runtime": "Current Runtime:",
-          "shard_info": "• Shard: {shard_id}/{max_shard}",
-          "total_shards": "• Total Shards: {count}",
-          "guilds_on_shard": "• Guilds on This Shard: {count}",
-          "latency": "• Latency: {latency}ms",
-          "single_mode": "• Mode: Single-instance (not sharded)",
-          "total_guilds": "• Total Guilds: {count}",
-          "process_id": "• Process ID: `{pid}`",
-          "available_commands": "Available Commands:",
-          "cmd_reload_all": "• `/owner shard reload` - Reload all shards",
-          "cmd_reload_single": "• `/owner shard reload <id>` - Reload specific shard",
-          "cmd_status": "• `/owner shard status` - View this status"
-        }
-      }
-    },
-    
-    "admin": {
-      "description": "Admin-only management commands",
-      "permission_denied": {
-        "title": "Admin Only",
-        "description": "This command is restricted to the bot admins."
-      },
-      "stats": {
-        "description": "View bot statistics",
-        "title": "Bot Statistics",
-        "server_title": "Server Statistics",
-        "servers": "Servers: {count}",
-        "subscribed_channels": "Subscribed Channels: {count}",
-        "removed_servers": "Removed Servers: {count}",
-        "blacklisted_servers": "Blacklisted Servers: {count}",
-        "saved_errors": "Saved Errors: {count}",
-        "server_name": "Server: {name}",
-        "server_id": "Server ID: {id}",
-        "blacklisted": "Blacklisted: {status}",
-        "blacklisted_yes": "Yes ⛔",
-        "blacklisted_no": "No ✅",
-        "unknown_channel": "Unknown Channel",
-        "errors": "Errors: {count}",
-        "channels_label": "Channels:",
-        "more_channels": "... and {count} more channels",
-        "not_found_title": "Server Not Found",
-        "not_found_description": "Server ID `{server_id}` was not found in the database.",
-        "not_found_note": "This server has never been subscribed to the bot."
-      },
-      "blacklist": {
-        "description": "Manage server blacklist",
-        "no_reason_provided": "No reason provided",
-        "add": {
-          "description": "Add a server to the blacklist",
-          "success_title": "Server Blacklisted",
-          "success_description": "Added server **{server_name}** (`{server_id}`) to blacklist.",
-          "success_reason": "Reason: {reason}",
-          "success_note_1": "• All subscriptions have been removed",
-          "success_note_2": "• The server cannot use bot commands",
-          "already_title": "Already Blacklisted",
-          "already_description": "Server `{server_id}` is already blacklisted."
-        },
-        "remove": {
-          "description": "Remove a server from the blacklist",
-          "success_title": "Server Unblacklisted",
-          "success_description": "Removed server `{server_id}` from blacklist.",
-          "success_note": "The server can now use bot commands again.",
-          "not_found_title": "Not Blacklisted",
-          "not_found_description": "Server `{server_id}` is not blacklisted."
-        },
-        "check": {
-          "description": "Check if a server is blacklisted",
-          "not_blacklisted_title": "Server is NOT Blacklisted",
-          "not_blacklisted_description": "Server `{server_id}` is not on the blacklist.",
-          "not_blacklisted_note": "This server can use bot commands normally.",
-          "blacklisted_title": "Server is Blacklisted",
-          "blacklisted_server_name": "Server Name",
-          "blacklisted_server_id": "Server ID",
-          "blacklisted_reason": "Reason",
-          "blacklisted_date": "Blacklisted",
-          "blacklisted_by": "Blacklisted By",
-          "blacklisted_note": "This server cannot use bot commands.",
-          "unknown_date": "Unknown"
-        }
-      },
-      "recache": {
-        "description": "Recache all data from database",
-        "success_title": "Cache Reloaded",
-        "success_description": "Successfully reloaded: **{cache_type}**",
-        "success_loaded_data": "Loaded Data",
-        "success_servers": "• Servers: {count}",
-        "success_channels": "• Channels: {count}",
-        "success_blacklist": "• Blacklisted: {count}",
-        "success_timezones": "• Timezones: {count}",
-        "error_title": "Recache Failed",
-        "error_description": "Failed to reload **{cache_type}** cache.",
-        "error_message": "Error: {error}"
-      },
-      "error": {
-        "description": "Manage error logs",
-        "check": {
-          "description": "Check an error by its ID",
-          "not_found_title": "Error Not Found",
-          "not_found_description": "No error found with ID: `{error_id}`",
-          "details_title": "Error Details: {error_id}",
-          "level": "Level",
-          "area": "Area",
-          "time": "Time",
-          "message": "Message",
-          "server": "Server",
-          "channel": "Channel",
-          "user": "User",
-          "command": "Command",
-          "traceback": "Traceback",
-          "no_message": "No message",
-          "unknown": "Unknown"
-        },
-        "delete": {
-          "description": "Delete an error by its ID"
-        },
-        "list": {
-          "description": "List recent errors"
-        },
-        "clear": {
-          "description": "Clear all errors from the database"
-        },
-        "not_found_title": "Error Not Found",
-        "not_found_description": "No error found with ID: `{error_id}`",
-        "details_title": "Error Details: {error_id}",
-        "details_level": "Level: {level}",
-        "details_area": "Area: {area}",
-        "details_time": "Time: <t:{timestamp}:F>",
-        "details_message": "Message: {message}",
-        "details_server": "Server: {name} ({id})",
-        "details_channel": "Channel: {name} ({id})",
-        "details_user": "User: <@{user_id}> ({user_id})",
-        "details_command": "Command: {command}",
-        "details_traceback": "Traceback:",
-        "delete_success_title": "Error Deleted",
-        "delete_success_description": "Error `{error_id}` has been deleted from the database.",
-        "delete_failed_title": "Delete Failed",
-        "delete_failed_description": "Could not delete error `{error_id}`.",
-        "delete_failed_note": "It may not exist or has already been deleted.",
-        "list_title": "Recent Errors",
-        "list_item_id": "ID: `{error_id}` | {level}",
-        "list_item_area": "Area: {area}",
-        "list_item_time": "Time: {timestamp}",
-        "list_item_message": "Message: {message}",
-        "list_more": "... and {count} more errors",
-        "list_hint": "Use `/admin error check <id>` to see full details",
-        "no_errors_title": "No Errors Found",
-        "no_errors_description": "No errors found in the database.",
-        "clear_success_title": "Errors Cleared",
-        "clear_success_description": "Cleared {count} error{s} from the database.",
-        "clear_success_note": "The error log is now empty",
-        "clear_failed_title": "Clear Failed",
-        "clear_failed_description": "Failed to clear errors from database.",
-        "clear_failed_error_id": "Error ID: `{error_id}`",
-        "clear_failed_note": "Please check the logs for more details"
-      },
-      "force": {
-        "description": "Force management actions",
-        "remove_server": {
-          "description": "Force remove all subscriptions for a server"
-        },
-        "remove_channel": {
-          "description": "Force remove a specific channel subscription"
-        },
-        "not_found_title": "Not Found",
-        "not_found_description": "No server or channel found with ID: `{target_id}`",
-        "not_found_note": "Please check the ID and try again",
-        "server_success_title": "Server Unsubscribed",
-        "server_success_description": "Cleared {count} subscribed channel{s} from server `{server_id}`.",
-        "server_success_note": "The server can subscribe channels again using `/subscription add`",
-        "channel_success_title": "Channel Unsubscribed",
-        "channel_success_description": "Removed channel `{channel_id}` from server `{server_id}`.",
-        "channel_success_note": "The channel can be subscribed again using `/subscription add`"
+      "description": "Manage server timezone preferences",
+      "list": {
+        "content": "Here are the configured timezone abbreviations and their full names:",
+        "description": "List available timezones from the configuration",
+        "title": "🌍 Available Timezones"
       }
     }
   },
-  
+  "common": {
+    "channel": "Channel",
+    "disabled": "Disabled",
+    "enabled": "Enabled",
+    "error": "Error",
+    "info": "Info",
+    "message": "Message",
+    "no": "No",
+    "none": "None",
+    "server": "Server",
+    "success": "Success",
+    "unknown": "Unknown",
+    "user": "User",
+    "warning": "Warning",
+    "yes": "Yes"
+  },
+  "components": {
+    "buttons": {
+      "cancel": "Cancel",
+      "clear_now": "Clear Now",
+      "confirm": "Confirm",
+      "no": "No",
+      "yes": "Yes"
+    },
+    "messages": {
+      "channel_cleared_manually": "Channel cleared successfully!"
+    },
+    "no_data": "❌ No data found for {channel}",
+    "powered_by": "**Powered by {bot_name}**"
+  },
+  "errors": {
+    "bot_missing_permissions": "❌ The bot is missing required permissions: {permissions}",
+    "channel_in_progress": "⏳ A clear is already in progress for {channel}. Please wait for it to complete.",
+    "command_failed": "❌ Command failed: {error}",
+    "generic": "❌ An error occurred: {error}",
+    "invalid_channel": "❌ Invalid channel: {channel}",
+    "invalid_target": "❌ Invalid target. Please provide a valid message ID/link or user mention/ID.",
+    "invalid_timer": "❌ Invalid timer format: `{timer}`\n\nPlease use formats like:\n• `24h` for 24 hours\n• `1d12h30m` for 1 day, 12 hours, 30 minutes\n• `15:30 EST` for daily at 3:30 PM EST",
+    "invalid_user": "❌ Invalid user: {user}",
+    "job_not_found": "❌ No scheduled job found for {channel}",
+    "missed_clear_notification": "⚠️ **Missed Clear Notification**\n\nA scheduled message clear was missed for this channel.\nThe timer has been rescheduled.",
+    "missing_permissions": "❌ Missing required permissions: {permissions}",
+    "next_time_not_found": "❌ Could not determine the next scheduled time for {channel}"
+  },
+  "language_code": "en",
+  "language_name": "English",
+  "language_native_name": "English",
   "subscription": {
-    "timer_view": {
-      "title": "Active Timer for {channel}",
-      "timer_setting": "Timer Setting",
-      "next_clear": "Next Clear",
-      "time_remaining": "Time Remaining",
-      "auto_update": "This message updates automatically after each clear."
+    "errors": {
+      "message_not_found": {
+        "description": "Message with ID `{message_id}` not found in {channel}.",
+        "help": "Please make sure the message exists in the specified channel.",
+        "title": "Message Not Found"
+      },
+      "user_not_found": {
+        "description": "User with ID `{user_id}` not found in this server.",
+        "help": "Please make sure the user is a member of this server.",
+        "title": "User Not Found"
+      }
     },
     "ignore": {
-      "user_added": {
-        "title": "User Added to Ignore List"
-      },
-      "user_removed": {
-        "title": "User Removed from Ignore List"
-      },
       "message_added": {
         "title": "Message Added to Ignore List"
       },
       "message_removed": {
         "title": "Message Removed from Ignore List"
+      },
+      "user_added": {
+        "title": "User Added to Ignore List"
+      },
+      "user_removed": {
+        "title": "User Removed from Ignore List"
       }
     },
-    "errors": {
-      "user_not_found": {
-        "title": "User Not Found",
-        "description": "User with ID `{user_id}` not found in this server.",
-        "help": "Please make sure the user is a member of this server."
-      },
-      "message_not_found": {
-        "title": "Message Not Found",
-        "description": "Message with ID `{message_id}` not found in {channel}.",
-        "help": "Please make sure the message exists in the specified channel."
-      }
+    "timer_view": {
+      "auto_update": "This message updates automatically after each clear.",
+      "next_clear": "Next Clear",
+      "time_remaining": "Time Remaining",
+      "timer_setting": "Timer Setting",
+      "title": "Active Timer for {channel}"
     }
   },
-  
-  "errors": {
-    "generic": "❌ An error occurred: {error}",
-    "command_failed": "❌ Command failed: {error}",
-    "invalid_channel": "❌ Invalid channel: {channel}",
-    "invalid_user": "❌ Invalid user: {user}",
-    "missing_permissions": "❌ Missing required permissions: {permissions}",
-    "bot_missing_permissions": "❌ The bot is missing required permissions: {permissions}",
-    "invalid_timer": "❌ Invalid timer format: `{timer}`\n\nPlease use formats like:\n• `24h` for 24 hours\n• `1d12h30m` for 1 day, 12 hours, 30 minutes\n• `15:30 EST` for daily at 3:30 PM EST",
-    "invalid_target": "❌ Invalid target. Please provide a valid message ID/link or user mention/ID.",
-    "channel_in_progress": "⏳ A clear is already in progress for {channel}. Please wait for it to complete.",
-    "job_not_found": "❌ No scheduled job found for {channel}",
-    "next_time_not_found": "❌ Could not determine the next scheduled time for {channel}",
-    "missed_clear_notification": "⚠️ **Missed Clear Notification**\n\nA scheduled message clear was missed for this channel.\nThe timer has been rescheduled."
-  },
-  
   "validation": {
-    "error_titles": {
-      "blacklisted": "Server Blacklisted",
-      "insufficient_permissions": "Insufficient Permissions",
-      "bot_missing_permissions": "Bot Missing Permissions",
-      "channel_already_subscribed": "Channel Already Subscribed",
-      "general": "Validation Error"
-    },
+    "already_subscribed": "❌ {channel} is already subscribed with a {timer} timer.\nUse `/subscription update` to change the timer.",
     "blacklisted": "❌ This server has been blacklisted and cannot use this bot.",
     "blacklisted_detailed": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, please contact support.",
-    "insufficient_permissions": "❌ You need the `Manage Messages` permission to use this command.",
-    "insufficient_permissions_detailed": "❌ **Insufficient Permissions**\n\nYou need the following permission to use this command:\n{permissions}\n\nPlease contact a server administrator if you need access.",
+    "blacklisted_server": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/botsupport).",
     "bot_missing_permissions": "❌ I'm missing the following permissions in {channel}: {permissions}",
     "bot_missing_permissions_detailed": "❌ **Bot Missing Permissions**\n\nI'm missing the following permissions in {channel}:\n{permissions}\n\nPlease grant these permissions and try again.",
+    "bot_no_permissions": "❌ I need the following permissions in {channel}: {permissions}",
     "channel_already_subscribed": "❌ {channel} already has a timer set. Use `/subscription update` to update the subscription instead.",
     "channel_already_subscribed_detailed": "❌ **Channel Already Subscribed**\n\n{channel} already has a timer set.\n\nUse `/subscription update` to update the subscription instead.",
+    "error_titles": {
+      "blacklisted": "Server Blacklisted",
+      "bot_missing_permissions": "Bot Missing Permissions",
+      "channel_already_subscribed": "Channel Already Subscribed",
+      "general": "Validation Error",
+      "insufficient_permissions": "Insufficient Permissions"
+    },
+    "insufficient_permissions": "❌ You need the `Manage Messages` permission to use this command.",
+    "insufficient_permissions_detailed": "❌ **Insufficient Permissions**\n\nYou need the following permission to use this command:\n{permissions}\n\nPlease contact a server administrator if you need access.",
+    "invalid_channel": "❌ Please provide a valid text channel.",
+    "no_permissions": "❌ You need the **{permission}** permission to use this command.",
     "not_subscribed": "❌ **Channel Not Subscribed**\n\n{channel} is not subscribed to automatic message clearing.\n\nUse `/subscription add` to set up automatic clearing first.",
     "not_subscribed_status": "❌ Not Subscribed",
-    "permission_denied": "❌ You need the **{permission}** permission to use this command.",
-    "blacklisted_server": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/botsupport).",
-    "no_permissions": "❌ You need the **{permission}** permission to use this command.",
-    "bot_no_permissions": "❌ I need the following permissions in {channel}: {permissions}",
-    "already_subscribed": "❌ {channel} is already subscribed with a {timer} timer.\nUse `/subscription update` to change the timer.",
-    "invalid_channel": "❌ Please provide a valid text channel."
-  },
-  
-  "components": {
-    "powered_by": "**Powered by {bot_name}**",
-    "buttons": {
-      "confirm": "Confirm",
-      "cancel": "Cancel",
-      "yes": "Yes",
-      "no": "No",
-      "clear_now": "Clear Now"
-    },
-    "messages": {
-      "channel_cleared_manually": "Channel cleared successfully!"
-    },
-    "no_data": "❌ No data found for {channel}"
+    "permission_denied": "❌ You need the **{permission}** permission to use this command."
   }
 }

@@ -1,150 +1,309 @@
 {
-  "language_name": "Chinese (Simplified)",
-  "language_native_name": "简体中文",
-  "language_code": "zh",
-  
-  "common": {
-    "yes": "是",
-    "no": "否",
-    "enabled": "已启用",
-    "disabled": "已禁用",
-    "error": "错误",
-    "success": "成功",
-    "warning": "警告",
-    "info": "信息",
-    "none": "无",
-    "unknown": "未知",
-    "channel": "频道",
-    "server": "服务器",
-    "user": "用户",
-    "message": "消息"
-  },
-  
   "commands": {
+    "admin": {
+      "blacklist": {
+        "add": {
+          "already_description": "服务器 `{server_id}` 已在黑名单中。",
+          "already_title": "已在黑名单中",
+          "description": "将服务器添加到黑名单",
+          "success_description": "将服务器 **{server_name}** (`{server_id}`) 添加到黑名单。",
+          "success_note_1": "• 所有订阅已被移除",
+          "success_note_2": "• 该服务器不能使用机器人命令",
+          "success_reason": "原因：{reason}",
+          "success_title": "服务器已列入黑名单"
+        },
+        "check": {
+          "blacklisted_by": "列入者",
+          "blacklisted_date": "列入黑名单",
+          "blacklisted_note": "此服务器不能使用机器人命令。",
+          "blacklisted_reason": "原因",
+          "blacklisted_server_id": "服务器ID",
+          "blacklisted_server_name": "服务器名称",
+          "blacklisted_title": "服务器在黑名单中",
+          "description": "检查服务器是否在黑名单中",
+          "not_blacklisted_description": "服务器 `{server_id}` 不在黑名单中。",
+          "not_blacklisted_note": "此服务器可以正常使用机器人命令。",
+          "not_blacklisted_title": "服务器不在黑名单中",
+          "unknown_date": "未知"
+        },
+        "description": "管理服务器黑名单",
+        "no_reason_provided": "未提供原因",
+        "remove": {
+          "description": "从黑名单中移除服务器",
+          "not_found_description": "服务器 `{server_id}` 不在黑名单中。",
+          "not_found_title": "不在黑名单中",
+          "success_description": "从黑名单中移除服务器 `{server_id}`。",
+          "success_note": "该服务器现在可以再次使用机器人命令。",
+          "success_title": "服务器已从黑名单移除"
+        }
+      },
+      "description": "仅限管理员的管理命令",
+      "error": {
+        "check": {
+          "channel": "频道",
+          "command": "命令",
+          "description": "通过ID检查错误",
+          "no_message": "无消息",
+          "traceback": "追踪",
+          "unknown": "未知",
+          "user": "用户"
+        },
+        "clear": {
+          "description": "从数据库中清除所有错误"
+        },
+        "clear_failed_description": "从数据库清除错误失败。",
+        "clear_failed_error_id": "错误ID：`{error_id}`",
+        "clear_failed_note": "请查看日志以获取更多详细信息",
+        "clear_failed_title": "清除失败",
+        "clear_success_description": "从数据库中清除了 {count} 个错误。",
+        "clear_success_note": "错误日志现在为空",
+        "clear_success_title": "错误已清除",
+        "delete": {
+          "description": "通过ID删除错误"
+        },
+        "delete_failed_description": "无法删除错误 `{error_id}`。",
+        "delete_failed_note": "它可能不存在或已被删除。",
+        "delete_failed_title": "删除失败",
+        "delete_success_description": "错误 `{error_id}` 已从数据库中删除。",
+        "delete_success_title": "错误已删除",
+        "description": "管理错误日志",
+        "details_area": "区域：{area}",
+        "details_channel": "频道：{name} ({id})",
+        "details_command": "命令：{command}",
+        "details_level": "级别：{level}",
+        "details_message": "消息：{message}",
+        "details_server": "服务器：{name} ({id})",
+        "details_time": "时间：<t:{timestamp}:F>",
+        "details_title": "错误详情：{error_id}",
+        "details_traceback": "追踪：",
+        "details_user": "用户：<@{user_id}> ({user_id})",
+        "list": {
+          "description": "列出最近的错误"
+        },
+        "list_hint": "使用 `/admin error check <id>` 查看完整详情",
+        "list_item_area": "区域：{area}",
+        "list_item_id": "ID：`{error_id}` | {level}",
+        "list_item_message": "消息：{message}",
+        "list_item_time": "时间：{timestamp}",
+        "list_more": "... 还有 {count} 个错误",
+        "list_title": "最近的错误",
+        "no_errors_description": "数据库中未找到错误。",
+        "no_errors_title": "未找到错误",
+        "not_found_description": "未找到ID为 `{error_id}` 的错误",
+        "not_found_title": "未找到错误"
+      },
+      "force": {
+        "channel_success_description": "从服务器 `{server_id}` 移除了频道 `{channel_id}`。",
+        "channel_success_note": "频道可以使用 `/subscription add` 再次订阅",
+        "channel_success_title": "频道已取消订阅",
+        "description": "强制管理操作",
+        "not_found_description": "未找到ID为 `{target_id}` 的服务器或频道",
+        "not_found_note": "请检查ID并重试",
+        "not_found_title": "未找到",
+        "remove_channel": {
+          "description": "强制移除特定的频道订阅"
+        },
+        "remove_server": {
+          "description": "强制移除服务器的所有订阅"
+        },
+        "server_success_description": "从服务器 `{server_id}` 清除了 {count} 个订阅频道。",
+        "server_success_note": "服务器可以使用 `/subscription add` 再次订阅频道",
+        "server_success_title": "服务器已取消订阅"
+      },
+      "permission_denied": {
+        "description": "此命令仅限机器人管理员使用。",
+        "title": "仅限管理员"
+      },
+      "recache": {
+        "description": "从数据库重新缓存所有数据",
+        "error_description": "重新加载 **{cache_type}** 缓存失败。",
+        "error_message": "错误：{error}",
+        "error_title": "重新缓存失败",
+        "success_blacklist": "• 黑名单：{count}",
+        "success_channels": "• 频道：{count}",
+        "success_description": "成功重新加载：**{cache_type}**",
+        "success_loaded_data": "加载的数据",
+        "success_servers": "• 服务器：{count}",
+        "success_timezones": "• 时区：{count}",
+        "success_title": "缓存已重新加载"
+      },
+      "stats": {
+        "blacklisted": "黑名单：{status}",
+        "blacklisted_no": "否 ✅",
+        "blacklisted_servers": "黑名单服务器：{count}",
+        "blacklisted_yes": "是 ⛔",
+        "channels_label": "频道：",
+        "description": "查看机器人统计信息",
+        "errors": "错误：{count}",
+        "more_channels": "... 还有 {count} 个频道",
+        "not_found_description": "在数据库中未找到服务器ID `{server_id}`。",
+        "not_found_note": "此服务器从未订阅过机器人。",
+        "not_found_title": "未找到服务器",
+        "removed_servers": "已移除服务器：{count}",
+        "saved_errors": "保存的错误：{count}",
+        "server_id": "服务器ID：{id}",
+        "server_name": "服务器：{name}",
+        "server_title": "服务器统计",
+        "servers": "服务器：{count}",
+        "subscribed_channels": "订阅频道：{count}",
+        "title": "机器人统计",
+        "unknown_channel": "未知频道"
+      }
+    },
     "help": {
-      "description": "显示关于机器人的帮助信息",
-      "title": "帮助",
       "content": "按计划自动清除Discord频道中的消息。",
-      "subscription_commands": "📝 订阅命令",
+      "description": "显示关于机器人的帮助信息",
+      "links": "🔗 链接",
       "other_commands": "🔧 其他命令",
-      "timer_formats": "⏱️ 计时器格式",
-      "timer_intervals": "**间隔：** `1d2h3m`（天、小时、分钟）",
+      "permissions_for_bot": "**对于机器人：** 查看频道、发送消息、在主题中发送消息、读取消息历史、管理消息、嵌入链接、使用应用程序命令",
+      "permissions_for_you": "**对于您：** 管理消息",
+      "required_permissions": "🔒 所需权限",
+      "select_command": "选择一个命令以了解更多...",
+      "subscription_commands": "📝 订阅命令",
       "timer_daily": "**每日计划：** `15:30 EST`（时间 + 时区）",
       "timer_examples": "**示例：** `24h`、`1d`、`30m`、`09:00 PST`",
-      "required_permissions": "🔒 所需权限",
-      "permissions_for_you": "**对于您：** 管理消息",
-      "permissions_for_bot": "**对于机器人：** 查看频道、发送消息、在主题中发送消息、读取消息历史、管理消息、嵌入链接、使用应用程序命令",
-      "links": "🔗 链接",
-      "select_command": "选择一个命令以了解更多..."
+      "timer_formats": "⏱️ 计时器格式",
+      "timer_intervals": "**间隔：** `1d2h3m`（天、小时、分钟）",
+      "title": "帮助"
     },
-    
+    "language": {
+      "change": {
+        "already_set": "ℹ️ 服务器语言已设置为 **{language}**",
+        "available": "可用语言：{languages}",
+        "description": "更改服务器的语言",
+        "invalid": "❌ 无效的语言：`{language}`",
+        "success": "✅ 服务器语言已更改为 **{language}**"
+      },
+      "description": "管理服务器语言偏好",
+      "list": {
+        "change_hint": "使用 `/language change <language>` 更改服务器语言",
+        "content": "机器人当前支持以下语言：",
+        "current": "当前语言：**{language}**",
+        "description": "显示所有支持的语言",
+        "title": "🌐 可用语言"
+      }
+    },
+    "owner": {
+      "admin": {
+        "add": {
+          "already_description": "用户 `{user_id}` 已是机器人管理员。",
+          "already_title": "已是管理员",
+          "description": "添加新的机器人管理员",
+          "self_description": "您是机器人所有者，已拥有完全权限。",
+          "self_note": "无需将自己添加为管理员",
+          "self_title": "已是所有者",
+          "success_description": "成功将 **{username}** 添加为机器人管理员。",
+          "success_mention": "提及：<@{user_id}>",
+          "success_note": "该用户现在可以使用管理命令",
+          "success_title": "管理员已添加",
+          "success_user_id": "用户ID：`{user_id}`"
+        },
+        "description": "管理机器人管理员",
+        "list": {
+          "description": "列出所有机器人管理员",
+          "no_admins_description": "没有配置管理员。",
+          "no_admins_hint": "使用 `/owner admin add` 添加管理员",
+          "no_admins_title": "未配置管理员",
+          "title": "机器人管理员",
+          "total": "总计：{count} {admin_text}"
+        },
+        "remove": {
+          "description": "移除机器人管理员",
+          "not_found_description": "用户 `{user_id}` 不是机器人管理员。",
+          "not_found_note": "不能移除非管理员",
+          "not_found_title": "不是管理员",
+          "success_description": "成功从管理员中移除 `{user_id}`。",
+          "success_note": "该用户不能再使用管理命令",
+          "success_previous": "前管理员：<@{user_id}>",
+          "success_title": "管理员已移除"
+        }
+      },
+      "description": "仅限所有者的管理命令",
+      "permission_denied": {
+        "description": "此命令仅限机器人所有者使用。",
+        "title": "仅限所有者"
+      },
+      "shard": {
+        "description": "管理机器人分片",
+        "reload": {
+          "all_description": "完全重新加载机器人已启动...",
+          "all_hint": "使用 `/owner shard reload <id>` 仅重新加载单个分片",
+          "all_note_1": "• 所有分片一起关闭",
+          "all_note_2": "• 分片管理器重启",
+          "all_note_3": "• 所有分片以新状态重新启动",
+          "all_note_4": "• 机器人离线约5-10秒",
+          "all_title": "重新加载所有分片",
+          "all_what_happens": "发生什么：",
+          "description": "重新加载所有分片或特定分片",
+          "failed_description": "重新加载分片失败。",
+          "failed_error": "错误：{error}",
+          "failed_note": "请查看日志以获取更多详细信息",
+          "failed_title": "重新加载失败",
+          "invalid_id_description": "分片ID `{shard_id}` 无效。",
+          "invalid_id_note": "请指定有效的分片ID",
+          "invalid_id_range": "有效范围：0 到 {max_shard}",
+          "invalid_id_title": "无效的分片ID",
+          "not_sharded_description": "机器人正在单实例模式运行（未分片）。",
+          "not_sharded_hint": "使用 `/owner shard reload` 重新加载机器人",
+          "not_sharded_title": "无法重新加载分片",
+          "signal_sent_description": "重新加载信号已发送到分片 {shard_id}。",
+          "signal_sent_future": "未来更新将启用自动跨分片重新加载",
+          "signal_sent_manual": "请手动重启分片。",
+          "signal_sent_note": "注意：跨分片通信尚未实现。",
+          "signal_sent_title": "重新加载信号已发送",
+          "single_description": "仅重启分片 {shard_id}...",
+          "single_note_1": "• 仅此特定分片重启",
+          "single_note_2": "• 其他分片继续运行",
+          "single_note_3": "• 此分片上的公会暂时离线",
+          "single_title": "重新加载单个分片",
+          "single_what_happens": "发生什么："
+        },
+        "status": {
+          "available_commands": "可用命令：",
+          "cmd_reload_all": "• `/owner shard reload` - 重新加载所有分片",
+          "cmd_reload_single": "• `/owner shard reload <id>` - 重新加载特定分片",
+          "cmd_status": "• `/owner shard status` - 查看此状态",
+          "current_runtime": "当前运行时间：",
+          "description": "查看当前分片状态",
+          "guilds_on_shard": "• 此分片上的公会：{count}",
+          "latency": "• 延迟：{latency}毫秒",
+          "process_id": "• 进程ID：`{pid}`",
+          "shard_info": "• 分片：{shard_id}/{max_shard}",
+          "single_mode": "• 模式：单实例（未分片）",
+          "title": "分片状态",
+          "total_guilds": "• 总公会：{count}",
+          "total_shards": "• 总分片：{count}"
+        }
+      }
+    },
     "ping": {
       "description": "检查机器人的延迟",
-      "title": "🏓 乒乓！",
-      "websocket_latency": "**WebSocket延迟：** {latency}毫秒",
       "response_time": "**响应时间：** {time}毫秒",
       "status": "**状态：** {status}",
       "status_excellent": "🟢 优秀",
-      "status_good": "🟡 良好",
       "status_fair": "🟠 一般",
-      "status_poor": "🔴 较差"
+      "status_good": "🟡 良好",
+      "status_poor": "🔴 较差",
+      "title": "🏓 乒乓！",
+      "websocket_latency": "**WebSocket延迟：** {latency}毫秒"
     },
-    
-    "timezone": {
-      "description": "管理服务器时区偏好",
-      "list": {
-        "description": "从配置中列出可用时区",
-        "title": "🌍 可用时区",
-        "content": "以下是配置的时区缩写及其完整名称："
-      },
-      "change": {
-        "description": "更改服务器的默认时区",
-        "success": "✅ 服务器时区已设置为 **{timezone}**",
-        "success_auto": "✅ 服务器时区已自动检测并设置为 **{timezone}**",
-        "invalid": "❌ 无效的时区：`{timezone}`",
-        "suggestion": "您是指：`{suggestion}` 吗？"
-      },
-      "current": {
-        "title": "当前服务器时区",
-        "timezone": "**时区：** `{timezone}`",
-        "offset": "**偏移：** {offset}",
-        "time": "**当前时间：** {time}",
-        "how_it_works": "这意味着：",
-        "benefit_1": "• 用户可以仅使用时间设置计时器：`/subscription add 21:30`",
-        "benefit_2": "• 将自动使用服务器时区",
-        "benefit_3": "• 用户仍可覆盖：`/subscription add 21:30 PST`",
-        "change_hint": "要更改时区，请使用 `/timezone change <timezone>`",
-        "error": "**错误：** 无法加载时区详情",
-        "no_timezone_title": "未设置时区",
-        "no_timezone_description": "此服务器没有配置默认时区。当用户创建计时器而不指定时区时，将使用UTC。",
-        "set_timezone_benefits": "设置时区以：",
-        "set_hint": "使用 `/timezone change <timezone>` 设置默认时区。",
-        "list_hint": "使用 `/timezone list` 查看可用时区。"
-      }
-    },
-    
-    "language": {
-      "description": "管理服务器语言偏好",
-      "list": {
-        "description": "显示所有支持的语言",
-        "title": "🌐 可用语言",
-        "content": "机器人当前支持以下语言：",
-        "current": "当前语言：**{language}**",
-        "change_hint": "使用 `/language change <language>` 更改服务器语言"
-      },
-      "change": {
-        "description": "更改服务器的语言",
-        "success": "✅ 服务器语言已更改为 **{language}**",
-        "already_set": "ℹ️ 服务器语言已设置为 **{language}**",
-        "invalid": "❌ 无效的语言：`{language}`",
-        "available": "可用语言：{languages}"
-      }
-    },
-    
     "subscription": {
-      "description": "管理频道的自动消息清除",
       "add": {
-        "description": "订阅频道自动删除消息",
-        "success": "✅ 成功为 {channel} 订阅自动消息清除，每 **{timer}**",
-        "success_with_ignored": "✅ 成功为 {channel} 订阅自动消息清除，每 **{timer}**\n\n**已添加忽略目标：** {count}",
         "already_subscribed": "❌ {channel} 已订阅 {timer} 计时器。\n使用 `/subscription update` 更改计时器。",
-        "invalid_timer": "❌ 无效的计时器格式：`{timer}`"
-      },
-      "remove": {
-        "description": "取消订阅频道的自动消息删除",
-        "success": "✅ 成功取消 {channel} 的自动消息清除订阅"
-      },
-      "list": {
-        "description": "列出此服务器中的所有活动订阅",
-        "title": "📋 活动订阅",
-        "no_subscriptions": "此服务器中没有活动订阅",
-        "subscription_item": "• {channel} - 每 **{timer}**（下次：{next_clear}）",
-        "subscription_item_with_ignored": "• {channel} - 每 **{timer}**（下次：{next_clear}）- {ignored_count} 个忽略",
-        "tip": "💡 使用 `/subscription info` 获取详细信息"
-      },
-      "info": {
-        "description": "查看频道的详细订阅信息",
-        "title": "订阅信息",
-        "subscribed": "✅ 已订阅",
-        "timer": "**计时器：** {timer}",
-        "next_clear": "**下次清除：** {time}",
-        "ignored_messages": "**忽略的消息：** {count}",
-        "ignored_users": "**忽略的用户：** {count}",
-        "commands_hint": "使用 `/subscription` 命令管理此订阅"
-      },
-      "update": {
-        "description": "更新现有订阅的计时器",
-        "success": "✅ 成功将 {channel} 的计时器更新为 **{timer}**",
-        "success_with_ignored": "✅ 成功将 {channel} 的计时器更新为 **{timer}**\n\n**已添加忽略目标：** {count}"
+        "description": "订阅频道自动删除消息",
+        "invalid_timer": "❌ 无效的计时器格式：`{timer}`",
+        "success": "✅ 成功为 {channel} 订阅自动消息清除，每 **{timer}**",
+        "success_with_ignored": "✅ 成功为 {channel} 订阅自动消息清除，每 **{timer}**\n\n**已添加忽略目标：** {count}"
       },
       "clear": {
         "description": "手动触发订阅频道的消息清除",
-        "success": "✅ 为 {channel} 触发手动清除",
+        "error": "❌ 清除 {channel} 中的消息失败：{error}",
         "in_progress": "⏳ {channel} 正在进行清除。请等待完成。",
         "messages_cleared": "消息已清除",
         "no_messages": "📭 {channel} 中没有要清除的消息",
-        "error": "❌ 清除 {channel} 中的消息失败：{error}"
+        "success": "✅ 为 {channel} 触发手动清除"
       },
+      "description": "管理频道的自动消息清除",
       "ignore": {
         "description": "切换在频道清除期间要忽略的消息或用户",
         "message_added": "✅ 来自 {author} 的消息将在 {channel} 清除期间被**忽略**",
@@ -152,348 +311,177 @@
         "user_added": "✅ {user} 的消息将在 {channel} 清除期间被**忽略**",
         "user_removed": "✅ {user} 的消息在 {channel} 清除期间将**不再被忽略**"
       },
+      "info": {
+        "commands_hint": "使用 `/subscription` 命令管理此订阅",
+        "description": "查看频道的详细订阅信息",
+        "ignored_messages": "**忽略的消息：** {count}",
+        "ignored_users": "**忽略的用户：** {count}",
+        "next_clear": "**下次清除：** {time}",
+        "subscribed": "✅ 已订阅",
+        "timer": "**计时器：** {timer}",
+        "title": "订阅信息"
+      },
+      "list": {
+        "description": "列出此服务器中的所有活动订阅",
+        "no_subscriptions": "此服务器中没有活动订阅",
+        "subscription_item": "• {channel} - 每 **{timer}**（下次：{next_clear}）",
+        "subscription_item_with_ignored": "• {channel} - 每 **{timer}**（下次：{next_clear}）- {ignored_count} 个忽略",
+        "tip": "💡 使用 `/subscription info` 获取详细信息",
+        "title": "📋 活动订阅"
+      },
+      "remove": {
+        "description": "取消订阅频道的自动消息删除",
+        "success": "✅ 成功取消 {channel} 的自动消息清除订阅"
+      },
       "skip": {
         "description": "跳过频道的下一次计划清除",
-        "success": "✅ 已跳过 {channel} 的下一次计划清除。\n**新的下次清除：** {next_clear}",
-        "no_scheduled": "❌ 未找到 {channel} 的计划清除"
+        "no_scheduled": "❌ 未找到 {channel} 的计划清除",
+        "success": "✅ 已跳过 {channel} 的下一次计划清除。\n**新的下次清除：** {next_clear}"
+      },
+      "update": {
+        "description": "更新现有订阅的计时器",
+        "success": "✅ 成功将 {channel} 的计时器更新为 **{timer}**",
+        "success_with_ignored": "✅ 成功将 {channel} 的计时器更新为 **{timer}**\n\n**已添加忽略目标：** {count}"
       }
     },
-    
-    "owner": {
-      "description": "仅限所有者的管理命令",
-      "permission_denied": {
-        "title": "仅限所有者",
-        "description": "此命令仅限机器人所有者使用。"
+    "timezone": {
+      "change": {
+        "description": "更改服务器的默认时区",
+        "invalid": "❌ 无效的时区：`{timezone}`",
+        "success": "✅ 服务器时区已设置为 **{timezone}**",
+        "success_auto": "✅ 服务器时区已自动检测并设置为 **{timezone}**",
+        "suggestion": "您是指：`{suggestion}` 吗？"
       },
-      "admin": {
-        "description": "管理机器人管理员",
-        "list": {
-          "description": "列出所有机器人管理员",
-          "title": "机器人管理员",
-          "no_admins_title": "未配置管理员",
-          "no_admins_description": "没有配置管理员。",
-          "no_admins_hint": "使用 `/owner admin add` 添加管理员",
-          "total": "总计：{count} {admin_text}"
-        },
-        "add": {
-          "description": "添加新的机器人管理员",
-          "success_title": "管理员已添加",
-          "success_description": "成功将 **{username}** 添加为机器人管理员。",
-          "success_user_id": "用户ID：`{user_id}`",
-          "success_mention": "提及：<@{user_id}>",
-          "success_note": "该用户现在可以使用管理命令",
-          "already_title": "已是管理员",
-          "already_description": "用户 `{user_id}` 已是机器人管理员。",
-          "self_title": "已是所有者",
-          "self_description": "您是机器人所有者，已拥有完全权限。",
-          "self_note": "无需将自己添加为管理员"
-        },
-        "remove": {
-          "description": "移除机器人管理员",
-          "success_title": "管理员已移除",
-          "success_description": "成功从管理员中移除 `{user_id}`。",
-          "success_previous": "前管理员：<@{user_id}>",
-          "success_note": "该用户不能再使用管理命令",
-          "not_found_title": "不是管理员",
-          "not_found_description": "用户 `{user_id}` 不是机器人管理员。",
-          "not_found_note": "不能移除非管理员"
-        }
+      "current": {
+        "benefit_1": "• 用户可以仅使用时间设置计时器：`/subscription add 21:30`",
+        "benefit_2": "• 将自动使用服务器时区",
+        "benefit_3": "• 用户仍可覆盖：`/subscription add 21:30 PST`",
+        "change_hint": "要更改时区，请使用 `/timezone change <timezone>`",
+        "error": "**错误：** 无法加载时区详情",
+        "how_it_works": "这意味着：",
+        "list_hint": "使用 `/timezone list` 查看可用时区。",
+        "no_timezone_description": "此服务器没有配置默认时区。当用户创建计时器而不指定时区时，将使用UTC。",
+        "no_timezone_title": "未设置时区",
+        "offset": "**偏移：** {offset}",
+        "set_hint": "使用 `/timezone change <timezone>` 设置默认时区。",
+        "set_timezone_benefits": "设置时区以：",
+        "time": "**当前时间：** {time}",
+        "timezone": "**时区：** `{timezone}`",
+        "title": "当前服务器时区"
       },
-      "shard": {
-        "description": "管理机器人分片",
-        "reload": {
-          "description": "重新加载所有分片或特定分片",
-          "single_title": "重新加载单个分片",
-          "single_description": "仅重启分片 {shard_id}...",
-          "single_what_happens": "发生什么：",
-          "single_note_1": "• 仅此特定分片重启",
-          "single_note_2": "• 其他分片继续运行",
-          "single_note_3": "• 此分片上的公会暂时离线",
-          "all_title": "重新加载所有分片",
-          "all_description": "完全重新加载机器人已启动...",
-          "all_what_happens": "发生什么：",
-          "all_note_1": "• 所有分片一起关闭",
-          "all_note_2": "• 分片管理器重启",
-          "all_note_3": "• 所有分片以新状态重新启动",
-          "all_note_4": "• 机器人离线约5-10秒",
-          "all_hint": "使用 `/owner shard reload <id>` 仅重新加载单个分片",
-          "not_sharded_title": "无法重新加载分片",
-          "not_sharded_description": "机器人正在单实例模式运行（未分片）。",
-          "not_sharded_hint": "使用 `/owner shard reload` 重新加载机器人",
-          "invalid_id_title": "无效的分片ID",
-          "invalid_id_description": "分片ID `{shard_id}` 无效。",
-          "invalid_id_range": "有效范围：0 到 {max_shard}",
-          "invalid_id_note": "请指定有效的分片ID",
-          "signal_sent_title": "重新加载信号已发送",
-          "signal_sent_description": "重新加载信号已发送到分片 {shard_id}。",
-          "signal_sent_note": "注意：跨分片通信尚未实现。",
-          "signal_sent_manual": "请手动重启分片。",
-          "signal_sent_future": "未来更新将启用自动跨分片重新加载",
-          "failed_title": "重新加载失败",
-          "failed_description": "重新加载分片失败。",
-          "failed_error": "错误：{error}",
-          "failed_note": "请查看日志以获取更多详细信息"
-        },
-        "status": {
-          "description": "查看当前分片状态",
-          "title": "分片状态",
-          "current_runtime": "当前运行时间：",
-          "shard_info": "• 分片：{shard_id}/{max_shard}",
-          "total_shards": "• 总分片：{count}",
-          "guilds_on_shard": "• 此分片上的公会：{count}",
-          "latency": "• 延迟：{latency}毫秒",
-          "single_mode": "• 模式：单实例（未分片）",
-          "total_guilds": "• 总公会：{count}",
-          "process_id": "• 进程ID：`{pid}`",
-          "available_commands": "可用命令：",
-          "cmd_reload_all": "• `/owner shard reload` - 重新加载所有分片",
-          "cmd_reload_single": "• `/owner shard reload <id>` - 重新加载特定分片",
-          "cmd_status": "• `/owner shard status` - 查看此状态"
-        }
-      }
-    },
-    
-    "admin": {
-      "description": "仅限管理员的管理命令",
-      "permission_denied": {
-        "title": "仅限管理员",
-        "description": "此命令仅限机器人管理员使用。"
-      },
-      "stats": {
-        "description": "查看机器人统计信息",
-        "title": "机器人统计",
-        "server_title": "服务器统计",
-        "servers": "服务器：{count}",
-        "subscribed_channels": "订阅频道：{count}",
-        "removed_servers": "已移除服务器：{count}",
-        "blacklisted_servers": "黑名单服务器：{count}",
-        "saved_errors": "保存的错误：{count}",
-        "server_name": "服务器：{name}",
-        "server_id": "服务器ID：{id}",
-        "blacklisted": "黑名单：{status}",
-        "blacklisted_yes": "是 ⛔",
-        "blacklisted_no": "否 ✅",
-        "unknown_channel": "未知频道",
-        "errors": "错误：{count}",
-        "channels_label": "频道：",
-        "more_channels": "... 还有 {count} 个频道",
-        "not_found_title": "未找到服务器",
-        "not_found_description": "在数据库中未找到服务器ID `{server_id}`。",
-        "not_found_note": "此服务器从未订阅过机器人。"
-      },
-      "blacklist": {
-        "description": "管理服务器黑名单",
-        "no_reason_provided": "未提供原因",
-        "add": {
-          "description": "将服务器添加到黑名单",
-          "success_title": "服务器已列入黑名单",
-          "success_description": "将服务器 **{server_name}** (`{server_id}`) 添加到黑名单。",
-          "success_reason": "原因：{reason}",
-          "success_note_1": "• 所有订阅已被移除",
-          "success_note_2": "• 该服务器不能使用机器人命令",
-          "already_title": "已在黑名单中",
-          "already_description": "服务器 `{server_id}` 已在黑名单中。"
-        },
-        "remove": {
-          "description": "从黑名单中移除服务器",
-          "success_title": "服务器已从黑名单移除",
-          "success_description": "从黑名单中移除服务器 `{server_id}`。",
-          "success_note": "该服务器现在可以再次使用机器人命令。",
-          "not_found_title": "不在黑名单中",
-          "not_found_description": "服务器 `{server_id}` 不在黑名单中。"
-        },
-        "check": {
-          "description": "检查服务器是否在黑名单中",
-          "not_blacklisted_title": "服务器不在黑名单中",
-          "not_blacklisted_description": "服务器 `{server_id}` 不在黑名单中。",
-          "not_blacklisted_note": "此服务器可以正常使用机器人命令。",
-          "blacklisted_title": "服务器在黑名单中",
-          "blacklisted_server_name": "服务器名称",
-          "blacklisted_server_id": "服务器ID",
-          "blacklisted_reason": "原因",
-          "blacklisted_date": "列入黑名单",
-          "blacklisted_by": "列入者",
-          "blacklisted_note": "此服务器不能使用机器人命令。",
-          "unknown_date": "未知"
-        }
-      },
-      "recache": {
-        "description": "从数据库重新缓存所有数据",
-        "success_title": "缓存已重新加载",
-        "success_description": "成功重新加载：**{cache_type}**",
-        "success_loaded_data": "加载的数据",
-        "success_servers": "• 服务器：{count}",
-        "success_channels": "• 频道：{count}",
-        "success_blacklist": "• 黑名单：{count}",
-        "success_timezones": "• 时区：{count}",
-        "error_title": "重新缓存失败",
-        "error_description": "重新加载 **{cache_type}** 缓存失败。",
-        "error_message": "错误：{error}"
-      },
-      "error": {
-        "description": "管理错误日志",
-        "check": {
-          "description": "通过ID检查错误",
-          "channel": "频道",
-          "user": "用户",
-          "command": "命令",
-          "traceback": "追踪",
-          "no_message": "无消息",
-          "unknown": "未知"
-        },
-        "delete": {
-          "description": "通过ID删除错误"
-        },
-        "list": {
-          "description": "列出最近的错误"
-        },
-        "clear": {
-          "description": "从数据库中清除所有错误"
-        },
-        "not_found_title": "未找到错误",
-        "not_found_description": "未找到ID为 `{error_id}` 的错误",
-        "details_title": "错误详情：{error_id}",
-        "details_level": "级别：{level}",
-        "details_area": "区域：{area}",
-        "details_time": "时间：<t:{timestamp}:F>",
-        "details_message": "消息：{message}",
-        "details_server": "服务器：{name} ({id})",
-        "details_channel": "频道：{name} ({id})",
-        "details_user": "用户：<@{user_id}> ({user_id})",
-        "details_command": "命令：{command}",
-        "details_traceback": "追踪：",
-        "delete_success_title": "错误已删除",
-        "delete_success_description": "错误 `{error_id}` 已从数据库中删除。",
-        "delete_failed_title": "删除失败",
-        "delete_failed_description": "无法删除错误 `{error_id}`。",
-        "delete_failed_note": "它可能不存在或已被删除。",
-        "list_title": "最近的错误",
-        "list_item_id": "ID：`{error_id}` | {level}",
-        "list_item_area": "区域：{area}",
-        "list_item_time": "时间：{timestamp}",
-        "list_item_message": "消息：{message}",
-        "list_more": "... 还有 {count} 个错误",
-        "list_hint": "使用 `/admin error check <id>` 查看完整详情",
-        "no_errors_title": "未找到错误",
-        "no_errors_description": "数据库中未找到错误。",
-        "clear_success_title": "错误已清除",
-        "clear_success_description": "从数据库中清除了 {count} 个错误。",
-        "clear_success_note": "错误日志现在为空",
-        "clear_failed_title": "清除失败",
-        "clear_failed_description": "从数据库清除错误失败。",
-        "clear_failed_error_id": "错误ID：`{error_id}`",
-        "clear_failed_note": "请查看日志以获取更多详细信息"
-      },
-      "force": {
-        "description": "强制管理操作",
-        "remove_server": {
-          "description": "强制移除服务器的所有订阅"
-        },
-        "remove_channel": {
-          "description": "强制移除特定的频道订阅"
-        },
-        "not_found_title": "未找到",
-        "not_found_description": "未找到ID为 `{target_id}` 的服务器或频道",
-        "not_found_note": "请检查ID并重试",
-        "server_success_title": "服务器已取消订阅",
-        "server_success_description": "从服务器 `{server_id}` 清除了 {count} 个订阅频道。",
-        "server_success_note": "服务器可以使用 `/subscription add` 再次订阅频道",
-        "channel_success_title": "频道已取消订阅",
-        "channel_success_description": "从服务器 `{server_id}` 移除了频道 `{channel_id}`。",
-        "channel_success_note": "频道可以使用 `/subscription add` 再次订阅"
+      "description": "管理服务器时区偏好",
+      "list": {
+        "content": "以下是配置的时区缩写及其完整名称：",
+        "description": "从配置中列出可用时区",
+        "title": "🌍 可用时区"
       }
     }
   },
-  
+  "common": {
+    "channel": "频道",
+    "disabled": "已禁用",
+    "enabled": "已启用",
+    "error": "错误",
+    "info": "信息",
+    "message": "消息",
+    "no": "否",
+    "none": "无",
+    "server": "服务器",
+    "success": "成功",
+    "unknown": "未知",
+    "user": "用户",
+    "warning": "警告",
+    "yes": "是"
+  },
+  "components": {
+    "buttons": {
+      "cancel": "取消",
+      "clear_now": "立即清除",
+      "confirm": "确认",
+      "no": "否",
+      "yes": "是"
+    },
+    "messages": {
+      "channel_cleared_manually": "频道清除成功！"
+    },
+    "no_data": "❌ 未找到 {channel} 的数据",
+    "powered_by": "**由 {bot_name} 提供支持**"
+  },
+  "errors": {
+    "bot_missing_permissions": "❌ 机器人缺少必需的权限：{permissions}",
+    "channel_in_progress": "⏳ {channel} 正在进行清除。请等待完成。",
+    "command_failed": "❌ 命令失败：{error}",
+    "generic": "❌ 发生错误：{error}",
+    "invalid_channel": "❌ 无效的频道：{channel}",
+    "invalid_target": "❌ 无效的目标。请提供有效的消息ID/链接或用户提及/ID。",
+    "invalid_timer": "❌ 无效的计时器格式：`{timer}`\n\n请使用如下格式：\n• `24h` 表示24小时\n• `1d12h30m` 表示1天12小时30分钟\n• `15:30 EST` 表示每天EST下午3:30",
+    "invalid_user": "❌ 无效的用户：{user}",
+    "job_not_found": "❌ 未找到 {channel} 的计划作业",
+    "missed_clear_notification": "⚠️ **错过清除通知**\n\n此频道错过了一次计划的消息清除。\n计时器已重新安排。",
+    "missing_permissions": "❌ 缺少必需的权限：{permissions}",
+    "next_time_not_found": "❌ 无法确定 {channel} 的下一个计划时间"
+  },
+  "language_code": "zh",
+  "language_name": "Chinese (Simplified)",
+  "language_native_name": "简体中文",
   "subscription": {
-    "timer_view": {
-      "title": "{channel} 的活动计时器",
-      "timer_setting": "计时器设置",
-      "next_clear": "下次清除",
-      "time_remaining": "剩余时间",
-      "auto_update": "此消息在每次清除后自动更新。"
+    "errors": {
+      "message_not_found": {
+        "description": "在 {channel} 中未找到ID为 `{message_id}` 的消息。",
+        "help": "请确保消息存在于指定的频道中。",
+        "title": "未找到消息"
+      },
+      "user_not_found": {
+        "description": "在此服务器中未找到ID为 `{user_id}` 的用户。",
+        "help": "请确保该用户是此服务器的成员。",
+        "title": "未找到用户"
+      }
     },
     "ignore": {
-      "user_added": {
-        "title": "用户已添加到忽略列表"
-      },
-      "user_removed": {
-        "title": "用户已从忽略列表移除"
-      },
       "message_added": {
         "title": "消息已添加到忽略列表"
       },
       "message_removed": {
         "title": "消息已从忽略列表移除"
+      },
+      "user_added": {
+        "title": "用户已添加到忽略列表"
+      },
+      "user_removed": {
+        "title": "用户已从忽略列表移除"
       }
     },
-    "errors": {
-      "user_not_found": {
-        "title": "未找到用户",
-        "description": "在此服务器中未找到ID为 `{user_id}` 的用户。",
-        "help": "请确保该用户是此服务器的成员。"
-      },
-      "message_not_found": {
-        "title": "未找到消息",
-        "description": "在 {channel} 中未找到ID为 `{message_id}` 的消息。",
-        "help": "请确保消息存在于指定的频道中。"
-      }
+    "timer_view": {
+      "auto_update": "此消息在每次清除后自动更新。",
+      "next_clear": "下次清除",
+      "time_remaining": "剩余时间",
+      "timer_setting": "计时器设置",
+      "title": "{channel} 的活动计时器"
     }
   },
-  
-  "errors": {
-    "generic": "❌ 发生错误：{error}",
-    "command_failed": "❌ 命令失败：{error}",
-    "invalid_channel": "❌ 无效的频道：{channel}",
-    "invalid_user": "❌ 无效的用户：{user}",
-    "missing_permissions": "❌ 缺少必需的权限：{permissions}",
-    "bot_missing_permissions": "❌ 机器人缺少必需的权限：{permissions}",
-    "invalid_timer": "❌ 无效的计时器格式：`{timer}`\n\n请使用如下格式：\n• `24h` 表示24小时\n• `1d12h30m` 表示1天12小时30分钟\n• `15:30 EST` 表示每天EST下午3:30",
-    "invalid_target": "❌ 无效的目标。请提供有效的消息ID/链接或用户提及/ID。",
-    "channel_in_progress": "⏳ {channel} 正在进行清除。请等待完成。",
-    "job_not_found": "❌ 未找到 {channel} 的计划作业",
-    "next_time_not_found": "❌ 无法确定 {channel} 的下一个计划时间",
-    "missed_clear_notification": "⚠️ **错过清除通知**\n\n此频道错过了一次计划的消息清除。\n计时器已重新安排。"
-  },
-  
   "validation": {
-    "error_titles": {
-      "blacklisted": "服务器已列入黑名单",
-      "insufficient_permissions": "权限不足",
-      "bot_missing_permissions": "机器人缺少权限",
-      "channel_already_subscribed": "频道已订阅",
-      "general": "验证错误"
-    },
+    "already_subscribed": "❌ {channel} 已订阅 {timer} 计时器。\n使用 `/subscription update` 更改计时器。",
     "blacklisted": "❌ 此服务器已被列入黑名单，不能使用此机器人。",
     "blacklisted_detailed": "❌ **服务器已列入黑名单**\n\n此服务器已被列入黑名单，不能使用此机器人。\n\n如果您认为这是错误，请联系支持。",
-    "insufficient_permissions": "❌ 您需要 `管理消息` 权限才能使用此命令。",
-    "insufficient_permissions_detailed": "❌ **权限不足**\n\n您需要以下权限才能使用此命令：\n{permissions}\n\n如需访问，请联系服务器管理员。",
+    "blacklisted_server": "❌ **服务器已列入黑名单**\n\n此服务器已被列入黑名单，不能使用此机器人。\n\n如果您认为这是错误，可以在我们的[支持服务器](https://biast12.com/botsupport)上申诉黑名单。",
     "bot_missing_permissions": "❌ 我在 {channel} 中缺少以下权限：{permissions}",
     "bot_missing_permissions_detailed": "❌ **机器人缺少权限**\n\n我在 {channel} 中缺少以下权限：\n{permissions}\n\n请授予这些权限并重试。",
+    "bot_no_permissions": "❌ 我需要在 {channel} 中拥有以下权限：{permissions}",
     "channel_already_subscribed": "❌ {channel} 已设置计时器。使用 `/subscription update` 更新订阅。",
     "channel_already_subscribed_detailed": "❌ **频道已订阅**\n\n{channel} 已设置计时器。\n\n使用 `/subscription update` 更新订阅。",
+    "error_titles": {
+      "blacklisted": "服务器已列入黑名单",
+      "bot_missing_permissions": "机器人缺少权限",
+      "channel_already_subscribed": "频道已订阅",
+      "general": "验证错误",
+      "insufficient_permissions": "权限不足"
+    },
+    "insufficient_permissions": "❌ 您需要 `管理消息` 权限才能使用此命令。",
+    "insufficient_permissions_detailed": "❌ **权限不足**\n\n您需要以下权限才能使用此命令：\n{permissions}\n\n如需访问，请联系服务器管理员。",
+    "invalid_channel": "❌ 请提供有效的文本频道。",
+    "no_permissions": "❌ 您需要 **{permission}** 权限才能使用此命令。",
     "not_subscribed": "❌ **频道未订阅**\n\n{channel} 未订阅自动消息清除。\n\n先使用 `/subscription add` 设置自动清除。",
     "not_subscribed_status": "❌ 未订阅",
-    "permission_denied": "❌ 您需要 **{permission}** 权限才能使用此命令。",
-    "blacklisted_server": "❌ **服务器已列入黑名单**\n\n此服务器已被列入黑名单，不能使用此机器人。\n\n如果您认为这是错误，可以在我们的[支持服务器](https://biast12.com/botsupport)上申诉黑名单。",
-    "no_permissions": "❌ 您需要 **{permission}** 权限才能使用此命令。",
-    "bot_no_permissions": "❌ 我需要在 {channel} 中拥有以下权限：{permissions}",
-    "already_subscribed": "❌ {channel} 已订阅 {timer} 计时器。\n使用 `/subscription update` 更改计时器。",
-    "invalid_channel": "❌ 请提供有效的文本频道。"
-  },
-  
-  "components": {
-    "powered_by": "**由 {bot_name} 提供支持**",
-    "buttons": {
-      "confirm": "确认",
-      "cancel": "取消",
-      "yes": "是",
-      "no": "否",
-      "clear_now": "立即清除"
-    },
-    "messages": {
-      "channel_cleared_manually": "频道清除成功！"
-    },
-    "no_data": "❌ 未找到 {channel} 的数据"
+    "permission_denied": "❌ 您需要 **{permission}** 权限才能使用此命令。"
   }
 }

@@ -1,150 +1,309 @@
 {
-  "language_name": "Danish",
-  "language_native_name": "Dansk",
-  "language_code": "da",
-  
-  "common": {
-    "yes": "Ja",
-    "no": "Nej",
-    "enabled": "Aktiveret",
-    "disabled": "Deaktiveret",
-    "error": "Fejl",
-    "success": "Succes",
-    "warning": "Advarsel",
-    "info": "Info",
-    "none": "Ingen",
-    "unknown": "Ukendt",
-    "channel": "Kanal",
-    "server": "Server",
-    "user": "Bruger",
-    "message": "Besked"
-  },
-  
   "commands": {
+    "admin": {
+      "blacklist": {
+        "add": {
+          "already_description": "Server `{server_id}` er allerede sortlistet.",
+          "already_title": "Allerede Sortlistet",
+          "description": "Tilføj en server til sortlisten",
+          "success_description": "Tilføjede server **{server_name}** (`{server_id}`) til sortlisten.",
+          "success_note_1": "• Alle abonnementer er blevet fjernet",
+          "success_note_2": "• Serveren kan ikke bruge bot kommandoer",
+          "success_reason": "Årsag: {reason}",
+          "success_title": "Server Sortlistet"
+        },
+        "check": {
+          "blacklisted_by": "Sortlistet Af",
+          "blacklisted_date": "Sortlistet",
+          "blacklisted_note": "Denne server kan ikke bruge bot kommandoer.",
+          "blacklisted_reason": "Årsag",
+          "blacklisted_server_id": "Server ID",
+          "blacklisted_server_name": "Server Navn",
+          "blacklisted_title": "Server er Sortlistet",
+          "description": "Tjek om en server er sortlistet",
+          "not_blacklisted_description": "Server `{server_id}` er ikke på sortlisten.",
+          "not_blacklisted_note": "Denne server kan bruge bot kommandoer normalt.",
+          "not_blacklisted_title": "Server er IKKE Sortlistet",
+          "unknown_date": "Ukendt"
+        },
+        "description": "Administrer server sortliste",
+        "no_reason_provided": "Ingen grund angivet",
+        "remove": {
+          "description": "Fjern en server fra sortlisten",
+          "not_found_description": "Server `{server_id}` er ikke sortlistet.",
+          "not_found_title": "Ikke Sortlistet",
+          "success_description": "Fjernede server `{server_id}` fra sortlisten.",
+          "success_note": "Serveren kan nu bruge bot kommandoer igen.",
+          "success_title": "Server Fjernet fra Sortliste"
+        }
+      },
+      "description": "Kun-admin administrationskommandoer",
+      "error": {
+        "check": {
+          "channel": "Kanal",
+          "command": "Kommando",
+          "description": "Tjek en fejl ved dens ID",
+          "no_message": "Ingen besked",
+          "traceback": "Traceback",
+          "unknown": "Ukendt",
+          "user": "Bruger"
+        },
+        "clear": {
+          "description": "Ryd alle fejl fra databasen"
+        },
+        "clear_failed_description": "Kunne ikke rydde fejl fra databasen.",
+        "clear_failed_error_id": "Fejl ID: `{error_id}`",
+        "clear_failed_note": "Tjek venligst logfilerne for flere detaljer",
+        "clear_failed_title": "Rydning Fejlede",
+        "clear_success_description": "Ryddede {count} fejl fra databasen.",
+        "clear_success_note": "Fejlloggen er nu tom",
+        "clear_success_title": "Fejl Ryddet",
+        "delete": {
+          "description": "Slet en fejl ved dens ID"
+        },
+        "delete_failed_description": "Kunne ikke slette fejl `{error_id}`.",
+        "delete_failed_note": "Den eksisterer muligvis ikke eller er allerede blevet slettet.",
+        "delete_failed_title": "Sletning Fejlede",
+        "delete_success_description": "Fejl `{error_id}` er blevet slettet fra databasen.",
+        "delete_success_title": "Fejl Slettet",
+        "description": "Administrer fejllogger",
+        "details_area": "Område: {area}",
+        "details_channel": "Kanal: {name} ({id})",
+        "details_command": "Kommando: {command}",
+        "details_level": "Niveau: {level}",
+        "details_message": "Besked: {message}",
+        "details_server": "Server: {name} ({id})",
+        "details_time": "Tid: <t:{timestamp}:F>",
+        "details_title": "Fejl Detaljer: {error_id}",
+        "details_traceback": "Traceback:",
+        "details_user": "Bruger: <@{user_id}> ({user_id})",
+        "list": {
+          "description": "Vis seneste fejl"
+        },
+        "list_hint": "Brug `/admin error check <id>` for at se fulde detaljer",
+        "list_item_area": "Område: {area}",
+        "list_item_id": "ID: `{error_id}` | {level}",
+        "list_item_message": "Besked: {message}",
+        "list_item_time": "Tid: {timestamp}",
+        "list_more": "... og {count} flere fejl",
+        "list_title": "Seneste Fejl",
+        "no_errors_description": "Ingen fejl fundet i databasen.",
+        "no_errors_title": "Ingen Fejl Fundet",
+        "not_found_description": "Ingen fejl fundet med ID: `{error_id}`",
+        "not_found_title": "Fejl Ikke Fundet"
+      },
+      "force": {
+        "channel_success_description": "Fjernede kanal `{channel_id}` fra server `{server_id}`.",
+        "channel_success_note": "Kanalen kan tilmeldes igen med `/subscription add`",
+        "channel_success_title": "Kanal Afmeldt",
+        "description": "Tvung administrationshandlinger",
+        "not_found_description": "Ingen server eller kanal fundet med ID: `{target_id}`",
+        "not_found_note": "Tjek venligst ID'et og prøv igen",
+        "not_found_title": "Ikke Fundet",
+        "remove_channel": {
+          "description": "Tvunget fjernelse af et specifikt kanalabonnement"
+        },
+        "remove_server": {
+          "description": "Tvunget fjernelse af alle abonnementer for en server"
+        },
+        "server_success_description": "Ryddede {count} tilmeldte kanaler fra server `{server_id}`.",
+        "server_success_note": "Serveren kan tilmelde kanaler igen med `/subscription add`",
+        "server_success_title": "Server Afmeldt"
+      },
+      "permission_denied": {
+        "description": "Denne kommando er begrænset til bot admins.",
+        "title": "Kun Admin"
+      },
+      "recache": {
+        "description": "Genindlæs alle data fra database",
+        "error_description": "Kunne ikke genindlæse **{cache_type}** cache.",
+        "error_message": "Fejl: {error}",
+        "error_title": "Genindlæsning Fejlede",
+        "success_blacklist": "• Sortlistede: {count}",
+        "success_channels": "• Kanaler: {count}",
+        "success_description": "Genindlæste: **{cache_type}**",
+        "success_loaded_data": "Indlæst Data",
+        "success_servers": "• Servere: {count}",
+        "success_timezones": "• Tidszoner: {count}",
+        "success_title": "Cache Genindlæst"
+      },
+      "stats": {
+        "blacklisted": "Sortlistet: {status}",
+        "blacklisted_no": "Nej ✅",
+        "blacklisted_servers": "Sortlistede Servere: {count}",
+        "blacklisted_yes": "Ja ⛔",
+        "channels_label": "Kanaler:",
+        "description": "Se bot statistik",
+        "errors": "Fejl: {count}",
+        "more_channels": "... og {count} flere kanaler",
+        "not_found_description": "Server ID `{server_id}` blev ikke fundet i databasen.",
+        "not_found_note": "Denne server har aldrig været tilmeldt botten.",
+        "not_found_title": "Server Ikke Fundet",
+        "removed_servers": "Fjernede Servere: {count}",
+        "saved_errors": "Gemte Fejl: {count}",
+        "server_id": "Server ID: {id}",
+        "server_name": "Server: {name}",
+        "server_title": "Server Statistik",
+        "servers": "Servere: {count}",
+        "subscribed_channels": "Tilmeldte Kanaler: {count}",
+        "title": "Bot Statistik",
+        "unknown_channel": "Ukendt Kanal"
+      }
+    },
     "help": {
-      "description": "Vis hjælpeinformation om botten",
-      "title": "Hjælp",
       "content": "Ryd automatisk beskeder i Discord-kanaler efter en tidsplan.",
-      "subscription_commands": "📝 Abonnementskommandoer",
+      "description": "Vis hjælpeinformation om botten",
+      "links": "🔗 Links",
       "other_commands": "🔧 Andre Kommandoer",
-      "timer_formats": "⏱️ Timerformater",
-      "timer_intervals": "**Intervaller:** `1d2h3m` (dage, timer, minutter)",
+      "permissions_for_bot": "**For Bot:** Se Kanal, Send Beskeder, Send Beskeder i Tråde, Læs Beskedhistorik, Administrer Beskeder, Indlejr Links, Brug Applikationskommandoer",
+      "permissions_for_you": "**For Dig:** Administrer Beskeder",
+      "required_permissions": "🔒 Påkrævede Tilladelser",
+      "select_command": "Vælg en kommando for at lære mere...",
+      "subscription_commands": "📝 Abonnementskommandoer",
       "timer_daily": "**Daglig Plan:** `15:30 EST` (tid + tidszone)",
       "timer_examples": "**Eksempler:** `24h`, `1d`, `30m`, `09:00 PST`",
-      "required_permissions": "🔒 Påkrævede Tilladelser",
-      "permissions_for_you": "**For Dig:** Administrer Beskeder",
-      "permissions_for_bot": "**For Bot:** Se Kanal, Send Beskeder, Send Beskeder i Tråde, Læs Beskedhistorik, Administrer Beskeder, Indlejr Links, Brug Applikationskommandoer",
-      "links": "🔗 Links",
-      "select_command": "Vælg en kommando for at lære mere..."
+      "timer_formats": "⏱️ Timerformater",
+      "timer_intervals": "**Intervaller:** `1d2h3m` (dage, timer, minutter)",
+      "title": "Hjælp"
     },
-    
+    "language": {
+      "change": {
+        "already_set": "ℹ️ Serverens sprog er allerede sat til **{language}**",
+        "available": "Tilgængelige sprog: {languages}",
+        "description": "Ændre sproget for din server",
+        "invalid": "❌ Ugyldigt sprog: `{language}`",
+        "success": "✅ Serverens sprog er blevet ændret til **{language}**"
+      },
+      "description": "Administrer serverens sprogpræferencer",
+      "list": {
+        "change_hint": "Brug `/language change <sprog>` for at ændre serverens sprog",
+        "content": "Botten understøtter i øjeblikket følgende sprog:",
+        "current": "Nuværende sprog: **{language}**",
+        "description": "Vis alle understøttede sprog",
+        "title": "🌐 Tilgængelige Sprog"
+      }
+    },
+    "owner": {
+      "admin": {
+        "add": {
+          "already_description": "Bruger `{user_id}` er allerede en bot administrator.",
+          "already_title": "Allerede Administrator",
+          "description": "Tilføj en ny bot administrator",
+          "self_description": "Du er bottens ejer og har allerede fulde tilladelser.",
+          "self_note": "Ingen grund til at tilføje dig selv som administrator",
+          "self_title": "Allerede Ejer",
+          "success_description": "Tilføjede **{username}** som bot administrator.",
+          "success_mention": "Omtale: <@{user_id}>",
+          "success_note": "Denne bruger kan nu bruge admin kommandoer",
+          "success_title": "Administrator Tilføjet",
+          "success_user_id": "Bruger ID: `{user_id}`"
+        },
+        "description": "Administrer bot administratorer",
+        "list": {
+          "description": "Vis alle bot administratorer",
+          "no_admins_description": "Der er ingen administratorer konfigureret.",
+          "no_admins_hint": "Brug `/owner admin add` for at tilføje administratorer",
+          "no_admins_title": "Ingen Administratorer Konfigureret",
+          "title": "Bot Administratorer",
+          "total": "Total: {count} {admin_text}"
+        },
+        "remove": {
+          "description": "Fjern en bot administrator",
+          "not_found_description": "Bruger `{user_id}` er ikke en bot administrator.",
+          "not_found_note": "Kan ikke fjerne nogen der ikke er admin",
+          "not_found_title": "Ikke en Administrator",
+          "success_description": "Fjernede `{user_id}` fra administratorer.",
+          "success_note": "Denne bruger kan ikke længere bruge admin kommandoer",
+          "success_previous": "Tidligere admin: <@{user_id}>",
+          "success_title": "Administrator Fjernet"
+        }
+      },
+      "description": "Kun-ejer administrationskommandoer",
+      "permission_denied": {
+        "description": "Denne kommando er begrænset til bottens ejer.",
+        "title": "Kun Ejer"
+      },
+      "shard": {
+        "description": "Administrer bot shards",
+        "reload": {
+          "all_description": "Fuld bot genindlæsning startet...",
+          "all_hint": "Brug `/owner shard reload <id>` for kun at genindlæse enkelt shard",
+          "all_note_1": "• Alle shards lukker ned sammen",
+          "all_note_2": "• Shard manager genstarter",
+          "all_note_3": "• Alle shards genstarter med frisk tilstand",
+          "all_note_4": "• Bot offline i ~5-10 sekunder",
+          "all_title": "Genindlæser Alle Shards",
+          "all_what_happens": "Hvad sker der:",
+          "description": "Genindlæs alle shards eller en specifik shard",
+          "failed_description": "Kunne ikke genindlæse shard.",
+          "failed_error": "Fejl: {error}",
+          "failed_note": "Tjek venligst logfilerne for flere detaljer",
+          "failed_title": "Genindlæsning Fejlede",
+          "invalid_id_description": "Shard ID `{shard_id}` er ugyldigt.",
+          "invalid_id_note": "Angiv venligst et gyldigt shard ID",
+          "invalid_id_range": "Gyldigt Område: 0 til {max_shard}",
+          "invalid_id_title": "Ugyldigt Shard ID",
+          "not_sharded_description": "Bot kører i enkelt-instans tilstand (ikke sharded).",
+          "not_sharded_hint": "Brug `/owner shard reload` for at genindlæse botten",
+          "not_sharded_title": "Kan Ikke Genindlæse Shard",
+          "signal_sent_description": "Genindlæsningssignal sendt til shard {shard_id}.",
+          "signal_sent_future": "Fremtidige opdateringer vil aktivere automatisk kryds-shard genindlæsning",
+          "signal_sent_manual": "Genstart venligst shard manuelt.",
+          "signal_sent_note": "Bemærk: Kryds-shard kommunikation er endnu ikke implementeret.",
+          "signal_sent_title": "Genindlæsningssignal Sendt",
+          "single_description": "Genstarter kun shard {shard_id}...",
+          "single_note_1": "• Kun denne specifikke shard genstarter",
+          "single_note_2": "• Andre shards fortsætter med at køre",
+          "single_note_3": "• Guilds på denne shard midlertidigt offline",
+          "single_title": "Genindlæser Enkelt Shard",
+          "single_what_happens": "Hvad sker der:"
+        },
+        "status": {
+          "available_commands": "Tilgængelige Kommandoer:",
+          "cmd_reload_all": "• `/owner shard reload` - Genindlæs alle shards",
+          "cmd_reload_single": "• `/owner shard reload <id>` - Genindlæs specifik shard",
+          "cmd_status": "• `/owner shard status` - Se denne status",
+          "current_runtime": "Nuværende Kørsel:",
+          "description": "Se nuværende shard status",
+          "guilds_on_shard": "• Guilds på Denne Shard: {count}",
+          "latency": "• Latenstid: {latency}ms",
+          "process_id": "• Proces ID: `{pid}`",
+          "shard_info": "• Shard: {shard_id}/{max_shard}",
+          "single_mode": "• Tilstand: Enkelt-instans (ikke sharded)",
+          "title": "Shard Status",
+          "total_guilds": "• Total Guilds: {count}",
+          "total_shards": "• Total Shards: {count}"
+        }
+      }
+    },
     "ping": {
       "description": "Tjek bottens latenstid",
-      "title": "🏓 Pong!",
-      "websocket_latency": "**WebSocket Latenstid:** {latency}ms",
       "response_time": "**Svartid:** {time}ms",
       "status": "**Status:** {status}",
       "status_excellent": "🟢 Fremragende",
-      "status_good": "🟡 God",
       "status_fair": "🟠 Rimelig",
-      "status_poor": "🔴 Dårlig"
+      "status_good": "🟡 God",
+      "status_poor": "🔴 Dårlig",
+      "title": "🏓 Pong!",
+      "websocket_latency": "**WebSocket Latenstid:** {latency}ms"
     },
-    
-    "timezone": {
-      "description": "Administrer serverens tidszonepræferencer",
-      "change": {
-        "description": "Skift standardtidszonen for din server",
-        "success": "✅ Serverens tidszone er blevet sat til **{timezone}**",
-        "success_auto": "✅ Serverens tidszone er automatisk blevet opdaget og sat til **{timezone}**",
-        "invalid": "❌ Ugyldig tidszone: `{timezone}`",
-        "suggestion": "Mente du: `{suggestion}`?"
-      },
-      "list": {
-        "description": "Vis tilgængelige tidszoner fra konfigurationen",
-        "title": "🌍 Tilgængelige Tidszoner",
-        "content": "Her er de konfigurerede tidszoneforkortelser og deres fulde navne:"
-      },
-      "current": {
-        "title": "Nuværende Server Tidszone",
-        "timezone": "**Tidszone:** `{timezone}`",
-        "offset": "**Forskydning:** {offset}",
-        "time": "**Nuværende Tid:** {time}",
-        "how_it_works": "Dette betyder:",
-        "benefit_1": "• Brugere kan indstille timere med kun tid: `/subscription add 21:30`",
-        "benefit_2": "• Serverens tidszone vil blive brugt automatisk",
-        "benefit_3": "• Brugere kan stadig tilsidesætte: `/subscription add 21:30 PST`",
-        "change_hint": "For at ændre tidszonen, brug `/timezone change <tidszone>`",
-        "error": "**Fejl:** Kunne ikke indlæse tidszonedetaljer",
-        "no_timezone_title": "Ingen Tidszone Indstillet",
-        "no_timezone_description": "Denne server har ikke en standard tidszone konfigureret. Når brugere opretter timere uden at angive en tidszone, vil UTC blive brugt.",
-        "set_timezone_benefits": "Indstil en tidszone for at:",
-        "set_hint": "Brug `/timezone change <tidszone>` for at indstille en standard tidszone.",
-        "list_hint": "Brug `/timezone list` for at se tilgængelige tidszoner."
-      }
-    },
-    
-    "language": {
-      "description": "Administrer serverens sprogpræferencer",
-      "list": {
-        "description": "Vis alle understøttede sprog",
-        "title": "🌐 Tilgængelige Sprog",
-        "content": "Botten understøtter i øjeblikket følgende sprog:",
-        "current": "Nuværende sprog: **{language}**",
-        "change_hint": "Brug `/language change <sprog>` for at ændre serverens sprog"
-      },
-      "change": {
-        "description": "Ændre sproget for din server",
-        "success": "✅ Serverens sprog er blevet ændret til **{language}**",
-        "already_set": "ℹ️ Serverens sprog er allerede sat til **{language}**",
-        "invalid": "❌ Ugyldigt sprog: `{language}`",
-        "available": "Tilgængelige sprog: {languages}"
-      }
-    },
-    
     "subscription": {
-      "description": "Administrer automatisk beskedrydning for kanaler",
       "add": {
-        "description": "Tilmeld en kanal til automatisk beskedsletning",
-        "success": "✅ Tilmeldte {channel} til automatisk beskedrydning hver **{timer}**",
-        "success_with_ignored": "✅ Tilmeldte {channel} til automatisk beskedrydning hver **{timer}**\n\n**Ignorerede mål tilføjet:** {count}",
         "already_subscribed": "❌ {channel} er allerede tilmeldt med en {timer} timer.\nBrug `/subscription update` for at ændre timeren.",
-        "invalid_timer": "❌ Ugyldigt timerformat: `{timer}`"
-      },
-      "remove": {
-        "description": "Afmeld en kanal fra automatisk beskedsletning",
-        "success": "✅ Afmeldte {channel} fra automatisk beskedrydning"
-      },
-      "list": {
-        "description": "Vis alle aktive abonnementer på denne server",
-        "title": "📋 Aktive Abonnementer",
-        "no_subscriptions": "Ingen aktive abonnementer på denne server",
-        "subscription_item": "• {channel} - Hver **{timer}** (Næste: {next_clear})",
-        "subscription_item_with_ignored": "• {channel} - Hver **{timer}** (Næste: {next_clear}) - {ignored_count} ignoreret",
-        "tip": "💡 Brug `/subscription info` for detaljeret information"
-      },
-      "info": {
-        "description": "Se detaljeret abonnementsinformation for en kanal",
-        "title": "Abonnementsinformation",
-        "subscribed": "✅ Tilmeldt",
-        "timer": "**Timer:** {timer}",
-        "next_clear": "**Næste Rydning:** {time}",
-        "ignored_messages": "**Ignorerede Beskeder:** {count}",
-        "ignored_users": "**Ignorerede Brugere:** {count}",
-        "commands_hint": "Brug `/subscription` kommandoer til at administrere dette abonnement"
-      },
-      "update": {
-        "description": "Opdater timeren for et eksisterende abonnement",
-        "success": "✅ Opdaterede timeren for {channel} til **{timer}**",
-        "success_with_ignored": "✅ Opdaterede timeren for {channel} til **{timer}**\n\n**Ignorerede mål tilføjet:** {count}"
+        "description": "Tilmeld en kanal til automatisk beskedsletning",
+        "invalid_timer": "❌ Ugyldigt timerformat: `{timer}`",
+        "success": "✅ Tilmeldte {channel} til automatisk beskedrydning hver **{timer}**",
+        "success_with_ignored": "✅ Tilmeldte {channel} til automatisk beskedrydning hver **{timer}**\n\n**Ignorerede mål tilføjet:** {count}"
       },
       "clear": {
         "description": "Manuelt udløs en beskedrydning for en tilmeldt kanal",
-        "success": "✅ Manuel rydning udløst for {channel}",
+        "error": "❌ Kunne ikke rydde beskeder i {channel}: {error}",
         "in_progress": "⏳ En rydning er allerede i gang for {channel}. Vent venligst på at den bliver færdig.",
         "messages_cleared": "Beskeder Ryddet",
         "no_messages": "📭 Ingen beskeder at rydde i {channel}",
-        "error": "❌ Kunne ikke rydde beskeder i {channel}: {error}"
+        "success": "✅ Manuel rydning udløst for {channel}"
       },
+      "description": "Administrer automatisk beskedrydning for kanaler",
       "ignore": {
         "description": "Skift beskeder eller brugere der skal ignoreres under kanalrydning",
         "message_added": "✅ Besked fra {author} vil blive **ignoreret** under rydning i {channel}",
@@ -152,348 +311,177 @@
         "user_added": "✅ {user}s beskeder vil blive **ignoreret** under rydning i {channel}",
         "user_removed": "✅ {user}s beskeder vil **ikke længere blive ignoreret** under rydning i {channel}"
       },
+      "info": {
+        "commands_hint": "Brug `/subscription` kommandoer til at administrere dette abonnement",
+        "description": "Se detaljeret abonnementsinformation for en kanal",
+        "ignored_messages": "**Ignorerede Beskeder:** {count}",
+        "ignored_users": "**Ignorerede Brugere:** {count}",
+        "next_clear": "**Næste Rydning:** {time}",
+        "subscribed": "✅ Tilmeldt",
+        "timer": "**Timer:** {timer}",
+        "title": "Abonnementsinformation"
+      },
+      "list": {
+        "description": "Vis alle aktive abonnementer på denne server",
+        "no_subscriptions": "Ingen aktive abonnementer på denne server",
+        "subscription_item": "• {channel} - Hver **{timer}** (Næste: {next_clear})",
+        "subscription_item_with_ignored": "• {channel} - Hver **{timer}** (Næste: {next_clear}) - {ignored_count} ignoreret",
+        "tip": "💡 Brug `/subscription info` for detaljeret information",
+        "title": "📋 Aktive Abonnementer"
+      },
+      "remove": {
+        "description": "Afmeld en kanal fra automatisk beskedsletning",
+        "success": "✅ Afmeldte {channel} fra automatisk beskedrydning"
+      },
       "skip": {
         "description": "Spring den næste planlagte rydning over for en kanal",
-        "success": "✅ Næste planlagte rydning for {channel} er blevet sprunget over.\n**Ny næste rydning:** {next_clear}",
-        "no_scheduled": "❌ Ingen planlagt rydning fundet for {channel}"
+        "no_scheduled": "❌ Ingen planlagt rydning fundet for {channel}",
+        "success": "✅ Næste planlagte rydning for {channel} er blevet sprunget over.\n**Ny næste rydning:** {next_clear}"
+      },
+      "update": {
+        "description": "Opdater timeren for et eksisterende abonnement",
+        "success": "✅ Opdaterede timeren for {channel} til **{timer}**",
+        "success_with_ignored": "✅ Opdaterede timeren for {channel} til **{timer}**\n\n**Ignorerede mål tilføjet:** {count}"
       }
     },
-    
-    "owner": {
-      "description": "Kun-ejer administrationskommandoer",
-      "permission_denied": {
-        "title": "Kun Ejer",
-        "description": "Denne kommando er begrænset til bottens ejer."
+    "timezone": {
+      "change": {
+        "description": "Skift standardtidszonen for din server",
+        "invalid": "❌ Ugyldig tidszone: `{timezone}`",
+        "success": "✅ Serverens tidszone er blevet sat til **{timezone}**",
+        "success_auto": "✅ Serverens tidszone er automatisk blevet opdaget og sat til **{timezone}**",
+        "suggestion": "Mente du: `{suggestion}`?"
       },
-      "admin": {
-        "description": "Administrer bot administratorer",
-        "list": {
-          "description": "Vis alle bot administratorer",
-          "title": "Bot Administratorer",
-          "no_admins_title": "Ingen Administratorer Konfigureret",
-          "no_admins_description": "Der er ingen administratorer konfigureret.",
-          "no_admins_hint": "Brug `/owner admin add` for at tilføje administratorer",
-          "total": "Total: {count} {admin_text}"
-        },
-        "add": {
-          "description": "Tilføj en ny bot administrator",
-          "success_title": "Administrator Tilføjet",
-          "success_description": "Tilføjede **{username}** som bot administrator.",
-          "success_user_id": "Bruger ID: `{user_id}`",
-          "success_mention": "Omtale: <@{user_id}>",
-          "success_note": "Denne bruger kan nu bruge admin kommandoer",
-          "already_title": "Allerede Administrator",
-          "already_description": "Bruger `{user_id}` er allerede en bot administrator.",
-          "self_title": "Allerede Ejer",
-          "self_description": "Du er bottens ejer og har allerede fulde tilladelser.",
-          "self_note": "Ingen grund til at tilføje dig selv som administrator"
-        },
-        "remove": {
-          "description": "Fjern en bot administrator",
-          "success_title": "Administrator Fjernet",
-          "success_description": "Fjernede `{user_id}` fra administratorer.",
-          "success_previous": "Tidligere admin: <@{user_id}>",
-          "success_note": "Denne bruger kan ikke længere bruge admin kommandoer",
-          "not_found_title": "Ikke en Administrator",
-          "not_found_description": "Bruger `{user_id}` er ikke en bot administrator.",
-          "not_found_note": "Kan ikke fjerne nogen der ikke er admin"
-        }
+      "current": {
+        "benefit_1": "• Brugere kan indstille timere med kun tid: `/subscription add 21:30`",
+        "benefit_2": "• Serverens tidszone vil blive brugt automatisk",
+        "benefit_3": "• Brugere kan stadig tilsidesætte: `/subscription add 21:30 PST`",
+        "change_hint": "For at ændre tidszonen, brug `/timezone change <tidszone>`",
+        "error": "**Fejl:** Kunne ikke indlæse tidszonedetaljer",
+        "how_it_works": "Dette betyder:",
+        "list_hint": "Brug `/timezone list` for at se tilgængelige tidszoner.",
+        "no_timezone_description": "Denne server har ikke en standard tidszone konfigureret. Når brugere opretter timere uden at angive en tidszone, vil UTC blive brugt.",
+        "no_timezone_title": "Ingen Tidszone Indstillet",
+        "offset": "**Forskydning:** {offset}",
+        "set_hint": "Brug `/timezone change <tidszone>` for at indstille en standard tidszone.",
+        "set_timezone_benefits": "Indstil en tidszone for at:",
+        "time": "**Nuværende Tid:** {time}",
+        "timezone": "**Tidszone:** `{timezone}`",
+        "title": "Nuværende Server Tidszone"
       },
-      "shard": {
-        "description": "Administrer bot shards",
-        "reload": {
-          "description": "Genindlæs alle shards eller en specifik shard",
-          "single_title": "Genindlæser Enkelt Shard",
-          "single_description": "Genstarter kun shard {shard_id}...",
-          "single_what_happens": "Hvad sker der:",
-          "single_note_1": "• Kun denne specifikke shard genstarter",
-          "single_note_2": "• Andre shards fortsætter med at køre",
-          "single_note_3": "• Guilds på denne shard midlertidigt offline",
-          "all_title": "Genindlæser Alle Shards",
-          "all_description": "Fuld bot genindlæsning startet...",
-          "all_what_happens": "Hvad sker der:",
-          "all_note_1": "• Alle shards lukker ned sammen",
-          "all_note_2": "• Shard manager genstarter",
-          "all_note_3": "• Alle shards genstarter med frisk tilstand",
-          "all_note_4": "• Bot offline i ~5-10 sekunder",
-          "all_hint": "Brug `/owner shard reload <id>` for kun at genindlæse enkelt shard",
-          "not_sharded_title": "Kan Ikke Genindlæse Shard",
-          "not_sharded_description": "Bot kører i enkelt-instans tilstand (ikke sharded).",
-          "not_sharded_hint": "Brug `/owner shard reload` for at genindlæse botten",
-          "invalid_id_title": "Ugyldigt Shard ID",
-          "invalid_id_description": "Shard ID `{shard_id}` er ugyldigt.",
-          "invalid_id_range": "Gyldigt Område: 0 til {max_shard}",
-          "invalid_id_note": "Angiv venligst et gyldigt shard ID",
-          "signal_sent_title": "Genindlæsningssignal Sendt",
-          "signal_sent_description": "Genindlæsningssignal sendt til shard {shard_id}.",
-          "signal_sent_note": "Bemærk: Kryds-shard kommunikation er endnu ikke implementeret.",
-          "signal_sent_manual": "Genstart venligst shard manuelt.",
-          "signal_sent_future": "Fremtidige opdateringer vil aktivere automatisk kryds-shard genindlæsning",
-          "failed_title": "Genindlæsning Fejlede",
-          "failed_description": "Kunne ikke genindlæse shard.",
-          "failed_error": "Fejl: {error}",
-          "failed_note": "Tjek venligst logfilerne for flere detaljer"
-        },
-        "status": {
-          "description": "Se nuværende shard status",
-          "title": "Shard Status",
-          "current_runtime": "Nuværende Kørsel:",
-          "shard_info": "• Shard: {shard_id}/{max_shard}",
-          "total_shards": "• Total Shards: {count}",
-          "guilds_on_shard": "• Guilds på Denne Shard: {count}",
-          "latency": "• Latenstid: {latency}ms",
-          "single_mode": "• Tilstand: Enkelt-instans (ikke sharded)",
-          "total_guilds": "• Total Guilds: {count}",
-          "process_id": "• Proces ID: `{pid}`",
-          "available_commands": "Tilgængelige Kommandoer:",
-          "cmd_reload_all": "• `/owner shard reload` - Genindlæs alle shards",
-          "cmd_reload_single": "• `/owner shard reload <id>` - Genindlæs specifik shard",
-          "cmd_status": "• `/owner shard status` - Se denne status"
-        }
-      }
-    },
-    
-    "admin": {
-      "description": "Kun-admin administrationskommandoer",
-      "permission_denied": {
-        "title": "Kun Admin",
-        "description": "Denne kommando er begrænset til bot admins."
-      },
-      "stats": {
-        "description": "Se bot statistik",
-        "title": "Bot Statistik",
-        "server_title": "Server Statistik",
-        "servers": "Servere: {count}",
-        "subscribed_channels": "Tilmeldte Kanaler: {count}",
-        "removed_servers": "Fjernede Servere: {count}",
-        "blacklisted_servers": "Sortlistede Servere: {count}",
-        "saved_errors": "Gemte Fejl: {count}",
-        "server_name": "Server: {name}",
-        "server_id": "Server ID: {id}",
-        "blacklisted": "Sortlistet: {status}",
-        "blacklisted_yes": "Ja ⛔",
-        "blacklisted_no": "Nej ✅",
-        "unknown_channel": "Ukendt Kanal",
-        "errors": "Fejl: {count}",
-        "channels_label": "Kanaler:",
-        "more_channels": "... og {count} flere kanaler",
-        "not_found_title": "Server Ikke Fundet",
-        "not_found_description": "Server ID `{server_id}` blev ikke fundet i databasen.",
-        "not_found_note": "Denne server har aldrig været tilmeldt botten."
-      },
-      "blacklist": {
-        "description": "Administrer server sortliste",
-        "no_reason_provided": "Ingen grund angivet",
-        "add": {
-          "description": "Tilføj en server til sortlisten",
-          "success_title": "Server Sortlistet",
-          "success_description": "Tilføjede server **{server_name}** (`{server_id}`) til sortlisten.",
-          "success_reason": "Årsag: {reason}",
-          "success_note_1": "• Alle abonnementer er blevet fjernet",
-          "success_note_2": "• Serveren kan ikke bruge bot kommandoer",
-          "already_title": "Allerede Sortlistet",
-          "already_description": "Server `{server_id}` er allerede sortlistet."
-        },
-        "remove": {
-          "description": "Fjern en server fra sortlisten",
-          "success_title": "Server Fjernet fra Sortliste",
-          "success_description": "Fjernede server `{server_id}` fra sortlisten.",
-          "success_note": "Serveren kan nu bruge bot kommandoer igen.",
-          "not_found_title": "Ikke Sortlistet",
-          "not_found_description": "Server `{server_id}` er ikke sortlistet."
-        },
-        "check": {
-          "description": "Tjek om en server er sortlistet",
-          "not_blacklisted_title": "Server er IKKE Sortlistet",
-          "not_blacklisted_description": "Server `{server_id}` er ikke på sortlisten.",
-          "not_blacklisted_note": "Denne server kan bruge bot kommandoer normalt.",
-          "blacklisted_title": "Server er Sortlistet",
-          "blacklisted_server_name": "Server Navn",
-          "blacklisted_server_id": "Server ID",
-          "blacklisted_reason": "Årsag",
-          "blacklisted_date": "Sortlistet",
-          "blacklisted_by": "Sortlistet Af",
-          "blacklisted_note": "Denne server kan ikke bruge bot kommandoer.",
-          "unknown_date": "Ukendt"
-        }
-      },
-      "recache": {
-        "description": "Genindlæs alle data fra database",
-        "success_title": "Cache Genindlæst",
-        "success_description": "Genindlæste: **{cache_type}**",
-        "success_loaded_data": "Indlæst Data",
-        "success_servers": "• Servere: {count}",
-        "success_channels": "• Kanaler: {count}",
-        "success_blacklist": "• Sortlistede: {count}",
-        "success_timezones": "• Tidszoner: {count}",
-        "error_title": "Genindlæsning Fejlede",
-        "error_description": "Kunne ikke genindlæse **{cache_type}** cache.",
-        "error_message": "Fejl: {error}"
-      },
-      "error": {
-        "description": "Administrer fejllogger",
-        "check": {
-          "description": "Tjek en fejl ved dens ID",
-          "channel": "Kanal",
-          "user": "Bruger",
-          "command": "Kommando",
-          "traceback": "Traceback",
-          "no_message": "Ingen besked",
-          "unknown": "Ukendt"
-        },
-        "delete": {
-          "description": "Slet en fejl ved dens ID"
-        },
-        "list": {
-          "description": "Vis seneste fejl"
-        },
-        "clear": {
-          "description": "Ryd alle fejl fra databasen"
-        },
-        "not_found_title": "Fejl Ikke Fundet",
-        "not_found_description": "Ingen fejl fundet med ID: `{error_id}`",
-        "details_title": "Fejl Detaljer: {error_id}",
-        "details_level": "Niveau: {level}",
-        "details_area": "Område: {area}",
-        "details_time": "Tid: <t:{timestamp}:F>",
-        "details_message": "Besked: {message}",
-        "details_server": "Server: {name} ({id})",
-        "details_channel": "Kanal: {name} ({id})",
-        "details_user": "Bruger: <@{user_id}> ({user_id})",
-        "details_command": "Kommando: {command}",
-        "details_traceback": "Traceback:",
-        "delete_success_title": "Fejl Slettet",
-        "delete_success_description": "Fejl `{error_id}` er blevet slettet fra databasen.",
-        "delete_failed_title": "Sletning Fejlede",
-        "delete_failed_description": "Kunne ikke slette fejl `{error_id}`.",
-        "delete_failed_note": "Den eksisterer muligvis ikke eller er allerede blevet slettet.",
-        "list_title": "Seneste Fejl",
-        "list_item_id": "ID: `{error_id}` | {level}",
-        "list_item_area": "Område: {area}",
-        "list_item_time": "Tid: {timestamp}",
-        "list_item_message": "Besked: {message}",
-        "list_more": "... og {count} flere fejl",
-        "list_hint": "Brug `/admin error check <id>` for at se fulde detaljer",
-        "no_errors_title": "Ingen Fejl Fundet",
-        "no_errors_description": "Ingen fejl fundet i databasen.",
-        "clear_success_title": "Fejl Ryddet",
-        "clear_success_description": "Ryddede {count} fejl fra databasen.",
-        "clear_success_note": "Fejlloggen er nu tom",
-        "clear_failed_title": "Rydning Fejlede",
-        "clear_failed_description": "Kunne ikke rydde fejl fra databasen.",
-        "clear_failed_error_id": "Fejl ID: `{error_id}`",
-        "clear_failed_note": "Tjek venligst logfilerne for flere detaljer"
-      },
-      "force": {
-        "description": "Tvung administrationshandlinger",
-        "remove_server": {
-          "description": "Tvunget fjernelse af alle abonnementer for en server"
-        },
-        "remove_channel": {
-          "description": "Tvunget fjernelse af et specifikt kanalabonnement"
-        },
-        "not_found_title": "Ikke Fundet",
-        "not_found_description": "Ingen server eller kanal fundet med ID: `{target_id}`",
-        "not_found_note": "Tjek venligst ID'et og prøv igen",
-        "server_success_title": "Server Afmeldt",
-        "server_success_description": "Ryddede {count} tilmeldte kanaler fra server `{server_id}`.",
-        "server_success_note": "Serveren kan tilmelde kanaler igen med `/subscription add`",
-        "channel_success_title": "Kanal Afmeldt",
-        "channel_success_description": "Fjernede kanal `{channel_id}` fra server `{server_id}`.",
-        "channel_success_note": "Kanalen kan tilmeldes igen med `/subscription add`"
+      "description": "Administrer serverens tidszonepræferencer",
+      "list": {
+        "content": "Her er de konfigurerede tidszoneforkortelser og deres fulde navne:",
+        "description": "Vis tilgængelige tidszoner fra konfigurationen",
+        "title": "🌍 Tilgængelige Tidszoner"
       }
     }
   },
-  
+  "common": {
+    "channel": "Kanal",
+    "disabled": "Deaktiveret",
+    "enabled": "Aktiveret",
+    "error": "Fejl",
+    "info": "Info",
+    "message": "Besked",
+    "no": "Nej",
+    "none": "Ingen",
+    "server": "Server",
+    "success": "Succes",
+    "unknown": "Ukendt",
+    "user": "Bruger",
+    "warning": "Advarsel",
+    "yes": "Ja"
+  },
+  "components": {
+    "buttons": {
+      "cancel": "Annuller",
+      "clear_now": "Ryd Nu",
+      "confirm": "Bekræft",
+      "no": "Nej",
+      "yes": "Ja"
+    },
+    "messages": {
+      "channel_cleared_manually": "Kanalen blev ryddet med succes!"
+    },
+    "no_data": "❌ Ingen data fundet for {channel}",
+    "powered_by": "**Drevet af {bot_name}**"
+  },
+  "errors": {
+    "bot_missing_permissions": "❌ Botten mangler påkrævede tilladelser: {permissions}",
+    "channel_in_progress": "⏳ En rydning er allerede i gang for {channel}. Vent venligst på at den bliver færdig.",
+    "command_failed": "❌ Kommando fejlede: {error}",
+    "generic": "❌ Der opstod en fejl: {error}",
+    "invalid_channel": "❌ Ugyldig kanal: {channel}",
+    "invalid_target": "❌ Ugyldigt mål. Angiv venligst et gyldigt besked-ID/link eller brugeromtale/ID.",
+    "invalid_timer": "❌ Ugyldigt timerformat: `{timer}`\n\nBrug venligst formater som:\n• `24h` for 24 timer\n• `1d12h30m` for 1 dag, 12 timer, 30 minutter\n• `15:30 EST` for dagligt kl. 15:30 EST",
+    "invalid_user": "❌ Ugyldig bruger: {user}",
+    "job_not_found": "❌ Ingen planlagt job fundet for {channel}",
+    "missed_clear_notification": "⚠️ **Meddelelse om Oversprunget Rydning**\n\nEn planlagt beskedrydning blev oversprunget for denne kanal.\nTimeren er blevet genplanlagt.",
+    "missing_permissions": "❌ Mangler påkrævede tilladelser: {permissions}",
+    "next_time_not_found": "❌ Kunne ikke bestemme næste planlagte tid for {channel}"
+  },
+  "language_code": "da",
+  "language_name": "Danish",
+  "language_native_name": "Dansk",
   "subscription": {
-    "timer_view": {
-      "title": "Aktiv Timer for {channel}",
-      "timer_setting": "Timer Indstilling",
-      "next_clear": "Næste Rydning",
-      "time_remaining": "Tid Tilbage",
-      "auto_update": "Denne besked opdateres automatisk efter hver rydning."
+    "errors": {
+      "message_not_found": {
+        "description": "Besked med ID `{message_id}` ikke fundet i {channel}.",
+        "help": "Sørg venligst for at beskeden eksisterer i den angivne kanal.",
+        "title": "Besked Ikke Fundet"
+      },
+      "user_not_found": {
+        "description": "Bruger med ID `{user_id}` ikke fundet på denne server.",
+        "help": "Sørg venligst for at brugeren er medlem af denne server.",
+        "title": "Bruger Ikke Fundet"
+      }
     },
     "ignore": {
-      "user_added": {
-        "title": "Bruger Tilføjet til Ignoreringsliste"
-      },
-      "user_removed": {
-        "title": "Bruger Fjernet fra Ignoreringsliste"
-      },
       "message_added": {
         "title": "Besked Tilføjet til Ignoreringsliste"
       },
       "message_removed": {
         "title": "Besked Fjernet fra Ignoreringsliste"
+      },
+      "user_added": {
+        "title": "Bruger Tilføjet til Ignoreringsliste"
+      },
+      "user_removed": {
+        "title": "Bruger Fjernet fra Ignoreringsliste"
       }
     },
-    "errors": {
-      "user_not_found": {
-        "title": "Bruger Ikke Fundet",
-        "description": "Bruger med ID `{user_id}` ikke fundet på denne server.",
-        "help": "Sørg venligst for at brugeren er medlem af denne server."
-      },
-      "message_not_found": {
-        "title": "Besked Ikke Fundet",
-        "description": "Besked med ID `{message_id}` ikke fundet i {channel}.",
-        "help": "Sørg venligst for at beskeden eksisterer i den angivne kanal."
-      }
+    "timer_view": {
+      "auto_update": "Denne besked opdateres automatisk efter hver rydning.",
+      "next_clear": "Næste Rydning",
+      "time_remaining": "Tid Tilbage",
+      "timer_setting": "Timer Indstilling",
+      "title": "Aktiv Timer for {channel}"
     }
   },
-  
-  "errors": {
-    "generic": "❌ Der opstod en fejl: {error}",
-    "command_failed": "❌ Kommando fejlede: {error}",
-    "invalid_channel": "❌ Ugyldig kanal: {channel}",
-    "invalid_user": "❌ Ugyldig bruger: {user}",
-    "missing_permissions": "❌ Mangler påkrævede tilladelser: {permissions}",
-    "bot_missing_permissions": "❌ Botten mangler påkrævede tilladelser: {permissions}",
-    "invalid_timer": "❌ Ugyldigt timerformat: `{timer}`\n\nBrug venligst formater som:\n• `24h` for 24 timer\n• `1d12h30m` for 1 dag, 12 timer, 30 minutter\n• `15:30 EST` for dagligt kl. 15:30 EST",
-    "invalid_target": "❌ Ugyldigt mål. Angiv venligst et gyldigt besked-ID/link eller brugeromtale/ID.",
-    "channel_in_progress": "⏳ En rydning er allerede i gang for {channel}. Vent venligst på at den bliver færdig.",
-    "job_not_found": "❌ Ingen planlagt job fundet for {channel}",
-    "next_time_not_found": "❌ Kunne ikke bestemme næste planlagte tid for {channel}",
-    "missed_clear_notification": "⚠️ **Meddelelse om Oversprunget Rydning**\n\nEn planlagt beskedrydning blev oversprunget for denne kanal.\nTimeren er blevet genplanlagt."
-  },
-  
   "validation": {
-    "error_titles": {
-      "blacklisted": "Server Blokeret",
-      "insufficient_permissions": "Utilstrækkelige Tilladelser",
-      "bot_missing_permissions": "Bot Mangler Tilladelser",
-      "channel_already_subscribed": "Kanal Allerede Tilmeldt",
-      "general": "Valideringsfejl"
-    },
+    "already_subscribed": "❌ {channel} er allerede tilmeldt med en {timer} timer.\nBrug `/subscription update` for at ændre timeren.",
     "blacklisted": "❌ Denne server er blokeret og kan ikke bruge denne bot.",
     "blacklisted_detailed": "❌ **Server Blokeret**\n\nDenne server er blokeret og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kontakt venligst support.",
-    "insufficient_permissions": "❌ Du skal have `Administrer beskeder` tilladelsen for at bruge denne kommando.",
-    "insufficient_permissions_detailed": "❌ **Utilstrækkelige Tilladelser**\n\nDu skal have følgende tilladelse for at bruge denne kommando:\n{permissions}\n\nKontakt venligst en serveradministrator hvis du har brug for adgang.",
+    "blacklisted_server": "❌ **Server Sortlistet**\n\nDenne server er blevet sortlistet og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kan du appellere sortlistningen på vores [Support Server](https://biast12.com/botsupport).",
     "bot_missing_permissions": "❌ Jeg mangler følgende tilladelser i {channel}: {permissions}",
     "bot_missing_permissions_detailed": "❌ **Bot Mangler Tilladelser**\n\nJeg mangler følgende tilladelser i {channel}:\n{permissions}\n\nGiv venligst disse tilladelser og prøv igen.",
+    "bot_no_permissions": "❌ Jeg skal bruge følgende tilladelser i {channel}: {permissions}",
     "channel_already_subscribed": "❌ {channel} har allerede en timer indstillet. Brug `/subscription update` for at opdatere abonnementet i stedet.",
     "channel_already_subscribed_detailed": "❌ **Kanal Allerede Tilmeldt**\n\n{channel} har allerede en timer indstillet.\n\nBrug `/subscription update` for at opdatere abonnementet i stedet.",
+    "error_titles": {
+      "blacklisted": "Server Blokeret",
+      "bot_missing_permissions": "Bot Mangler Tilladelser",
+      "channel_already_subscribed": "Kanal Allerede Tilmeldt",
+      "general": "Valideringsfejl",
+      "insufficient_permissions": "Utilstrækkelige Tilladelser"
+    },
+    "insufficient_permissions": "❌ Du skal have `Administrer beskeder` tilladelsen for at bruge denne kommando.",
+    "insufficient_permissions_detailed": "❌ **Utilstrækkelige Tilladelser**\n\nDu skal have følgende tilladelse for at bruge denne kommando:\n{permissions}\n\nKontakt venligst en serveradministrator hvis du har brug for adgang.",
+    "invalid_channel": "❌ Angiv venligst en gyldig tekstkanal.",
+    "no_permissions": "❌ Du skal have **{permission}** tilladelsen for at bruge denne kommando.",
     "not_subscribed": "❌ **Kanal Ikke Tilmeldt**\n\n{channel} er ikke tilmeldt automatisk beskedrydning.\n\nBrug `/subscription add` for at opsætte automatisk rydning først.",
     "not_subscribed_status": "❌ Ikke Tilmeldt",
-    "permission_denied": "❌ Du skal have **{permission}** tilladelse for at bruge denne kommando.",
-    "blacklisted_server": "❌ **Server Sortlistet**\n\nDenne server er blevet sortlistet og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kan du appellere sortlistningen på vores [Support Server](https://biast12.com/botsupport).",
-    "no_permissions": "❌ Du skal have **{permission}** tilladelsen for at bruge denne kommando.",
-    "bot_no_permissions": "❌ Jeg skal bruge følgende tilladelser i {channel}: {permissions}",
-    "already_subscribed": "❌ {channel} er allerede tilmeldt med en {timer} timer.\nBrug `/subscription update` for at ændre timeren.",
-    "invalid_channel": "❌ Angiv venligst en gyldig tekstkanal."
-  },
-  
-  "components": {
-    "powered_by": "**Drevet af {bot_name}**",
-    "buttons": {
-      "confirm": "Bekræft",
-      "cancel": "Annuller",
-      "yes": "Ja",
-      "no": "Nej",
-      "clear_now": "Ryd Nu"
-    },
-    "messages": {
-      "channel_cleared_manually": "Kanalen blev ryddet med succes!"
-    },
-    "no_data": "❌ Ingen data fundet for {channel}"
+    "permission_denied": "❌ Du skal have **{permission}** tilladelse for at bruge denne kommando."
   }
 }
