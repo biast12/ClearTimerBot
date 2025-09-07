@@ -298,7 +298,11 @@ class ShardStatusCompleteView(discord.ui.LayoutView):
             content += f"• Guilds on This Shard: {len(bot.guilds)}\n"
             
             # Get shard latency
-            latency = bot.get_shard(bot.shard_id).latency if bot.get_shard(bot.shard_id) else bot.latency
+            try:
+                shard = bot.get_shard(bot.shard_id)
+                latency = shard.latency if shard and shard.latency is not None else bot.latency
+            except:
+                latency = bot.latency
             content += f"• Latency: {latency * 1000:.2f}ms\n"
         else:
             content += "• Mode: Single-instance (not sharded)\n"
