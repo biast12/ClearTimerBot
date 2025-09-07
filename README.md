@@ -24,15 +24,18 @@ Just click the link above and select your server - setup takes less than a minut
 ### 💪 Core Features
 
 - ⏰ **Smart Scheduling**
+
   - Set intervals: "Clear every 6 hours" (`/subscription add 6h`)
   - Set daily times: "Clear at 3 AM EST" (`/subscription add 03:00 EST`)
   - Combine multiple timers for different channels
 
 - 🛡️ **Intelligent Protection**
+
   - Preserve important messages while clearing the rest
   - Ignore specific users' messages (bots, admins, etc.)
 
 - 🌍 **Global Timezone Support**
+
   - Schedule in your local timezone
   - Perfect for international communities
   - Automatic DST adjustments
@@ -73,7 +76,7 @@ Just click the link above and select your server - setup takes less than a minut
 ClearTimer needs these permissions to work properly:
 
 - ✅ **Read Messages** - To see channels
-- ✅ **Manage Messages** - To delete messages  
+- ✅ **Manage Messages** - To delete messages
 - ✅ **Send Messages** - To respond to commands
 - ✅ **Embed Links** - To send formatted responses
 - ✅ **Use Slash Commands** - To register commands
@@ -252,7 +255,7 @@ Display bot statistics. Without server_id shows overall stats (total servers, ch
 Commands for managing server blacklist under `/admin blacklist`:
 
 - **`/admin blacklist add [server_id] [reason]`**: Add a server to the blacklist with optional reason
-- **`/admin blacklist remove [server_id]`**: Remove a server from the blacklist  
+- **`/admin blacklist remove [server_id]`**: Remove a server from the blacklist
 - **`/admin blacklist check [server_id]`**: Check if a server is blacklisted and view details
 
 #### Error Management
@@ -358,89 +361,90 @@ Commands for managing bot shards under `/owner shard` (if bot is sharded):
 
 1. **Clone the repository:**
 
-    ```cmd
-    git clone https://github.com/biast12/ClearTimerBot.git
-    cd ClearTimerBot
-    ```
+   ```cmd
+   git clone https://github.com/biast12/ClearTimerBot.git
+   cd ClearTimerBot
+   ```
 
 2. **Run the automated setup script:**
 
-    ```cmd
-    setup_environment.bat
-    ```
+   ```cmd
+   setup_environment.bat
+   ```
 
-    This will create a virtual environment and install all dependencies.
+   This will create a virtual environment and install all dependencies.
 
 3. **Configure environment variables:**
-    - Copy `.env.example` to `.env`
-    - Edit `.env` and add your configuration:
 
-    ```env
-    # Required
-    DISCORD_BOT_TOKEN=your_bot_token_here
-    DATABASE_URL=mongodb://localhost:27017/ClearTimerBot  # or your MongoDB Atlas URL
-    
-    # Optional but recommended
-    OWNER_ID=your_discord_user_id
-    GUILD_ID=your_test_server_id
-    ```
+   - Copy `.env.example` to `.env`
+   - Edit `.env` and add your configuration:
+
+   ```env
+   # Required
+   DISCORD_BOT_TOKEN=your_bot_token_here
+   DATABASE_URL=mongodb://localhost:27017/ClearTimerBot  # or your MongoDB Atlas URL
+
+   # Optional but recommended
+   OWNER_ID=your_discord_user_id
+   GUILD_ID=your_test_server_id
+   ```
 
 4. **Register slash commands (first time only):**
 
-    ```cmd
-    register_commands.bat
-    ```
+   ```cmd
+   register_commands.bat
+   ```
 
 5. **Start the bot:**
 
-    ```cmd
-    start_bot.bat
-    ```
+   ```cmd
+   start_bot.bat
+   ```
 
 ### Linux/Mac Setup
 
 1. **Clone the repository:**
 
-    ```bash
-    git clone https://github.com/biast12/ClearTimerBot.git
-    cd ClearTimerBot
-    ```
+   ```bash
+   git clone https://github.com/biast12/ClearTimerBot.git
+   cd ClearTimerBot
+   ```
 
 2. **Run the automated setup script:**
 
-    ```bash
-    ./setup_environment.sh
-    ```
+   ```bash
+   ./setup_environment.sh
+   ```
 
-    This will create a virtual environment and install all dependencies.
+   This will create a virtual environment and install all dependencies.
 
 3. **Configure environment variables:**
 
-    ```bash
-    cp .env.example .env
-    nano .env  # or use your preferred editor
-    ```
+   ```bash
+   cp .env.example .env
+   nano .env  # or use your preferred editor
+   ```
 
-    Add your configuration as shown in the Windows setup.
+   Add your configuration as shown in the Windows setup.
 
 4. **Register slash commands (first time only):**
 
-    ```bash
-    ./register_commands.sh
-    ```
+   ```bash
+   ./register_commands.sh
+   ```
 
 5. **Start the bot:**
 
-    ```bash
-    ./start_bot.sh
-    ```
+   ```bash
+   ./start_bot.sh
+   ```
 
-    For sharded instances:
+   For sharded instances:
 
-    ```bash
-    ./start_bot.sh --shards 4
-    ./start_bot.sh --shard-ids "0,1,2,3"
-    ```
+   ```bash
+   ./start_bot.sh --shards 4
+   ./start_bot.sh --shard-ids "0,1,2,3"
+   ```
 
 ## Configuration Details
 
@@ -466,23 +470,14 @@ The bot uses the following environment variables (configured in `.env`):
 POWERED_BY_EMOJI_ID=1411854240443531384
 POWERED_BY_EMOJI_NAME=logo
 BOT_NAME=ClearTimerBot
-BOT_COLOR=5865F2
-ERROR_COLOR=ED4245
-SUCCESS_COLOR=57F287
-WARNING_COLOR=FEE75C
 SHOW_POWERED_BY_FOOTER=true
 
-# Rate Limiting
-MAX_CLEARS_PER_MINUTE=5
-MAX_SUBSCRIPTIONS_PER_SERVER=50
-
-# Cache Configuration (seconds)
+# Cache Configuration
 CACHE_TTL_MEMORY=60
 CACHE_TTL_WARM=300
 CACHE_TTL_COLD=3600
 
 # Message Settings
-EPHEMERAL_ERROR_TIMEOUT=60.0
 MISSED_CLEAR_NOTIFICATION_TIMEOUT=0.0
 
 # Scheduler Settings
@@ -490,14 +485,8 @@ MAX_RESTART_ATTEMPTS=3
 RESTART_COOLDOWN=30
 CACHE_CLEANUP_INTERVAL=900
 
-# Database Retention (days)
-REMOVED_SERVERS_RETENTION_DAYS=30
-ERROR_LOGS_RETENTION_DAYS=7
-
 # Support Links
 SUPPORT_SERVER_URL=https://biast12.com/botsupport
-TERMS_OF_SERVICE_URL=https://biast12.com/cleartimer/termsofservice
-PRIVACY_POLICY_URL=https://biast12.com/cleartimer/privacypolicy
 BOT_INVITE_URL=https://discord.com/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=277025483776&integration_type=0&scope=bot
 GITHUB_URL=https://github.com/biast12/ClearTimerBot
 ```

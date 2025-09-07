@@ -259,6 +259,9 @@ class MessageService:
         # Create the view with notification message and Clear Now button
         view = MissedClearView(translator, channel, self, self.bot)
 
-        await channel.send(
-            view=view, delete_after=config.missed_clear_notification_timeout
+        delete_after = (
+            config.missed_clear_notification_timeout
+            if config.missed_clear_notification_timeout > 0
+            else None
         )
+        await channel.send(view=view, delete_after=delete_after)
