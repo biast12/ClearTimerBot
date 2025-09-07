@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from src.utils.logger import logger, LogArea
+from src.localization import get_translator
 import asyncio
 from typing import Optional
 
@@ -17,7 +18,14 @@ class OwnerCommands(
         """Check if user is the bot owner (using OWNER_ID from config)"""
         if not self.bot.is_owner(interaction.user):
             from src.components.owner import OwnerOnlyView
-            view = OwnerOnlyView()
+            # Try to get translator for localization
+            translator = None
+            if interaction.guild:
+                try:
+                    translator = await get_translator(str(interaction.guild.id), self.data_service)
+                except:
+                    pass
+            view = OwnerOnlyView(translator=translator)
             if not interaction.response.is_done():
                 await interaction.response.send_message(view=view, ephemeral=True)
             else:
@@ -50,14 +58,22 @@ class OwnerCommands(
         
         admins = await self.data_service.get_admins()
         
+        # Get translator for localization
+        translator = None
+        if interaction.guild:
+            try:
+                translator = await get_translator(str(interaction.guild.id), self.data_service)
+            except:
+                pass
+        
         if not admins:
             from src.components.owner import NoAdminsView
-            view = NoAdminsView()
+            view = NoAdminsView(translator=translator)
             await interaction.followup.send(view=view)
             return
         
         from src.components.owner import AdminListView
-        view = AdminListView(admins, self.bot)
+        view = AdminListView(admins, self.bot, translator=translator)
         await interaction.followup.send(view=view)
     
     
@@ -74,10 +90,18 @@ class OwnerCommands(
         if not await self._check_owner_permission(interaction):
             return
         
+        # Get translator for localization
+        translator = None
+        if interaction.guild:
+            try:
+                translator = await get_translator(str(interaction.guild.id), self.data_service)
+            except:
+                pass
+        
         try:
             if str(interaction.user.id) == user_id:
                 from src.components.owner import AdminAddSelfView
-                view = AdminAddSelfView()
+                view = AdminAddSelfView(translator=translator)
                 await interaction.followup.send(view=view)
                 return
             
@@ -97,11 +121,11 @@ class OwnerCommands(
                     username = "Unknown User"
                 
                 from src.components.owner import AdminAddSuccessView
-                view = AdminAddSuccessView(username, user_id)
+                view = AdminAddSuccessView(username, user_id, translator=translator)
                 await interaction.followup.send(view=view)
             else:
                 from src.components.owner import AdminAddAlreadyView
-                view = AdminAddAlreadyView(user_id)
+                view = AdminAddAlreadyView(user_id, translator=translator)
                 await interaction.followup.send(view=view)
                 
         except Exception as e:
@@ -123,13 +147,21 @@ class OwnerCommands(
         if not await self._check_owner_permission(interaction):
             return
         
+        # Get translator for localization
+        translator = None
+        if interaction.guild:
+            try:
+                translator = await get_translator(str(interaction.guild.id), self.data_service)
+            except:
+                pass
+        
         if await self.data_service.remove_admin(user_id):
             from src.components.owner import AdminRemoveSuccessView
-            view = AdminRemoveSuccessView(user_id)
+            view = AdminRemoveSuccessView(user_id, translator=translator)
             await interaction.followup.send(view=view)
         else:
             from src.components.owner import AdminRemoveNotFoundView
-            view = AdminRemoveNotFoundView(user_id)
+            view = AdminRemoveNotFoundView(user_id, translator=translator)
             await interaction.followup.send(view=view)
     
     
@@ -146,22 +178,30 @@ class OwnerCommands(
         if not await self._check_owner_permission(interaction):
             return
         
+        # Get translator for localization
+        translator = None
+        if interaction.guild:
+            try:
+                translator = await get_translator(str(interaction.guild.id), self.data_service)
+            except:
+                pass
+        
         try:
             if self.bot.shard_id is None and shard_id is not None:
                 from src.components.owner import ShardNotShardedView
-                view = ShardNotShardedView()
+                view = ShardNotShardedView(translator=translator)
                 await interaction.followup.send(view=view)
                 return
             
             if shard_id is not None:
                 if self.bot.shard_count and (shard_id < 0 or shard_id >= self.bot.shard_count):
                     from src.components.owner import ShardInvalidIdView
-                    view = ShardInvalidIdView(shard_id, self.bot.shard_count)
+                    view = ShardInvalidIdView(shard_id, self.bot.shard_count, translator=translator)
                     await interaction.followup.send(view=view)
                     return
                 
                 from src.components.owner import ShardReloadSingleView
-                view = ShardReloadSingleView(shard_id)
+                view = ShardReloadSingleView(shard_id, translator=translator)
                 await interaction.followup.send(view=view)
                 
                 if self.bot.shard_id == shard_id:
@@ -171,11 +211,11 @@ class OwnerCommands(
                 else:
                     logger.info(LogArea.COMMANDS, f"Reload requested for shard {shard_id}")
                     from src.components.owner import ShardReloadSignalView
-                    view = ShardReloadSignalView(shard_id)
+                    view = ShardReloadSignalView(shard_id, translator=translator)
                     await interaction.edit_original_response(view=view)
             else:
                 from src.components.owner import ShardRestartView
-                view = ShardRestartView()
+                view = ShardRestartView(translator=translator)
                 await interaction.followup.send(view=view)
                 
                 logger.info(LogArea.COMMANDS, "Reloading all shards")
@@ -185,7 +225,7 @@ class OwnerCommands(
         except Exception as e:
             logger.error(LogArea.COMMANDS, f"Error reloading shard: {e}")
             from src.components.owner import ShardReloadFailedView
-            view = ShardReloadFailedView(str(e))
+            view = ShardReloadFailedView(str(e), translator=translator)
             await interaction.followup.send(view=view)
     
     
@@ -199,9 +239,17 @@ class OwnerCommands(
         if not await self._check_owner_permission(interaction):
             return
         
+        # Get translator for localization
+        translator = None
+        if interaction.guild:
+            try:
+                translator = await get_translator(str(interaction.guild.id), self.data_service)
+            except:
+                pass
+        
         try:
             from src.components.owner import ShardStatusCompleteView
-            view = ShardStatusCompleteView(self.bot)
+            view = ShardStatusCompleteView(self.bot, translator=translator)
             await interaction.followup.send(view=view)
             
         except Exception as e:

@@ -140,6 +140,206 @@
         "success": "✅ Next scheduled clear for {channel} has been skipped.\n**New next clear:** {next_clear}",
         "no_scheduled": "❌ No scheduled clear found for {channel}"
       }
+    },
+    
+    "owner": {
+      "permission_denied": {
+        "title": "Owner Only",
+        "description": "This command is restricted to the bot owner."
+      },
+      "admin": {
+        "list": {
+          "title": "Bot Administrators",
+          "no_admins_title": "No Admins Configured",
+          "no_admins_description": "There are no administrators configured.",
+          "no_admins_hint": "Use `/owner admin add` to add administrators",
+          "total": "Total: {count} {admin_text}"
+        },
+        "add": {
+          "success_title": "Administrator Added",
+          "success_description": "Successfully added **{username}** as a bot administrator.",
+          "success_user_id": "User ID: `{user_id}`",
+          "success_mention": "Mention: <@{user_id}>",
+          "success_note": "This user can now use admin commands",
+          "already_title": "Already Administrator",
+          "already_description": "User `{user_id}` is already a bot administrator.",
+          "self_title": "Already Owner",
+          "self_description": "You are the bot owner and already have full permissions.",
+          "self_note": "No need to add yourself as an administrator"
+        },
+        "remove": {
+          "success_title": "Administrator Removed",
+          "success_description": "Successfully removed `{user_id}` from administrators.",
+          "success_previous": "Previous admin: <@{user_id}>",
+          "success_note": "This user can no longer use admin commands",
+          "not_found_title": "Not an Administrator",
+          "not_found_description": "User `{user_id}` is not a bot administrator.",
+          "not_found_note": "Cannot remove someone who isn't an admin"
+        }
+      },
+      "shard": {
+        "reload": {
+          "single_title": "Reloading Single Shard",
+          "single_description": "Restarting shard {shard_id} only...",
+          "single_what_happens": "What happens:",
+          "single_note_1": "• Only this specific shard restarts",
+          "single_note_2": "• Other shards continue running",
+          "single_note_3": "• Guilds on this shard temporarily offline",
+          "all_title": "Reloading All Shards",
+          "all_description": "Full bot reload initiated...",
+          "all_what_happens": "What happens:",
+          "all_note_1": "• All shards shut down together",
+          "all_note_2": "• Shard manager restarts",
+          "all_note_3": "• All shards relaunch with fresh state",
+          "all_note_4": "• Bot offline for ~5-10 seconds",
+          "all_hint": "Use `/owner shard reload <id>` to reload single shard only",
+          "not_sharded_title": "Cannot Reload Shard",
+          "not_sharded_description": "Bot is running in single-instance mode (not sharded).",
+          "not_sharded_hint": "Use `/owner shard reload` to reload the bot",
+          "invalid_id_title": "Invalid Shard ID",
+          "invalid_id_description": "Shard ID `{shard_id}` is invalid.",
+          "invalid_id_range": "Valid Range: 0 to {max_shard}",
+          "invalid_id_note": "Please specify a valid shard ID",
+          "signal_sent_title": "Reload Signal Sent",
+          "signal_sent_description": "Reload signal sent to shard {shard_id}.",
+          "signal_sent_note": "Note: Cross-shard communication is not yet implemented.",
+          "signal_sent_manual": "Please restart the shard manually.",
+          "signal_sent_future": "Future updates will enable automatic cross-shard reloading",
+          "failed_title": "Reload Failed",
+          "failed_description": "Failed to reload shard.",
+          "failed_error": "Error: {error}",
+          "failed_note": "Please check the logs for more details"
+        },
+        "status": {
+          "title": "Shard Status",
+          "current_runtime": "Current Runtime:",
+          "shard_info": "• Shard: {shard_id}/{max_shard}",
+          "total_shards": "• Total Shards: {count}",
+          "guilds_on_shard": "• Guilds on This Shard: {count}",
+          "latency": "• Latency: {latency}ms",
+          "single_mode": "• Mode: Single-instance (not sharded)",
+          "total_guilds": "• Total Guilds: {count}",
+          "process_id": "• Process ID: `{pid}`",
+          "available_commands": "Available Commands:",
+          "cmd_reload_all": "• `/owner shard reload` - Reload all shards",
+          "cmd_reload_single": "• `/owner shard reload <id>` - Reload specific shard",
+          "cmd_status": "• `/owner shard status` - View this status"
+        }
+      }
+    },
+    
+    "admin": {
+      "permission_denied": {
+        "title": "Admin Only",
+        "description": "This command is restricted to the bot admins."
+      },
+      "stats": {
+        "title": "Bot Statistics",
+        "server_title": "Server Statistics",
+        "servers": "Servers: {count}",
+        "subscribed_channels": "Subscribed Channels: {count}",
+        "removed_servers": "Removed Servers: {count}",
+        "blacklisted_servers": "Blacklisted Servers: {count}",
+        "saved_errors": "Saved Errors: {count}",
+        "server_name": "Server: {name}",
+        "server_id": "Server ID: {id}",
+        "blacklisted": "Blacklisted: {status}",
+        "errors": "Errors: {count}",
+        "channels_label": "Channels:",
+        "more_channels": "... and {count} more channels",
+        "not_found_title": "Server Not Found",
+        "not_found_description": "Server ID `{server_id}` was not found in the database.",
+        "not_found_note": "This server has never been subscribed to the bot."
+      },
+      "blacklist": {
+        "add": {
+          "success_title": "Server Blacklisted",
+          "success_description": "Added server **{server_name}** (`{server_id}`) to blacklist.",
+          "success_reason": "Reason: {reason}",
+          "success_note_1": "• All subscriptions have been removed",
+          "success_note_2": "• The server cannot use bot commands",
+          "already_title": "Already Blacklisted",
+          "already_description": "Server `{server_id}` is already blacklisted."
+        },
+        "remove": {
+          "success_title": "Server Unblacklisted",
+          "success_description": "Removed server `{server_id}` from blacklist.",
+          "success_note": "The server can now use bot commands again.",
+          "not_found_title": "Not Blacklisted",
+          "not_found_description": "Server `{server_id}` is not blacklisted."
+        },
+        "check": {
+          "not_found_title": "Server is NOT Blacklisted",
+          "not_found_description": "Server `{server_id}` is not on the blacklist.",
+          "not_found_note": "This server can use bot commands normally.",
+          "found_title": "Server is Blacklisted",
+          "found_server_name": "Server Name: {name}",
+          "found_server_id": "Server ID: `{id}`",
+          "found_reason": "Reason: {reason}",
+          "found_blacklisted": "Blacklisted: {date}",
+          "found_blacklisted_by": "Blacklisted By: <@{user_id}>",
+          "found_note": "This server cannot use bot commands."
+        }
+      },
+      "recache": {
+        "success_title": "Cache Reloaded",
+        "success_description": "Successfully reloaded: **{cache_type}**",
+        "success_loaded_data": "Loaded Data",
+        "success_servers": "• Servers: {count}",
+        "success_channels": "• Channels: {count}",
+        "success_blacklist": "• Blacklisted: {count}",
+        "success_timezones": "• Timezones: {count}",
+        "error_title": "Recache Failed",
+        "error_description": "Failed to reload **{cache_type}** cache.",
+        "error_message": "Error: {error}"
+      },
+      "error": {
+        "not_found_title": "Error Not Found",
+        "not_found_description": "No error found with ID: `{error_id}`",
+        "details_title": "Error Details: {error_id}",
+        "details_level": "Level: {level}",
+        "details_area": "Area: {area}",
+        "details_time": "Time: <t:{timestamp}:F>",
+        "details_message": "Message: {message}",
+        "details_server": "Server: {name} ({id})",
+        "details_channel": "Channel: {name} ({id})",
+        "details_user": "User: <@{user_id}> ({user_id})",
+        "details_command": "Command: {command}",
+        "details_traceback": "Traceback:",
+        "delete_success_title": "Error Deleted",
+        "delete_success_description": "Error `{error_id}` has been deleted from the database.",
+        "delete_failed_title": "Delete Failed",
+        "delete_failed_description": "Could not delete error `{error_id}`.",
+        "delete_failed_note": "It may not exist or has already been deleted.",
+        "list_title": "Recent Errors",
+        "list_item_id": "ID: `{error_id}` | {level}",
+        "list_item_area": "Area: {area}",
+        "list_item_time": "Time: {timestamp}",
+        "list_item_message": "Message: {message}",
+        "list_more": "... and {count} more errors",
+        "list_hint": "Use `/admin error check <id>` to see full details",
+        "no_errors_title": "No Errors Found",
+        "no_errors_description": "No errors found in the database.",
+        "no_errors_note": "Errors will appear here when they occur",
+        "clear_success_title": "Errors Cleared",
+        "clear_success_description": "Cleared {count} error{s} from the database.",
+        "clear_success_note": "The error log is now empty",
+        "clear_failed_title": "Clear Failed",
+        "clear_failed_description": "Failed to clear errors from database.",
+        "clear_failed_error_id": "Error ID: `{error_id}`",
+        "clear_failed_note": "Please check the logs for more details"
+      },
+      "force": {
+        "not_found_title": "Not Found",
+        "not_found_description": "No server or channel found with ID: `{target_id}`",
+        "not_found_note": "Please check the ID and try again",
+        "server_success_title": "Server Unsubscribed",
+        "server_success_description": "Cleared {count} subscribed channel{s} from server `{server_id}`.",
+        "server_success_note": "The server can subscribe channels again using `/subscription add`",
+        "channel_success_title": "Channel Unsubscribed",
+        "channel_success_description": "Removed channel `{channel_id}` from server `{server_id}`.",
+        "channel_success_note": "The channel can be subscribed again using `/subscription add`"
+      }
     }
   },
   

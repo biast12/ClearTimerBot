@@ -140,6 +140,206 @@
         "success": "✅ Næste planlagte rydning for {channel} er blevet sprunget over.\n**Ny næste rydning:** {next_clear}",
         "no_scheduled": "❌ Ingen planlagt rydning fundet for {channel}"
       }
+    },
+    
+    "owner": {
+      "permission_denied": {
+        "title": "Kun Ejer",
+        "description": "Denne kommando er begrænset til bottens ejer."
+      },
+      "admin": {
+        "list": {
+          "title": "Bot Administratorer",
+          "no_admins_title": "Ingen Administratorer Konfigureret",
+          "no_admins_description": "Der er ingen administratorer konfigureret.",
+          "no_admins_hint": "Brug `/owner admin add` for at tilføje administratorer",
+          "total": "Total: {count} {admin_text}"
+        },
+        "add": {
+          "success_title": "Administrator Tilføjet",
+          "success_description": "Tilføjede **{username}** som bot administrator.",
+          "success_user_id": "Bruger ID: `{user_id}`",
+          "success_mention": "Omtale: <@{user_id}>",
+          "success_note": "Denne bruger kan nu bruge admin kommandoer",
+          "already_title": "Allerede Administrator",
+          "already_description": "Bruger `{user_id}` er allerede en bot administrator.",
+          "self_title": "Allerede Ejer",
+          "self_description": "Du er bottens ejer og har allerede fulde tilladelser.",
+          "self_note": "Ingen grund til at tilføje dig selv som administrator"
+        },
+        "remove": {
+          "success_title": "Administrator Fjernet",
+          "success_description": "Fjernede `{user_id}` fra administratorer.",
+          "success_previous": "Tidligere admin: <@{user_id}>",
+          "success_note": "Denne bruger kan ikke længere bruge admin kommandoer",
+          "not_found_title": "Ikke en Administrator",
+          "not_found_description": "Bruger `{user_id}` er ikke en bot administrator.",
+          "not_found_note": "Kan ikke fjerne nogen der ikke er admin"
+        }
+      },
+      "shard": {
+        "reload": {
+          "single_title": "Genindlæser Enkelt Shard",
+          "single_description": "Genstarter kun shard {shard_id}...",
+          "single_what_happens": "Hvad sker der:",
+          "single_note_1": "• Kun denne specifikke shard genstarter",
+          "single_note_2": "• Andre shards fortsætter med at køre",
+          "single_note_3": "• Guilds på denne shard midlertidigt offline",
+          "all_title": "Genindlæser Alle Shards",
+          "all_description": "Fuld bot genindlæsning startet...",
+          "all_what_happens": "Hvad sker der:",
+          "all_note_1": "• Alle shards lukker ned sammen",
+          "all_note_2": "• Shard manager genstarter",
+          "all_note_3": "• Alle shards genstarter med frisk tilstand",
+          "all_note_4": "• Bot offline i ~5-10 sekunder",
+          "all_hint": "Brug `/owner shard reload <id>` for kun at genindlæse enkelt shard",
+          "not_sharded_title": "Kan Ikke Genindlæse Shard",
+          "not_sharded_description": "Bot kører i enkelt-instans tilstand (ikke sharded).",
+          "not_sharded_hint": "Brug `/owner shard reload` for at genindlæse botten",
+          "invalid_id_title": "Ugyldigt Shard ID",
+          "invalid_id_description": "Shard ID `{shard_id}` er ugyldigt.",
+          "invalid_id_range": "Gyldigt Område: 0 til {max_shard}",
+          "invalid_id_note": "Angiv venligst et gyldigt shard ID",
+          "signal_sent_title": "Genindlæsningssignal Sendt",
+          "signal_sent_description": "Genindlæsningssignal sendt til shard {shard_id}.",
+          "signal_sent_note": "Bemærk: Kryds-shard kommunikation er endnu ikke implementeret.",
+          "signal_sent_manual": "Genstart venligst shard manuelt.",
+          "signal_sent_future": "Fremtidige opdateringer vil aktivere automatisk kryds-shard genindlæsning",
+          "failed_title": "Genindlæsning Fejlede",
+          "failed_description": "Kunne ikke genindlæse shard.",
+          "failed_error": "Fejl: {error}",
+          "failed_note": "Tjek venligst logfilerne for flere detaljer"
+        },
+        "status": {
+          "title": "Shard Status",
+          "current_runtime": "Nuværende Kørsel:",
+          "shard_info": "• Shard: {shard_id}/{max_shard}",
+          "total_shards": "• Total Shards: {count}",
+          "guilds_on_shard": "• Guilds på Denne Shard: {count}",
+          "latency": "• Latenstid: {latency}ms",
+          "single_mode": "• Tilstand: Enkelt-instans (ikke sharded)",
+          "total_guilds": "• Total Guilds: {count}",
+          "process_id": "• Proces ID: `{pid}`",
+          "available_commands": "Tilgængelige Kommandoer:",
+          "cmd_reload_all": "• `/owner shard reload` - Genindlæs alle shards",
+          "cmd_reload_single": "• `/owner shard reload <id>` - Genindlæs specifik shard",
+          "cmd_status": "• `/owner shard status` - Se denne status"
+        }
+      }
+    },
+    
+    "admin": {
+      "permission_denied": {
+        "title": "Kun Admin",
+        "description": "Denne kommando er begrænset til bot admins."
+      },
+      "stats": {
+        "title": "Bot Statistik",
+        "server_title": "Server Statistik",
+        "servers": "Servere: {count}",
+        "subscribed_channels": "Tilmeldte Kanaler: {count}",
+        "removed_servers": "Fjernede Servere: {count}",
+        "blacklisted_servers": "Sortlistede Servere: {count}",
+        "saved_errors": "Gemte Fejl: {count}",
+        "server_name": "Server: {name}",
+        "server_id": "Server ID: {id}",
+        "blacklisted": "Sortlistet: {status}",
+        "errors": "Fejl: {count}",
+        "channels_label": "Kanaler:",
+        "more_channels": "... og {count} flere kanaler",
+        "not_found_title": "Server Ikke Fundet",
+        "not_found_description": "Server ID `{server_id}` blev ikke fundet i databasen.",
+        "not_found_note": "Denne server har aldrig været tilmeldt botten."
+      },
+      "blacklist": {
+        "add": {
+          "success_title": "Server Sortlistet",
+          "success_description": "Tilføjede server **{server_name}** (`{server_id}`) til sortlisten.",
+          "success_reason": "Årsag: {reason}",
+          "success_note_1": "• Alle abonnementer er blevet fjernet",
+          "success_note_2": "• Serveren kan ikke bruge bot kommandoer",
+          "already_title": "Allerede Sortlistet",
+          "already_description": "Server `{server_id}` er allerede sortlistet."
+        },
+        "remove": {
+          "success_title": "Server Fjernet fra Sortliste",
+          "success_description": "Fjernede server `{server_id}` fra sortlisten.",
+          "success_note": "Serveren kan nu bruge bot kommandoer igen.",
+          "not_found_title": "Ikke Sortlistet",
+          "not_found_description": "Server `{server_id}` er ikke sortlistet."
+        },
+        "check": {
+          "not_found_title": "Server er IKKE Sortlistet",
+          "not_found_description": "Server `{server_id}` er ikke på sortlisten.",
+          "not_found_note": "Denne server kan bruge bot kommandoer normalt.",
+          "found_title": "Server er Sortlistet",
+          "found_server_name": "Server Navn: {name}",
+          "found_server_id": "Server ID: `{id}`",
+          "found_reason": "Årsag: {reason}",
+          "found_blacklisted": "Sortlistet: {date}",
+          "found_blacklisted_by": "Sortlistet Af: <@{user_id}>",
+          "found_note": "Denne server kan ikke bruge bot kommandoer."
+        }
+      },
+      "recache": {
+        "success_title": "Cache Genindlæst",
+        "success_description": "Genindlæste: **{cache_type}**",
+        "success_loaded_data": "Indlæst Data",
+        "success_servers": "• Servere: {count}",
+        "success_channels": "• Kanaler: {count}",
+        "success_blacklist": "• Sortlistede: {count}",
+        "success_timezones": "• Tidszoner: {count}",
+        "error_title": "Genindlæsning Fejlede",
+        "error_description": "Kunne ikke genindlæse **{cache_type}** cache.",
+        "error_message": "Fejl: {error}"
+      },
+      "error": {
+        "not_found_title": "Fejl Ikke Fundet",
+        "not_found_description": "Ingen fejl fundet med ID: `{error_id}`",
+        "details_title": "Fejl Detaljer: {error_id}",
+        "details_level": "Niveau: {level}",
+        "details_area": "Område: {area}",
+        "details_time": "Tid: <t:{timestamp}:F>",
+        "details_message": "Besked: {message}",
+        "details_server": "Server: {name} ({id})",
+        "details_channel": "Kanal: {name} ({id})",
+        "details_user": "Bruger: <@{user_id}> ({user_id})",
+        "details_command": "Kommando: {command}",
+        "details_traceback": "Traceback:",
+        "delete_success_title": "Fejl Slettet",
+        "delete_success_description": "Fejl `{error_id}` er blevet slettet fra databasen.",
+        "delete_failed_title": "Sletning Fejlede",
+        "delete_failed_description": "Kunne ikke slette fejl `{error_id}`.",
+        "delete_failed_note": "Den eksisterer muligvis ikke eller er allerede blevet slettet.",
+        "list_title": "Seneste Fejl",
+        "list_item_id": "ID: `{error_id}` | {level}",
+        "list_item_area": "Område: {area}",
+        "list_item_time": "Tid: {timestamp}",
+        "list_item_message": "Besked: {message}",
+        "list_more": "... og {count} flere fejl",
+        "list_hint": "Brug `/admin error check <id>` for at se fulde detaljer",
+        "no_errors_title": "Ingen Fejl Fundet",
+        "no_errors_description": "Ingen fejl fundet i databasen.",
+        "no_errors_note": "Fejl vil vises her når de opstår",
+        "clear_success_title": "Fejl Ryddet",
+        "clear_success_description": "Ryddede {count} fejl fra databasen.",
+        "clear_success_note": "Fejlloggen er nu tom",
+        "clear_failed_title": "Rydning Fejlede",
+        "clear_failed_description": "Kunne ikke rydde fejl fra databasen.",
+        "clear_failed_error_id": "Fejl ID: `{error_id}`",
+        "clear_failed_note": "Tjek venligst logfilerne for flere detaljer"
+      },
+      "force": {
+        "not_found_title": "Ikke Fundet",
+        "not_found_description": "Ingen server eller kanal fundet med ID: `{target_id}`",
+        "not_found_note": "Tjek venligst ID'et og prøv igen",
+        "server_success_title": "Server Afmeldt",
+        "server_success_description": "Ryddede {count} tilmeldte kanaler fra server `{server_id}`.",
+        "server_success_note": "Serveren kan tilmelde kanaler igen med `/subscription add`",
+        "channel_success_title": "Kanal Afmeldt",
+        "channel_success_description": "Fjernede kanal `{channel_id}` fra server `{server_id}`.",
+        "channel_success_note": "Kanalen kan tilmeldes igen med `/subscription add`"
+      }
     }
   },
   

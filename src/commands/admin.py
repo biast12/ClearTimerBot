@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from src.utils.logger import logger, LogArea
+from src.localization import get_translator
 
 
 class AdminCommands(
@@ -18,8 +19,16 @@ class AdminCommands(
         is_admin = await self.bot.is_admin(interaction.user)
         
         if not (is_owner or is_admin):
+            # Get translator for localization
+            translator = None
+            if interaction.guild:
+                try:
+                    translator = await get_translator(str(interaction.guild.id), self.data_service)
+                except:
+                    pass
+            
             from src.components.admin import AdminOnlyView
-            view = AdminOnlyView()
+            view = AdminOnlyView(translator=translator)
             await interaction.followup.send(view=view, ephemeral=True)
             return False
         return True
@@ -54,12 +63,20 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
+        # Get translator for localization
+        translator = None
+        if interaction.guild:
+            try:
+                translator = await get_translator(str(interaction.guild.id), self.data_service)
+            except:
+                pass
+        
         if server_id:
             server = await self.data_service.get_server(server_id)
             
             if not server:
                 from src.components.admin import ServerNotFoundView
-                view = ServerNotFoundView(server_id)
+                view = ServerNotFoundView(server_id, translator=translator)
                 await interaction.followup.send(view=view)
                 return
             
@@ -89,7 +106,8 @@ class AdminCommands(
                 is_blacklisted=is_blacklisted,
                 error_count=server_errors,
                 bot=self.bot,
-                channels=server.channels
+                channels=server.channels,
+                translator=translator
             )
             await interaction.followup.send(view=view)
         else:
@@ -118,7 +136,8 @@ class AdminCommands(
                 total_channels=total_channels,
                 removed_servers=removed_servers,
                 blacklisted_servers=blacklisted_servers,
-                error_count=error_count
+                error_count=error_count,
+                translator=translator
             )
             await interaction.followup.send(view=view)
 
@@ -136,6 +155,14 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
+        # Get translator for localization
+        translator = None
+        if interaction.guild:
+            try:
+                translator = await get_translator(str(interaction.guild.id), self.data_service)
+            except:
+                pass
+        
         guild = self.bot.get_guild(int(server_id))
         server_name = guild.name if guild else "Unknown"
         blacklisted_by = str(interaction.user.id)
@@ -151,11 +178,11 @@ class AdminCommands(
                 await self.data_service.save_servers()
 
             from src.components.admin import BlacklistAddSuccessView
-            view = BlacklistAddSuccessView(server_name, server_id, reason)
+            view = BlacklistAddSuccessView(server_name, server_id, reason, translator=translator)
             await interaction.followup.send(view=view)
         else:
             from src.components.admin import BlacklistAddAlreadyView
-            view = BlacklistAddAlreadyView(server_id)
+            view = BlacklistAddAlreadyView(server_id, translator=translator)
             await interaction.followup.send(view=view)
 
     @blacklist_group.command(
@@ -168,14 +195,22 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
+        # Get translator for localization
+        translator = None
+        if interaction.guild:
+            try:
+                translator = await get_translator(str(interaction.guild.id), self.data_service)
+            except:
+                pass
+        
         if await self.data_service.remove_from_blacklist(server_id):
             await self.data_service.save_blacklist()
             from src.components.admin import BlacklistRemoveSuccessView
-            view = BlacklistRemoveSuccessView(server_id)
+            view = BlacklistRemoveSuccessView(server_id, translator=translator)
             await interaction.followup.send(view=view)
         else:
             from src.components.admin import BlacklistRemoveNotFoundView
-            view = BlacklistRemoveNotFoundView(server_id)
+            view = BlacklistRemoveNotFoundView(server_id, translator=translator)
             await interaction.followup.send(view=view)
 
     @blacklist_group.command(
