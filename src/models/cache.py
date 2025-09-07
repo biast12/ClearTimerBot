@@ -56,7 +56,7 @@ class CacheEntry:
         
         return cls(
             key=data["key"],
-            value=data.get("value"),  # Note: value not stored in to_dict, might need adjustment
+            value=data.get("value"),
             level=CacheLevel(data.get("level", "memory")),
             created_at=created_at,
             last_accessed=last_accessed,

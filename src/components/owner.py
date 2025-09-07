@@ -55,7 +55,7 @@ class AdminListView(discord.ui.LayoutView):
             try:
                 user = bot.get_user(int(user_id))
                 current_name = str(user) if user else f"User {user_id}"
-            except:
+            except (ValueError, AttributeError):
                 current_name = f"User {user_id}"
             
             content += f"• **{current_name}**\n"
@@ -346,7 +346,7 @@ class ShardStatusCompleteView(discord.ui.LayoutView):
             try:
                 shard = bot.get_shard(bot.shard_id)
                 latency = shard.latency if shard and shard.latency is not None else bot.latency
-            except:
+            except AttributeError:
                 latency = bot.latency
             
             content += translator.get("commands.owner.shard.status.latency", 

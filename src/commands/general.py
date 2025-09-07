@@ -301,7 +301,6 @@ class GeneralCommands(commands.Cog):
             current_lower = current.lower() if current else ""
             
             for code, name in available_languages.items():
-                # Create display name with both native and English names
                 native_name = self.i18n.languages.get(code, {}).get('language_native_name', name)
                 if native_name != name:
                     display_name = f"{name} ({native_name}) - {code}"
@@ -362,11 +361,9 @@ class GeneralCommands(commands.Cog):
             await self.validator.send_validation_error(interaction, error_msg)
             return
         
-        # Get translator for the current server
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
         
-        # Get available languages
         languages = self.i18n.get_available_languages()
         current_language = await self.data_service.get_server_language(server_id) or "en"
         
@@ -404,11 +401,9 @@ class GeneralCommands(commands.Cog):
         
         server_id = str(interaction.guild.id)
         
-        # Get current language for translation
         current_language = await self.data_service.get_server_language(server_id) or "en"
         translator = await get_translator(server_id, self.data_service)
         
-        # Get the selected language (now it's a string, not a Choice)
         selected_language = language.lower()
         available_languages = self.i18n.get_available_languages()
         
@@ -426,15 +421,12 @@ class GeneralCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
             return
         
-        # Get server and create if doesn't exist
         server = await self.data_service.get_server(server_id)
         if not server:
             server = await self.data_service.add_server(interaction.guild)
         
-        # Set the language
         await self.data_service.set_server_language(server_id, selected_language)
         
-        # Get new translator with the new language
         new_translator = await get_translator(server_id, self.data_service)
         
         # Send success message in the new language

@@ -35,8 +35,8 @@ class GlobalConfig:
     default_cache_ttl_cold: int = 3600  # 1 hour
     
     # Message Settings
-    ephemeral_error_timeout: float = 10.0  # Delete error messages after 10 seconds
-    missed_clear_notification_timeout: float = 60.0  # Delete missed clear notifications after 60 seconds
+    ephemeral_error_timeout: float = 60.0  # Delete error messages after 10 seconds
+    missed_clear_notification_timeout: float = 0.0  # Delete missed clear notifications after 60 seconds
     
     # Scheduler Settings
     max_restart_attempts: int = 3

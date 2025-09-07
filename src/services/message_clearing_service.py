@@ -52,7 +52,6 @@ class MessageService:
         return set(), set()
 
     async def _validate_bot_channel_permissions(self, channel: discord.TextChannel) -> bool:
-        # Cache permission checks
         cache_key = f"perms:{channel.guild.id}:{channel.id}:{channel.guild.me.id}"
         cached_result = await self.data_service._cache.get(cache_key)
         
@@ -75,7 +74,6 @@ class MessageService:
         
         result = len(missing_perms) == 0
         
-        # Cache the result for 15 minutes
         await self.data_service._cache.set(cache_key, result, cache_level="memory", ttl=900)
         
         if missing_perms:
@@ -95,17 +93,33 @@ class MessageService:
             old_messages = []
 
             try:
-                async for message in channel.history(limit=None):
-                    if str(message.id) in ignored_messages:
-                        continue
+                batch_size = 1000
+                last_message = None
+                
+                while True:
+                    messages_batch = []
+                    async for message in channel.history(limit=batch_size, before=last_message):
+                        messages_batch.append(message)
                     
-                    if str(message.author.id) in ignored_users:
-                        continue
+                    if not messages_batch:
+                        break
                     
-                    if message.created_at > two_weeks_ago:
-                        messages_to_delete.append(message)
-                    else:
-                        old_messages.append(message)
+                    for message in messages_batch:
+                        if str(message.id) in ignored_messages:
+                            continue
+                        
+                        if str(message.author.id) in ignored_users:
+                            continue
+                        
+                        if message.created_at > two_weeks_ago:
+                            messages_to_delete.append(message)
+                        else:
+                            old_messages.append(message)
+                    
+                    if len(messages_batch) < batch_size:
+                        break
+                    
+                    last_message = messages_batch[-1]
             except discord.Forbidden:
                 logger.warning(LogArea.PERMISSIONS, f"No permission to access channel history for channel {channel.id}")
                 return 0

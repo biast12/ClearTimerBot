@@ -52,7 +52,6 @@ class SubscriptionCommands(commands.Cog):
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
         
-        server_id = str(interaction.guild.id)
         channel_id = str(message.channel.id)
         
         server = await self.data_service.get_server(server_id)
@@ -113,7 +112,6 @@ class SubscriptionCommands(commands.Cog):
             )
             return
         
-        server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
         
         server = await self.data_service.get_server(server_id)
@@ -148,7 +146,6 @@ class SubscriptionCommands(commands.Cog):
                 ephemeral=True
             )
 
-    # Create the main /subscription command group
     subscription_group = app_commands.Group(
         name="subscription", 
         description=get_command_description("subscription"),
@@ -222,7 +219,6 @@ class SubscriptionCommands(commands.Cog):
             ignored_target, channel, interaction.guild, server.channels[channel_id]
         )
         
-        # Create view message if requested
         view_message = None
         if view:
             from src.components.subscription import TimerViewMessage
@@ -332,8 +328,10 @@ class SubscriptionCommands(commands.Cog):
                         await message.delete()
                         # Invalidate cache after deletion
                         await self.data_service._cache.invalidate(cache_key)
-                    except:
-                        pass  # Message might have been deleted already
+                    except discord.NotFound:
+                        pass
+                    except discord.HTTPException as e:
+                        logger.warning(LogArea.COMMANDS, f"Failed to delete view message {view_message_id}: {e}")
             
             server.remove_channel(channel_id)
             await self.data_service.save_servers()
@@ -416,7 +414,6 @@ class SubscriptionCommands(commands.Cog):
         channel_id = str(channel.id)
         translator = await get_translator(server_id, self.data_service)
 
-        # Get next run time
         next_run_time = self.scheduler_service.get_channel_next_clear_time(server_id, channel_id)
 
         if not next_run_time:
@@ -425,7 +422,6 @@ class SubscriptionCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
-        # Get detailed subscription info from data service
         server = await self.data_service.get_server(server_id)
         timer_info = server.get_channel(channel_id) if server else None
 
@@ -487,7 +483,6 @@ class SubscriptionCommands(commands.Cog):
         # Defer the response immediately (non-ephemeral so we can send a proper response)
         await interaction.response.defer(ephemeral=False)
         
-        # Get current ignored messages and users
         server = await self.data_service.get_server(server_id)
         current_ignored_messages = []
         current_ignored_users = []
@@ -540,10 +535,11 @@ class SubscriptionCommands(commands.Cog):
                         await old_message.delete()
                         # Invalidate cache after deletion
                         await self.data_service._cache.invalidate(cache_key)
-                    except:
-                        pass  # Message might have been deleted already
+                    except discord.NotFound:
+                        pass
+                    except discord.HTTPException as e:
+                        logger.warning(LogArea.COMMANDS, f"Failed to delete view message {view_message_id}: {e}")
                 
-                # Create new view message
                 view_message = await channel.send(view=timer_view)
                 server.channels[channel_id].view_message_id = str(view_message.id)
             elif old_view_message_id:
@@ -553,15 +549,13 @@ class SubscriptionCommands(commands.Cog):
                     old_message = await channel.fetch_message(int(old_view_message_id))
                     await old_message.edit(view=timer_view)
                     view_message = old_message  # Track that we updated it
-                except:
+                except (discord.NotFound, discord.HTTPException) as e:
                     # If message doesn't exist, clear the ID
+                    logger.debug(LogArea.COMMANDS, f"Could not update view message {old_view_message_id}: {e}")
                     server.channels[channel_id].view_message_id = None
             
-            # Save data BEFORE creating the new job to prevent race condition
             await self.data_service.save_servers()
 
-        # Add new job with updated timer AFTER data is saved
-        # This ensures ignored targets are persisted before any clearing can happen
         self.scheduler_service.create_channel_clear_job(
             channel_id=channel_id,
             server_id=server_id,
@@ -645,7 +639,6 @@ class SubscriptionCommands(commands.Cog):
             await interaction.response.send_message(view=view, ephemeral=True)
             return
 
-        # Get server and channel data
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
             from src.components.subscription import NoSubscriptionDataView
@@ -734,7 +727,6 @@ class SubscriptionCommands(commands.Cog):
         # Defer the response as clearing might take time
         await interaction.response.defer(ephemeral=True)
 
-        # Get ignored messages and users
         server = await self.data_service.get_server(server_id)
         ignored_messages = []
         ignored_users = []

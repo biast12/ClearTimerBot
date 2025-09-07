@@ -109,7 +109,8 @@ class OwnerCommands(
                         await self.data_service._cache.set(cache_key, user, cache_level="warm", ttl=1800)
                     
                     username = str(user)
-                except:
+                except Exception as e:
+                    logger.warning(LogArea.COMMANDS, f"Failed to fetch user {user_id}: {e}")
                     username = "Unknown User"
                 
                 from src.components.owner import AdminAddSuccessView
@@ -191,7 +192,8 @@ class OwnerCommands(
                 if self.bot.shard_id == shard_id:
                     logger.info(LogArea.COMMANDS, f"Reloading current shard {shard_id} (self-restart)")
                     self.bot.restart_requested = True
-                    asyncio.create_task(self._delayed_shutdown())
+                    task = asyncio.create_task(self._delayed_shutdown())
+                    task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
                 else:
                     logger.info(LogArea.COMMANDS, f"Reload requested for shard {shard_id}")
                     from src.components.owner import ShardReloadSignalView
@@ -204,7 +206,8 @@ class OwnerCommands(
                 
                 logger.info(LogArea.COMMANDS, "Reloading all shards")
                 self.bot.restart_requested = True
-                asyncio.create_task(self._delayed_shutdown())
+                task = asyncio.create_task(self._delayed_shutdown())
+                task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
                 
         except Exception as e:
             logger.error(LogArea.COMMANDS, f"Error reloading shard: {e}")

@@ -16,12 +16,13 @@ class AdminCommands(
         self.data_service = bot.data_service
         self.scheduler_service = bot.scheduler_service
 
-    async def _check_admin_permission_before_defer(self, interaction: discord.Interaction) -> bool:
+    async def _check_admin_permission(self, interaction: discord.Interaction) -> bool:
         """Check if user has admin permissions"""
         is_owner = self.bot.is_owner(interaction.user)
         is_admin = await self.bot.is_admin(interaction.user)
         
         if not (is_owner or is_admin):
+            translator = None
             if interaction.guild:
                 translator = await get_translator(str(interaction.guild.id), self.data_service)
             
@@ -63,7 +64,7 @@ class AdminCommands(
     async def stats(self, interaction: discord.Interaction, server_id: str = None):
         await interaction.response.defer(thinking=True, ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         if interaction.guild:
@@ -152,7 +153,7 @@ class AdminCommands(
     async def blacklist_add(self, interaction: discord.Interaction, server_id: str, reason: str = "No reason provided"):
         await interaction.response.defer(ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         if interaction.guild:
@@ -189,7 +190,7 @@ class AdminCommands(
     async def blacklist_remove(self, interaction: discord.Interaction, server_id: str):
         await interaction.response.defer(ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         if interaction.guild:
@@ -214,7 +215,7 @@ class AdminCommands(
     async def blacklist_check(self, interaction: discord.Interaction, server_id: str):
         await interaction.response.defer(ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         translator = await get_translator(str(interaction.guild.id), self.data_service)
@@ -243,7 +244,7 @@ class AdminCommands(
     async def recache(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True, ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         translator = await get_translator(str(interaction.guild.id), self.data_service)
@@ -282,7 +283,7 @@ class AdminCommands(
     async def error_check(self, interaction: discord.Interaction, error_id: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         translator = await get_translator(str(interaction.guild.id), self.data_service)
@@ -310,7 +311,7 @@ class AdminCommands(
     async def error_delete(self, interaction: discord.Interaction, error_id: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         translator = await get_translator(str(interaction.guild.id), self.data_service)
@@ -335,7 +336,7 @@ class AdminCommands(
     async def error_list(self, interaction: discord.Interaction, limit: int = 10):
         await interaction.response.defer(thinking=True, ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         translator = await get_translator(str(interaction.guild.id), self.data_service)
@@ -363,7 +364,7 @@ class AdminCommands(
     async def error_clear(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True, ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         translator = await get_translator(str(interaction.guild.id), self.data_service)
@@ -396,7 +397,7 @@ class AdminCommands(
     async def force_remove_server(self, interaction: discord.Interaction, id: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         translator = await get_translator(str(interaction.guild.id), self.data_service)
@@ -431,7 +432,7 @@ class AdminCommands(
     async def force_remove_channel(self, interaction: discord.Interaction, id: str):
         await interaction.response.defer(thinking=True, ephemeral=True)
         
-        if not await self._check_admin_permission_before_defer(interaction):
+        if not await self._check_admin_permission(interaction):
             return
         
         translator = await get_translator(str(interaction.guild.id), self.data_service)
