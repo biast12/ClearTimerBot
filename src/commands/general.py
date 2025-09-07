@@ -280,6 +280,50 @@ class GeneralCommands(commands.Cog):
     ) -> list[app_commands.Choice[str]]:
         return await self.timezone_autocomplete(interaction, current)
 
+    async def language_autocomplete(
+        self,
+        interaction: discord.Interaction,
+        current: str
+    ) -> list[app_commands.Choice[str]]:
+        try:
+            available_languages = self.i18n.get_available_languages()
+            
+            choices = []
+            current_lower = current.lower() if current else ""
+            
+            for code, name in available_languages.items():
+                # Create display name with both native and English names
+                native_name = self.i18n.languages.get(code, {}).get('language_native_name', name)
+                if native_name != name:
+                    display_name = f"{name} ({native_name}) - {code}"
+                else:
+                    display_name = f"{name} - {code}"
+                
+                # Truncate if too long
+                if len(display_name) > 100:
+                    display_name = display_name[:97] + "..."
+                
+                # Filter based on current input
+                if not current or (
+                    code.lower().startswith(current_lower) or
+                    name.lower().startswith(current_lower) or
+                    native_name.lower().startswith(current_lower) or
+                    current_lower in code.lower() or
+                    current_lower in name.lower() or
+                    current_lower in native_name.lower()
+                ):
+                    choices.append(app_commands.Choice(name=display_name, value=code))
+            
+            # Sort by language code
+            choices.sort(key=lambda x: x.value)
+            return choices[:25]
+        except Exception as e:
+            from src.utils.logger import logger, LogArea
+            import traceback
+            logger.error(LogArea.COMMANDS, f"Error in language_autocomplete: {e}")
+            logger.debug(LogArea.COMMANDS, traceback.format_exc())
+            return []
+
     language_group = app_commands.Group(
         name="language",
         description="Manage server language preferences"
@@ -326,16 +370,12 @@ class GeneralCommands(commands.Cog):
     )
     @app_commands.default_permissions(manage_guild=True)
     @app_commands.describe(
-        language="Select the language for your server"
+        language="Select or type a language code (e.g., en, es, de, zh)"
     )
-    @app_commands.choices(language=[
-        app_commands.Choice(name="English", value="en"),
-        app_commands.Choice(name="Danish (Dansk)", value="da"),
-    ])
     async def language_change(
         self,
         interaction: discord.Interaction,
-        language: app_commands.Choice[str]
+        language: str
     ):
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -356,9 +396,16 @@ class GeneralCommands(commands.Cog):
         current_language = await self.data_service.get_server_language(server_id) or "en"
         translator = await get_translator(server_id, self.data_service)
         
-        # Get the selected language from the Choice
-        selected_language = language.value
+        # Get the selected language (now it's a string, not a Choice)
+        selected_language = language.lower()
         available_languages = self.i18n.get_available_languages()
+        
+        # Validate the language code
+        if selected_language not in available_languages:
+            from src.components.general import LanguageInvalidView
+            view = LanguageInvalidView(language, list(available_languages.keys()), translator)
+            await interaction.response.send_message(view=view, ephemeral=True)
+            return
         
         # Check if already set to this language
         if current_language == selected_language:
@@ -382,6 +429,14 @@ class GeneralCommands(commands.Cog):
         from src.components.general import LanguageChangeSuccessView
         view = LanguageChangeSuccessView(available_languages[selected_language], new_translator)
         await interaction.response.send_message(view=view)
+
+    @language_change.autocomplete('language')
+    async def language_change_autocomplete(
+        self,
+        interaction: discord.Interaction,
+        current: str
+    ) -> list[app_commands.Choice[str]]:
+        return await self.language_autocomplete(interaction, current)
 
 
 async def setup(bot):

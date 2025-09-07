@@ -189,3 +189,25 @@ class LanguageAlreadySetView(discord.ui.LayoutView):
         self.add_item(container)
 
 
+class LanguageInvalidView(discord.ui.LayoutView):
+    """View for when an invalid language code is provided"""
+    
+    def __init__(self, invalid_language: str, available_languages: list, translator):
+        super().__init__()
+        
+        # Format available languages list
+        languages_str = ", ".join([f"`{lang}`" for lang in sorted(available_languages)])
+        
+        message = translator.get("commands.language.change.invalid", language=invalid_language)
+        available_msg = translator.get("commands.language.change.available", languages=languages_str)
+        
+        full_message = f"{message}\n{available_msg}"
+        content = add_footer(full_message, translator)
+        
+        container = discord.ui.Container(
+            discord.ui.TextDisplay(content=content),
+            accent_color=discord.Color.red().value,
+        )
+        self.add_item(container)
+
+
