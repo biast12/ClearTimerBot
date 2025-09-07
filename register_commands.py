@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from src.core.config import ConfigManager
 from src.utils.logger import logger, LogArea
 
+
 class MockScheduleParser:
     """Mock schedule parser for command registration"""
 
@@ -47,7 +48,9 @@ class CommandRegisterBot(commands.Bot):
         intents.message_content = True
         intents.guilds = True
 
-        super().__init__(command_prefix=lambda bot, msg: None, intents=intents, help_command=None)
+        super().__init__(
+            command_prefix=lambda bot, msg: None, intents=intents, help_command=None
+        )
 
         self.config = config
         self.data_service = MockDataService()
@@ -56,9 +59,10 @@ class CommandRegisterBot(commands.Bot):
 
     async def setup_hook(self):
         from src.localization.discord_translator import ClearTimerTranslator
+
         translator = ClearTimerTranslator()
         await self.tree.set_translator(translator)
-        
+
         command_modules = [
             "src.commands.subscription",
             "src.commands.general",
@@ -77,7 +81,7 @@ class CommandRegisterBot(commands.Bot):
                 logger.info(LogArea.NONE, "Loaded extension: src.commands.admin")
             except Exception as e:
                 logger.error(LogArea.NONE, f"Failed to load admin commands: {e}")
-        
+
         if self.config.owner_id and self.config.guild_id:
             try:
                 await self.load_extension("src.commands.owner")
@@ -89,12 +93,12 @@ class CommandRegisterBot(commands.Bot):
         """Display registered commands in a clean format"""
         if not commands:
             return
-            
+
         slash_commands = []
         context_menus = []
-        
+
         for cmd in commands:
-            if hasattr(cmd, 'type'):
+            if hasattr(cmd, "type"):
                 if cmd.type == discord.AppCommandType.user:
                     context_menus.append(cmd.name)
                 elif cmd.type == discord.AppCommandType.message:
@@ -103,7 +107,7 @@ class CommandRegisterBot(commands.Bot):
                     slash_commands.append(cmd)
             else:
                 slash_commands.append(cmd)
-        
+
         if slash_commands:
             logger.info(LogArea.NONE, f"{command_type} Slash commands registered:")
             for cmd in slash_commands:
@@ -112,18 +116,31 @@ class CommandRegisterBot(commands.Bot):
                     for option in cmd.options:
                         if hasattr(option, "required") or hasattr(option, "choices"):
                             continue
-                        
+
                         if hasattr(option, "options") and option.options:
-                            logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
+                            logger.info(
+                                LogArea.NONE,
+                                f"      - {option.name}: {option.description}",
+                            )
                             for suboption in option.options:
-                                if hasattr(suboption, "required") or hasattr(suboption, "choices"):
+                                if hasattr(suboption, "required") or hasattr(
+                                    suboption, "choices"
+                                ):
                                     continue
-                                logger.info(LogArea.NONE, f"          - {suboption.name}: {suboption.description}")
+                                logger.info(
+                                    LogArea.NONE,
+                                    f"          - {suboption.name}: {suboption.description}",
+                                )
                         else:
-                            logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
-        
+                            logger.info(
+                                LogArea.NONE,
+                                f"      - {option.name}: {option.description}",
+                            )
+
         if context_menus:
-            logger.info(LogArea.NONE, f"{command_type} Context menu commands registered:")
+            logger.info(
+                LogArea.NONE, f"{command_type} Context menu commands registered:"
+            )
             for cmd_name in context_menus:
                 logger.info(LogArea.NONE, f"  - {cmd_name}")
 
@@ -134,17 +151,26 @@ class CommandRegisterBot(commands.Bot):
         try:
             logger.info(LogArea.NONE, "Registering global commands...")
             registered = await self.tree.sync()
-            logger.info(LogArea.NONE, f"Successfully registered {len(registered)} global commands")
+            logger.info(
+                LogArea.NONE,
+                f"Successfully registered {len(registered)} global commands",
+            )
 
             if registered:
                 self.display_commands(registered, "Global")
 
             if self.config.guild_id:
                 logger.spacer()
-                logger.info(LogArea.NONE, f"Registering guild-specific commands to guild {self.config.guild_id}...")
+                logger.info(
+                    LogArea.NONE,
+                    f"Registering guild-specific commands to guild {self.config.guild_id}...",
+                )
                 guild = discord.Object(id=self.config.guild_id)
                 registered_guild = await self.tree.sync(guild=guild)
-                logger.info(LogArea.NONE, f"Successfully registered {len(registered_guild)} commands to guild")
+                logger.info(
+                    LogArea.NONE,
+                    f"Successfully registered {len(registered_guild)} commands to guild",
+                )
 
                 if registered_guild:
                     self.display_commands(registered_guild, "Guild-specific")
@@ -174,15 +200,21 @@ async def main(guild_id_override=None, owner_id_override=None):
 
     if guild_id_override:
         config.guild_id = int(guild_id_override)
-        logger.info(LogArea.NONE, f"Using guild ID from command line: {config.guild_id}")
+        logger.info(
+            LogArea.NONE, f"Using guild ID from command line: {config.guild_id}"
+        )
     elif config.guild_id:
         logger.info(LogArea.NONE, f"Using guild ID from .env: {config.guild_id}")
     else:
-        logger.info(LogArea.NONE, "No guild ID specified (owner commands will be global)")
+        logger.info(
+            LogArea.NONE, "No guild ID specified (owner commands will be global)"
+        )
 
     if owner_id_override:
         config.owner_id = int(owner_id_override)
-        logger.info(LogArea.NONE, f"Using owner ID from command line: {config.owner_id}")
+        logger.info(
+            LogArea.NONE, f"Using owner ID from command line: {config.owner_id}"
+        )
     elif config.owner_id:
         logger.info(LogArea.NONE, f"Using owner ID from .env: {config.owner_id}")
     else:

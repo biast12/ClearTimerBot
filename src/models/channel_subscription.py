@@ -6,21 +6,16 @@ from typing import Dict, Optional, List, Any
 @dataclass
 class IgnoredEntities:
     """Container for ignored messages and users"""
+
     messages: List[str] = field(default_factory=list)
     users: List[str] = field(default_factory=list)
-    
+
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            "messages": self.messages,
-            "users": self.users
-        }
-    
+        return {"messages": self.messages, "users": self.users}
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "IgnoredEntities":
-        return cls(
-            messages=data.get("messages", []),
-            users=data.get("users", [])
-        )
+        return cls(messages=data.get("messages", []), users=data.get("users", []))
 
 
 @dataclass
@@ -33,9 +28,9 @@ class ChannelTimer:
 
     def to_dict(self) -> Dict[str, Any]:
         data = {
-            "timer": self.timer, 
+            "timer": self.timer,
             "next_run_time": self.next_run_time.isoformat(),
-            "ignored": self.ignored.to_dict()
+            "ignored": self.ignored.to_dict(),
         }
         if self.view_message_id:
             data["view_message_id"] = self.view_message_id
@@ -44,33 +39,33 @@ class ChannelTimer:
     @classmethod
     def from_dict(cls, channel_id: str, data: Dict[str, Any]) -> "ChannelTimer":
         ignored = IgnoredEntities.from_dict(data.get("ignored", {}))
-        
+
         return cls(
             channel_id=channel_id,
             timer=data["timer"],
             next_run_time=datetime.fromisoformat(data["next_run_time"]),
             ignored=ignored,
-            view_message_id=data.get("view_message_id")
+            view_message_id=data.get("view_message_id"),
         )
-    
+
     def add_ignored_message(self, message_id: str) -> bool:
         if message_id not in self.ignored.messages:
             self.ignored.messages.append(message_id)
             return True
         return False
-    
+
     def remove_ignored_message(self, message_id: str) -> bool:
         if message_id in self.ignored.messages:
             self.ignored.messages.remove(message_id)
             return True
         return False
-    
+
     def add_ignored_user(self, user_id: str) -> bool:
         if user_id not in self.ignored.users:
             self.ignored.users.append(user_id)
             return True
         return False
-    
+
     def remove_ignored_user(self, user_id: str) -> bool:
         if user_id in self.ignored.users:
             self.ignored.users.remove(user_id)
@@ -115,7 +110,7 @@ class Server:
             server_id=server_id,
             server_name=data.get("server_name", "") or "",
             timezone=data.get("timezone"),
-            language=data.get("language", "en")  # Default to English if not set
+            language=data.get("language", "en"),  # Default to English if not set
         )
         for channel_id, channel_data in data.get("channels", {}).items():
             server.channels[channel_id] = ChannelTimer.from_dict(

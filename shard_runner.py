@@ -17,30 +17,30 @@ from src.utils.logger import logger, LogArea
 
 async def run_shard():
     """Run a single shard based on environment variables"""
-    shard_id = int(os.environ.get('SHARD_ID', 0))
-    shard_count = int(os.environ.get('SHARD_COUNT', 1))
+    shard_id = int(os.environ.get("SHARD_ID", 0))
+    shard_count = int(os.environ.get("SHARD_COUNT", 1))
     config_manager = ConfigManager()
     config = config_manager.load_config()
     bot = ClearTimerBot(config, shard=(shard_id, shard_count))
     bot.restart_requested = False
-    
+
     try:
-        logger.info(LogArea.STARTUP, f"Starting bot shard {shard_id}/{shard_count - 1}...")
+        logger.info(
+            LogArea.STARTUP, f"Starting bot shard {shard_id}/{shard_count - 1}..."
+        )
         await bot.start(config.token)
     except KeyboardInterrupt:
         logger.info(LogArea.STARTUP, "Received shutdown signal")
     except Exception as e:
         if not isinstance(e, SystemExit):
             error_id = await logger.log_error(
-                LogArea.STARTUP,
-                f"Fatal error in shard {shard_id}",
-                exception=e
+                LogArea.STARTUP, f"Fatal error in shard {shard_id}", exception=e
             )
             logger.critical(LogArea.STARTUP, f"Fatal error: {e}. Error ID: {error_id}")
             raise
     finally:
         await bot.close()
-        if hasattr(bot, 'restart_requested') and bot.restart_requested:
+        if hasattr(bot, "restart_requested") and bot.restart_requested:
             sys.exit(99)
 
 

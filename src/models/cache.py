@@ -37,9 +37,9 @@ class CacheEntry:
             "created_at": self.created_at.isoformat(),
             "last_accessed": self.last_accessed.isoformat(),
             "ttl": self.ttl,
-            "access_count": self.access_count
+            "access_count": self.access_count,
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "CacheEntry":
         created_at = data.get("created_at")
@@ -47,13 +47,13 @@ class CacheEntry:
             created_at = datetime.fromisoformat(created_at)
         elif created_at is None:
             created_at = datetime.now(timezone.utc)
-        
+
         last_accessed = data.get("last_accessed")
         if isinstance(last_accessed, str):
             last_accessed = datetime.fromisoformat(last_accessed)
         elif last_accessed is None:
             last_accessed = datetime.now(timezone.utc)
-        
+
         return cls(
             key=data["key"],
             value=data.get("value"),
@@ -61,7 +61,7 @@ class CacheEntry:
             created_at=created_at,
             last_accessed=last_accessed,
             ttl=data.get("ttl"),
-            access_count=data.get("access_count", 0)
+            access_count=data.get("access_count", 0),
         )
 
 
@@ -74,14 +74,14 @@ class CacheStats:
     hit_rate: float = 0.0
     memory_usage_bytes: int = 0
     evictions: int = 0
-    
+
     def calculate_hit_rate(self) -> None:
         total_requests = self.total_hits + self.total_misses
         if total_requests > 0:
             self.hit_rate = (self.total_hits / total_requests) * 100
         else:
             self.hit_rate = 0.0
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "level": self.level.value,
@@ -90,9 +90,9 @@ class CacheStats:
             "total_misses": self.total_misses,
             "hit_rate": f"{self.hit_rate:.2f}%",
             "memory_usage_bytes": self.memory_usage_bytes,
-            "evictions": self.evictions
+            "evictions": self.evictions,
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "CacheStats":
         stats = cls(
@@ -101,7 +101,7 @@ class CacheStats:
             total_hits=data.get("total_hits", 0),
             total_misses=data.get("total_misses", 0),
             memory_usage_bytes=data.get("memory_usage_bytes", 0),
-            evictions=data.get("evictions", 0)
+            evictions=data.get("evictions", 0),
         )
         # Parse hit_rate if it's a string percentage
         hit_rate = data.get("hit_rate", "0.0%")
@@ -117,16 +117,30 @@ class GlobalCacheStats:
     memory: CacheStats = field(default_factory=lambda: CacheStats(CacheLevel.MEMORY))
     warm: CacheStats = field(default_factory=lambda: CacheStats(CacheLevel.WARM))
     cold: CacheStats = field(default_factory=lambda: CacheStats(CacheLevel.COLD))
-    
+
     def get_total_stats(self) -> Dict[str, Any]:
-        total_hits = self.memory.total_hits + self.warm.total_hits + self.cold.total_hits
-        total_misses = self.memory.total_misses + self.warm.total_misses + self.cold.total_misses
-        total_entries = self.memory.total_entries + self.warm.total_entries + self.cold.total_entries
-        total_memory = self.memory.memory_usage_bytes + self.warm.memory_usage_bytes + self.cold.memory_usage_bytes
-        
+        total_hits = (
+            self.memory.total_hits + self.warm.total_hits + self.cold.total_hits
+        )
+        total_misses = (
+            self.memory.total_misses + self.warm.total_misses + self.cold.total_misses
+        )
+        total_entries = (
+            self.memory.total_entries
+            + self.warm.total_entries
+            + self.cold.total_entries
+        )
+        total_memory = (
+            self.memory.memory_usage_bytes
+            + self.warm.memory_usage_bytes
+            + self.cold.memory_usage_bytes
+        )
+
         total_requests = total_hits + total_misses
-        overall_hit_rate = (total_hits / total_requests * 100) if total_requests > 0 else 0.0
-        
+        overall_hit_rate = (
+            (total_hits / total_requests * 100) if total_requests > 0 else 0.0
+        )
+
         return {
             "total_entries": total_entries,
             "total_hits": total_hits,
@@ -136,21 +150,33 @@ class GlobalCacheStats:
             "levels": {
                 "memory": self.memory.to_dict(),
                 "warm": self.warm.to_dict(),
-                "cold": self.cold.to_dict()
-            }
+                "cold": self.cold.to_dict(),
+            },
         }
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "memory": self.memory.to_dict(),
             "warm": self.warm.to_dict(),
-            "cold": self.cold.to_dict()
+            "cold": self.cold.to_dict(),
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "GlobalCacheStats":
         return cls(
-            memory=CacheStats.from_dict(data.get("memory", {"level": "memory"})) if "memory" in data else CacheStats(CacheLevel.MEMORY),
-            warm=CacheStats.from_dict(data.get("warm", {"level": "warm"})) if "warm" in data else CacheStats(CacheLevel.WARM),
-            cold=CacheStats.from_dict(data.get("cold", {"level": "cold"})) if "cold" in data else CacheStats(CacheLevel.COLD)
+            memory=(
+                CacheStats.from_dict(data.get("memory", {"level": "memory"}))
+                if "memory" in data
+                else CacheStats(CacheLevel.MEMORY)
+            ),
+            warm=(
+                CacheStats.from_dict(data.get("warm", {"level": "warm"}))
+                if "warm" in data
+                else CacheStats(CacheLevel.WARM)
+            ),
+            cold=(
+                CacheStats.from_dict(data.get("cold", {"level": "cold"}))
+                if "cold" in data
+                else CacheStats(CacheLevel.COLD)
+            ),
         )

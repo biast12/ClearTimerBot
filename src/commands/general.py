@@ -15,105 +15,112 @@ class GeneralCommands(commands.Cog):
         self.i18n = get_i18n()
 
     @app_commands.command(
-        name="help", 
+        name="help",
         description=get_command_description("help"),
-        auto_locale_strings=False
+        auto_locale_strings=False,
     )
     async def help_command(self, interaction: discord.Interaction):
         checks = {
             ValidationCheck.BLACKLIST: True,
         }
-        
+
         is_valid, error_msg, _ = await self.validator.validate_command(
             interaction, None, checks
         )
-        
+
         if not is_valid:
             await self.validator.send_validation_error(interaction, error_msg)
             return
-        
+
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
-        
-        commands_dict = {
-            'subscription': [],
-            'general': []
-        }
-        
+
+        commands_dict = {"subscription": [], "general": []}
+
         try:
             for cog_name, cog in self.bot.cogs.items():
-                if cog_name in ['AdminCommands', 'OwnerCommands']:
+                if cog_name in ["AdminCommands", "OwnerCommands"]:
                     continue
-                    
+
                 for attr_name in dir(cog):
                     attr = getattr(cog, attr_name, None)
-                    
+
                     if isinstance(attr, app_commands.Group):
                         group_name = attr.name
-                        
-                        if group_name in ['blacklist', 'error', 'force', 'admin', 'shard']:
+
+                        if group_name in [
+                            "blacklist",
+                            "error",
+                            "force",
+                            "admin",
+                            "shard",
+                        ]:
                             continue
-                        
+
                         for subcommand in attr.commands:
                             cmd_info = {
-                                'name': f"{group_name} {subcommand.name}",
-                                'description': subcommand.description or "No description"
+                                "name": f"{group_name} {subcommand.name}",
+                                "description": subcommand.description
+                                or "No description",
                             }
-                            
-                            if group_name == 'subscription':
-                                commands_dict['subscription'].append(cmd_info)
-                            elif group_name in ['timezone', 'language']:
-                                commands_dict['general'].append(cmd_info)
+
+                            if group_name == "subscription":
+                                commands_dict["subscription"].append(cmd_info)
+                            elif group_name in ["timezone", "language"]:
+                                commands_dict["general"].append(cmd_info)
                             else:
-                                commands_dict['general'].append(cmd_info)
-                
+                                commands_dict["general"].append(cmd_info)
+
                 for command in cog.walk_app_commands():
                     if not isinstance(command, app_commands.Command):
                         continue
-                    
-                    if isinstance(command, (app_commands.Group, app_commands.ContextMenu)):
+
+                    if isinstance(
+                        command, (app_commands.Group, app_commands.ContextMenu)
+                    ):
                         continue
-                        
-                    if hasattr(command, 'parent') and command.parent is not None:
+
+                    if hasattr(command, "parent") and command.parent is not None:
                         continue
-                    
-                    if command.name in ['stats', 'server_info']:
+
+                    if command.name in ["stats", "server_info"]:
                         continue
-                    
-                    if command.name in ['help', 'ping']:
+
+                    if command.name in ["help", "ping"]:
                         cmd_info = {
-                            'name': command.name,
-                            'description': command.description or "No description"
+                            "name": command.name,
+                            "description": command.description or "No description",
                         }
-                        commands_dict['general'].append(cmd_info)
-                        
+                        commands_dict["general"].append(cmd_info)
+
         except Exception as e:
             import traceback
+
             traceback.print_exc()
-        
+
         from src.components.general import HelpView
-        
+
         view = HelpView(translator, commands_dict)
         await interaction.response.send_message(view=view)
 
     @app_commands.command(
-        name="ping", 
+        name="ping",
         description=get_command_description("ping"),
-        auto_locale_strings=False
+        auto_locale_strings=False,
     )
     async def ping(self, interaction: discord.Interaction):
         checks = {
             ValidationCheck.BLACKLIST: True,
         }
-        
+
         is_valid, error_msg, _ = await self.validator.validate_command(
             interaction, None, checks
         )
-        
+
         if not is_valid:
             await self.validator.send_validation_error(interaction, error_msg)
             return
-        
+
         ws_latency = round(self.bot.latency * 1000)
 
         start_time = time.perf_counter()
@@ -123,211 +130,209 @@ class GeneralCommands(commands.Cog):
 
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
-        
+
         from src.components.general import PingView
-        
+
         view = PingView(ws_latency, response_time, translator)
         await interaction.followup.send(view=view)
 
     async def timezone_autocomplete(
-        self, 
-        interaction: discord.Interaction, 
-        current: str
+        self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
         try:
-            if not hasattr(self.bot, 'data_service') or not self.bot.data_service:
+            if not hasattr(self.bot, "data_service") or not self.bot.data_service:
                 from src.utils.logger import logger, LogArea
-                logger.warning(LogArea.COMMANDS, "data_service not available in autocomplete")
+
+                logger.warning(
+                    LogArea.COMMANDS, "data_service not available in autocomplete"
+                )
                 return []
-            
+
             timezone_mappings = self.bot.data_service.get_timezones_list()
-            
+
             if not timezone_mappings:
                 from src.utils.logger import logger, LogArea
-                logger.warning(LogArea.COMMANDS, "No timezone mappings found in database")
+
+                logger.warning(
+                    LogArea.COMMANDS, "No timezone mappings found in database"
+                )
                 return []
-            
+
             choices = []
             current_lower = current.lower() if current else ""
-            
+
             for abbr, full_tz in timezone_mappings.items():
                 display_name = f"{abbr} ({full_tz})"
                 if len(display_name) > 100:
                     display_name = f"{abbr} ({full_tz[:90]}...)"
-                
+
                 if not current or (
-                    abbr.lower().startswith(current_lower) or
-                    full_tz.lower().startswith(current_lower) or
-                    current_lower in abbr.lower() or
-                    current_lower in full_tz.lower()
+                    abbr.lower().startswith(current_lower)
+                    or full_tz.lower().startswith(current_lower)
+                    or current_lower in abbr.lower()
+                    or current_lower in full_tz.lower()
                 ):
                     choices.append(app_commands.Choice(name=display_name, value=abbr))
-            
+
             choices.sort(key=lambda x: x.value)
             return choices[:25]
         except Exception as e:
             from src.utils.logger import logger, LogArea
             import traceback
+
             logger.error(LogArea.COMMANDS, f"Error in timezone_autocomplete: {e}")
             logger.debug(LogArea.COMMANDS, traceback.format_exc())
             return []
-    
+
     timezone_group = app_commands.Group(
         name="timezone",
         description=get_command_description("timezone"),
-        auto_locale_strings=False
+        auto_locale_strings=False,
     )
 
     @timezone_group.command(
         name="list",
         description=get_command_description("timezone.list"),
-        auto_locale_strings=False
+        auto_locale_strings=False,
     )
     @app_commands.default_permissions(manage_guild=True)
-    async def timezone_list(
-        self,
-        interaction: discord.Interaction
-    ):
+    async def timezone_list(self, interaction: discord.Interaction):
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: "manage_guild",
         }
-        
+
         is_valid, error_msg, _ = await self.validator.validate_command(
             interaction, None, checks
         )
-        
+
         if not is_valid:
             await self.validator.send_validation_error(interaction, error_msg)
             return
-        
+
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
-        
+
         timezones = self.data_service.get_timezones_list()
-        
+
         from src.components.timezone import TimezoneListView
+
         view = TimezoneListView(timezones, translator)
         await interaction.response.send_message(view=view)
 
     async def timezone_change_impl(
-        self,
-        interaction: discord.Interaction,
-        timezone: str
+        self, interaction: discord.Interaction, timezone: str
     ):
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: "manage_guild",
         }
-        
+
         is_valid, error_msg, _ = await self.validator.validate_command(
             interaction, None, checks
         )
-        
+
         if not is_valid:
             await self.validator.send_validation_error(interaction, error_msg)
             return
-        
+
         timezone_mappings = self.data_service.get_timezones_list()
         if timezone.upper() in timezone_mappings:
             timezone = timezone_mappings[timezone.upper()]
-        
+
         try:
             pytz.timezone(timezone)
         except pytz.exceptions.UnknownTimeZoneError:
             all_timezones = pytz.all_timezones
             suggestion = None
             timezone_lower = timezone.lower()
-            
+
             for tz in all_timezones:
                 if timezone_lower in tz.lower():
                     suggestion = tz
                     break
-            
+
             server_id = str(interaction.guild.id)
             translator = await get_translator(server_id, self.data_service)
-            
+
             from src.components.timezone import TimezoneInvalidView
+
             view = TimezoneInvalidView(timezone, suggestion, translator)
             await interaction.response.send_message(view=view, ephemeral=True)
             return
-        
+
         server_id = str(interaction.guild.id)
-        
+
         server = await self.data_service.get_server(server_id)
         if not server:
             server = await self.data_service.add_server(interaction.guild)
-        
+
         await self.data_service.set_server_timezone(server_id, timezone)
-        
+
         translator = await get_translator(server_id, self.data_service)
         from src.components.timezone import TimezoneChangeSuccessView
+
         view = TimezoneChangeSuccessView(timezone, translator)
         await interaction.response.send_message(view=view)
-    
+
     @timezone_group.command(
         name="change",
         description=get_command_description("timezone.change"),
-        auto_locale_strings=False
+        auto_locale_strings=False,
     )
     @app_commands.default_permissions(manage_guild=True)
     @app_commands.describe(
         timezone="Select or type a timezone (e.g., PST, EST, GMT, Europe/London)"
     )
-    async def timezone_change(
-        self,
-        interaction: discord.Interaction,
-        timezone: str
-    ):
+    async def timezone_change(self, interaction: discord.Interaction, timezone: str):
         await self.timezone_change_impl(interaction, timezone)
-    
-    @timezone_change.autocomplete('timezone')
+
+    @timezone_change.autocomplete("timezone")
     async def timezone_change_autocomplete(
-        self,
-        interaction: discord.Interaction,
-        current: str
+        self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
         return await self.timezone_autocomplete(interaction, current)
 
     async def language_autocomplete(
-        self,
-        interaction: discord.Interaction,
-        current: str
+        self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
         try:
             available_languages = self.i18n.get_available_languages()
-            
+
             choices = []
             current_lower = current.lower() if current else ""
-            
+
             for code, name in available_languages.items():
-                native_name = self.i18n.languages.get(code, {}).get('language_native_name', name)
+                native_name = self.i18n.languages.get(code, {}).get(
+                    "language_native_name", name
+                )
                 if native_name != name:
                     display_name = f"{name} ({native_name}) - {code}"
                 else:
                     display_name = f"{name} - {code}"
-                
+
                 # Truncate if too long
                 if len(display_name) > 100:
                     display_name = display_name[:97] + "..."
-                
+
                 # Filter based on current input
                 if not current or (
-                    code.lower().startswith(current_lower) or
-                    name.lower().startswith(current_lower) or
-                    native_name.lower().startswith(current_lower) or
-                    current_lower in code.lower() or
-                    current_lower in name.lower() or
-                    current_lower in native_name.lower()
+                    code.lower().startswith(current_lower)
+                    or name.lower().startswith(current_lower)
+                    or native_name.lower().startswith(current_lower)
+                    or current_lower in code.lower()
+                    or current_lower in name.lower()
+                    or current_lower in native_name.lower()
                 ):
                     choices.append(app_commands.Choice(name=display_name, value=code))
-            
+
             # Sort by language code
             choices.sort(key=lambda x: x.value)
             return choices[:25]
         except Exception as e:
             from src.utils.logger import logger, LogArea
             import traceback
+
             logger.error(LogArea.COMMANDS, f"Error in language_autocomplete: {e}")
             logger.debug(LogArea.COMMANDS, traceback.format_exc())
             return []
@@ -335,110 +340,115 @@ class GeneralCommands(commands.Cog):
     language_group = app_commands.Group(
         name="language",
         description=get_command_description("language"),
-        auto_locale_strings=False
+        auto_locale_strings=False,
     )
 
     @language_group.command(
         name="list",
         description=get_command_description("language.list"),
-        auto_locale_strings=False
+        auto_locale_strings=False,
     )
     @app_commands.default_permissions(manage_guild=True)
-    async def language_list(
-        self,
-        interaction: discord.Interaction
-    ):
+    async def language_list(self, interaction: discord.Interaction):
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: "manage_guild",
         }
-        
+
         is_valid, error_msg, _ = await self.validator.validate_command(
             interaction, None, checks
         )
-        
+
         if not is_valid:
             await self.validator.send_validation_error(interaction, error_msg)
             return
-        
+
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
-        
+
         languages = self.i18n.get_available_languages()
-        current_language = await self.data_service.get_server_language(server_id) or "en"
-        
+        current_language = (
+            await self.data_service.get_server_language(server_id) or "en"
+        )
+
         # Use the language list view
         from src.components.general import LanguageListView
+
         view = LanguageListView(languages, current_language, translator)
         await interaction.response.send_message(view=view)
 
     @language_group.command(
         name="change",
         description=get_command_description("language.change"),
-        auto_locale_strings=False
+        auto_locale_strings=False,
     )
     @app_commands.default_permissions(manage_guild=True)
     @app_commands.describe(
         language="Select or type a language code (e.g., en, es, de, zh)"
     )
-    async def language_change(
-        self,
-        interaction: discord.Interaction,
-        language: str
-    ):
+    async def language_change(self, interaction: discord.Interaction, language: str):
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: "manage_guild",
         }
-        
+
         is_valid, error_msg, _ = await self.validator.validate_command(
             interaction, None, checks
         )
-        
+
         if not is_valid:
             await self.validator.send_validation_error(interaction, error_msg)
             return
-        
+
         server_id = str(interaction.guild.id)
-        
-        current_language = await self.data_service.get_server_language(server_id) or "en"
+
+        current_language = (
+            await self.data_service.get_server_language(server_id) or "en"
+        )
         translator = await get_translator(server_id, self.data_service)
-        
+
         selected_language = language.lower()
         available_languages = self.i18n.get_available_languages()
-        
+
         # Validate the language code
         if selected_language not in available_languages:
             from src.components.general import LanguageInvalidView
-            view = LanguageInvalidView(language, list(available_languages.keys()), translator)
+
+            view = LanguageInvalidView(
+                language, list(available_languages.keys()), translator
+            )
             await interaction.response.send_message(view=view, ephemeral=True)
             return
-        
+
         # Check if already set to this language
         if current_language == selected_language:
             from src.components.general import LanguageAlreadySetView
-            view = LanguageAlreadySetView(available_languages[selected_language], translator)
+
+            view = LanguageAlreadySetView(
+                available_languages[selected_language], translator
+            )
             await interaction.response.send_message(view=view, ephemeral=True)
             return
-        
+
         server = await self.data_service.get_server(server_id)
         if not server:
             server = await self.data_service.add_server(interaction.guild)
-        
+
         await self.data_service.set_server_language(server_id, selected_language)
-        
+
         new_translator = await get_translator(server_id, self.data_service)
-        
+
         # Send success message in the new language
         from src.components.general import LanguageChangeSuccessView
-        view = LanguageChangeSuccessView(available_languages[selected_language], new_translator)
+
+        view = LanguageChangeSuccessView(
+            available_languages[selected_language], new_translator
+        )
         await interaction.response.send_message(view=view)
 
-    @language_change.autocomplete('language')
+    @language_change.autocomplete("language")
     async def language_change_autocomplete(
-        self,
-        interaction: discord.Interaction,
-        current: str
+        self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
         return await self.language_autocomplete(interaction, current)
 

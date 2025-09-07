@@ -29,11 +29,11 @@ class BotConfig:
     log_level: LogLevel = LogLevel.INFO
     shard_count: Optional[int] = None
     shard_ids: Optional[List[int]] = None
-    
+
     @property
     def is_owner_mode(self) -> bool:
         return self.owner_id is not None and self.guild_id is not None
-    
+
     @classmethod
     def from_env(cls, env_vars: Dict[str, str]) -> "BotConfig":
         return cls(
@@ -44,10 +44,16 @@ class BotConfig:
             database_url=env_vars.get("DATABASE_URL"),
             environment=Environment(env_vars.get("ENVIRONMENT", "production")),
             log_level=LogLevel(env_vars.get("LOG_LEVEL", "INFO")),
-            shard_count=int(env_vars["SHARD_COUNT"]) if "SHARD_COUNT" in env_vars else None,
-            shard_ids=[int(x) for x in env_vars["SHARD_IDS"].split(",")] if "SHARD_IDS" in env_vars else None
+            shard_count=(
+                int(env_vars["SHARD_COUNT"]) if "SHARD_COUNT" in env_vars else None
+            ),
+            shard_ids=(
+                [int(x) for x in env_vars["SHARD_IDS"].split(",")]
+                if "SHARD_IDS" in env_vars
+                else None
+            ),
         )
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "application_id": self.application_id,
@@ -55,5 +61,5 @@ class BotConfig:
             "environment": self.environment.value,
             "log_level": self.log_level.value,
             "shard_count": self.shard_count,
-            "shard_ids": self.shard_ids
+            "shard_ids": self.shard_ids,
         }

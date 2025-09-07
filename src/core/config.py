@@ -53,7 +53,7 @@ class ConfigManager:
             "Please enter your test server ID for owner commands",
             required=False,
         )
-        
+
         # Get optional environment variables without prompting
         application_id = os.getenv("APPLICATION_ID")
         database_url = os.getenv("DATABASE_URL")  # MongoDB URL from environment
@@ -67,7 +67,7 @@ class ConfigManager:
             application_id=application_id,
             database_url=database_url,
             environment=Environment(environment),
-            log_level=LogLevel(log_level)
+            log_level=LogLevel(log_level),
         )
 
     @staticmethod
