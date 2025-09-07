@@ -23,15 +23,11 @@ class AdminCommands(
         
         if not (is_owner or is_admin):
             # Get translator for localization
-            translator = None
             if interaction.guild:
-                try:
-                    translator = await get_translator(str(interaction.guild.id), self.data_service)
-                except:
-                    pass
+                translator = await get_translator(str(interaction.guild.id), self.data_service)
             
             from src.components.admin import AdminOnlyView
-            view = AdminOnlyView(translator=translator)
+            view = AdminOnlyView(translator)
             await interaction.followup.send(view=view, ephemeral=True)
             return False
         return True
@@ -72,19 +68,15 @@ class AdminCommands(
             return
         
         # Get translator for localization
-        translator = None
         if interaction.guild:
-            try:
-                translator = await get_translator(str(interaction.guild.id), self.data_service)
-            except:
-                pass
+            translator = await get_translator(str(interaction.guild.id), self.data_service)
         
         if server_id:
             server = await self.data_service.get_server(server_id)
             
             if not server:
                 from src.components.admin import ServerNotFoundView
-                view = ServerNotFoundView(server_id, translator=translator)
+                view = ServerNotFoundView(server_id, translator)
                 await interaction.followup.send(view=view)
                 return
             
@@ -166,12 +158,8 @@ class AdminCommands(
             return
         
         # Get translator for localization
-        translator = None
         if interaction.guild:
-            try:
-                translator = await get_translator(str(interaction.guild.id), self.data_service)
-            except:
-                pass
+            translator = await get_translator(str(interaction.guild.id), self.data_service)
         
         guild = self.bot.get_guild(int(server_id))
         server_name = guild.name if guild else "Unknown"
@@ -188,11 +176,11 @@ class AdminCommands(
                 await self.data_service.save_servers()
 
             from src.components.admin import BlacklistAddSuccessView
-            view = BlacklistAddSuccessView(server_name, server_id, reason, translator=translator)
+            view = BlacklistAddSuccessView(server_name, server_id, translator, reason)
             await interaction.followup.send(view=view)
         else:
             from src.components.admin import BlacklistAddAlreadyView
-            view = BlacklistAddAlreadyView(server_id, translator=translator)
+            view = BlacklistAddAlreadyView(server_id, translator)
             await interaction.followup.send(view=view)
 
     @blacklist_group.command(
@@ -208,21 +196,17 @@ class AdminCommands(
             return
         
         # Get translator for localization
-        translator = None
         if interaction.guild:
-            try:
-                translator = await get_translator(str(interaction.guild.id), self.data_service)
-            except:
-                pass
+            translator = await get_translator(str(interaction.guild.id), self.data_service)
         
         if await self.data_service.remove_from_blacklist(server_id):
             await self.data_service.save_blacklist()
             from src.components.admin import BlacklistRemoveSuccessView
-            view = BlacklistRemoveSuccessView(server_id, translator=translator)
+            view = BlacklistRemoveSuccessView(server_id, translator)
             await interaction.followup.send(view=view)
         else:
             from src.components.admin import BlacklistRemoveNotFoundView
-            view = BlacklistRemoveNotFoundView(server_id, translator=translator)
+            view = BlacklistRemoveNotFoundView(server_id, translator)
             await interaction.followup.send(view=view)
 
     @blacklist_group.command(
@@ -237,11 +221,14 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
+        # Get translator for localization
+        translator = await get_translator(str(interaction.guild.id), self.data_service)
+        
         blacklist_entries = await self.data_service.get_blacklist_entries()
         
         if server_id not in blacklist_entries:
             from src.components.admin import BlacklistCheckNotFoundView
-            view = BlacklistCheckNotFoundView(server_id)
+            view = BlacklistCheckNotFoundView(server_id, translator)
             await interaction.followup.send(view=view)
             return
         
@@ -250,7 +237,7 @@ class AdminCommands(
         server_name = guild.name if guild else (entry.server_name or "Unknown")
         
         from src.components.admin import BlacklistCheckFoundView
-        view = BlacklistCheckFoundView(server_id, server_name, entry)
+        view = BlacklistCheckFoundView(server_id, server_name, entry, translator)
         await interaction.followup.send(view=view)
 
     @app_commands.command(
@@ -264,6 +251,9 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
+        # Get translator for localization
+        translator = await get_translator(str(interaction.guild.id), self.data_service)
+        
         try:
             await self.data_service.reload_all_caches()
             await self.data_service.reload_timezones_cache()
@@ -275,7 +265,8 @@ class AdminCommands(
             
             from src.components.admin import RecacheSuccessView
             view = RecacheSuccessView(
-                cache_type="All data (except config)",
+                cache_type="All data",
+                translator=translator,
                 servers=servers_count,
                 blacklist=blacklist_count,
                 channels=channels_count,
@@ -285,7 +276,7 @@ class AdminCommands(
             
         except Exception as e:
             from src.components.admin import RecacheErrorView
-            view = RecacheErrorView("all", str(e))
+            view = RecacheErrorView("all", str(e), translator)
             await interaction.followup.send(view=view)
 
     @error_group.command(
@@ -300,18 +291,21 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
+        # Get translator for localization
+        translator = await get_translator(str(interaction.guild.id), self.data_service)
+        
         error_doc = await logger.get_error(error_id)
         
         if not error_doc:
             from src.components.admin import ErrorNotFoundView
-            view = ErrorNotFoundView(error_id)
+            view = ErrorNotFoundView(error_id, translator)
             await interaction.followup.send(view=view)
             return
         
         # Error details display
         from src.components.admin import ErrorDetailsView
         
-        view = ErrorDetailsView(error_doc, self.bot)
+        view = ErrorDetailsView(error_doc, self.bot, translator)
         await interaction.followup.send(view=view)
 
     @error_group.command(
@@ -326,15 +320,18 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
+        # Get translator for localization
+        translator = await get_translator(str(interaction.guild.id), self.data_service)
+        
         success = await logger.delete_error(error_id)
         
         if success:
             from src.components.admin import ErrorDeleteSuccessView
-            view = ErrorDeleteSuccessView(error_id)
+            view = ErrorDeleteSuccessView(error_id, translator)
             await interaction.followup.send(view=view)
         else:
             from src.components.admin import ErrorDeleteFailedView
-            view = ErrorDeleteFailedView(error_id)
+            view = ErrorDeleteFailedView(error_id, translator)
             await interaction.followup.send(view=view)
 
     @error_group.command(
@@ -349,19 +346,22 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
+        # Get translator for localization
+        translator = await get_translator(str(interaction.guild.id), self.data_service)
+        
         limit = min(max(1, limit), 25)
         errors = await logger.get_recent_errors(limit)
         
         if not errors:
             from src.components.admin import NoErrorsView
-            view = NoErrorsView()
+            view = NoErrorsView(translator)
             await interaction.followup.send(view=view)
             return
         
         # Error list display
         from src.components.admin import ErrorListView
         
-        view = ErrorListView(errors)
+        view = ErrorListView(errors, translator)
         await interaction.followup.send(view=view)
 
     @error_group.command(
@@ -375,13 +375,16 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
+        # Get translator for localization
+        translator = await get_translator(str(interaction.guild.id), self.data_service)
+        
         from src.services.database_connection_manager import db_manager
         
         try:
             errors_collection = db_manager.db.errors
             result = await errors_collection.delete_many({})
             from src.components.admin import ErrorsClearedView
-            view = ErrorsClearedView(result.deleted_count)
+            view = ErrorsClearedView(result.deleted_count, translator)
             await interaction.followup.send(view=view)
         except Exception as e:
             error_id = await logger.log_error(
@@ -390,7 +393,7 @@ class AdminCommands(
                 exception=e
             )
             from src.components.admin import ErrorsClearFailedView
-            view = ErrorsClearFailedView(error_id)
+            view = ErrorsClearFailedView(error_id, translator)
             await interaction.followup.send(view=view)
 
 
@@ -405,12 +408,15 @@ class AdminCommands(
         
         if not await self._check_admin_permission_before_defer(interaction):
             return
+        
+        # Get translator for localization
+        translator = await get_translator(str(interaction.guild.id), self.data_service)
 
         servers = await self.data_service.get_all_servers()
 
         if id not in servers:
             from src.components.admin import ForceUnsubNotFoundView
-            view = ForceUnsubNotFoundView(id)
+            view = ForceUnsubNotFoundView(id, translator)
             await interaction.followup.send(view=view)
             return
 
@@ -424,7 +430,7 @@ class AdminCommands(
         await self.data_service.save_servers()
 
         from src.components.admin import ForceUnsubSuccessView
-        view = ForceUnsubSuccessView("server", id, channels_removed)
+        view = ForceUnsubSuccessView("server", id, translator, channels_removed)
         await interaction.followup.send(view=view)
 
     @force_group.command(
@@ -438,6 +444,9 @@ class AdminCommands(
         
         if not await self._check_admin_permission_before_defer(interaction):
             return
+        
+        # Get translator for localization
+        translator = await get_translator(str(interaction.guild.id), self.data_service)
 
         servers = await self.data_service.get_all_servers()
 
@@ -448,12 +457,12 @@ class AdminCommands(
                 await self.data_service.save_servers()
 
                 from src.components.admin import ForceUnsubSuccessView
-                view = ForceUnsubSuccessView("channel", id, server_id=server_id)
+                view = ForceUnsubSuccessView("channel", id, translator, server_id=server_id)
                 await interaction.followup.send(view=view)
                 return
 
         from src.components.admin import ForceUnsubNotFoundView
-        view = ForceUnsubNotFoundView(id)
+        view = ForceUnsubNotFoundView(id, translator)
         await interaction.followup.send(view=view)
 
 

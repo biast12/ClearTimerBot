@@ -271,6 +271,9 @@
         "server_name": "Servidor: {name}",
         "server_id": "ID del Servidor: {id}",
         "blacklisted": "En Lista Negra: {status}",
+        "blacklisted_yes": "Sí ⛔",
+        "blacklisted_no": "No ✅",
+        "unknown_channel": "Canal Desconocido",
         "errors": "Errores: {count}",
         "channels_label": "Canales:",
         "more_channels": "... y {count} canales más",
@@ -280,6 +283,7 @@
       },
       "blacklist": {
         "description": "Administrar lista negra de servidores",
+        "no_reason_provided": "No se proporcionó razón",
         "add": {
           "description": "Añadir un servidor a la lista negra",
           "success_title": "Servidor en Lista Negra",
@@ -300,20 +304,21 @@
         },
         "check": {
           "description": "Verificar si un servidor está en la lista negra",
-          "not_found_title": "El Servidor NO está en Lista Negra",
-          "not_found_description": "El servidor `{server_id}` no está en la lista negra.",
-          "not_found_note": "Este servidor puede usar comandos del bot normalmente.",
-          "found_title": "El Servidor está en Lista Negra",
-          "found_server_name": "Nombre del Servidor: {name}",
-          "found_server_id": "ID del Servidor: `{id}`",
-          "found_reason": "Razón: {reason}",
-          "found_blacklisted": "En Lista Negra: {date}",
-          "found_blacklisted_by": "En Lista Negra Por: <@{user_id}>",
-          "found_note": "Este servidor no puede usar comandos del bot."
+          "not_blacklisted_title": "El Servidor NO está en Lista Negra",
+          "not_blacklisted_description": "El servidor `{server_id}` no está en la lista negra.",
+          "not_blacklisted_note": "Este servidor puede usar comandos del bot normalmente.",
+          "blacklisted_title": "El Servidor está en Lista Negra",
+          "blacklisted_server_name": "Nombre del Servidor",
+          "blacklisted_server_id": "ID del Servidor",
+          "blacklisted_reason": "Razón",
+          "blacklisted_date": "En Lista Negra",
+          "blacklisted_by": "En Lista Negra Por",
+          "blacklisted_note": "Este servidor no puede usar comandos del bot.",
+          "unknown_date": "Desconocido"
         }
       },
       "recache": {
-        "description": "Recargar todos los datos de la base de datos (excepto configuración)",
+        "description": "Recargar todos los datos de la base de datos",
         "success_title": "Caché Recargado",
         "success_description": "Se recargó exitosamente: **{cache_type}**",
         "success_loaded_data": "Datos Cargados",
@@ -328,7 +333,13 @@
       "error": {
         "description": "Administrar registros de errores",
         "check": {
-          "description": "Verificar un error por su ID"
+          "description": "Verificar un error por su ID",
+          "channel": "Canal",
+          "user": "Usuario",
+          "command": "Comando",
+          "traceback": "Rastreo",
+          "no_message": "Sin mensaje",
+          "unknown": "Desconocido"
         },
         "delete": {
           "description": "Eliminar un error por su ID"
@@ -350,7 +361,7 @@
         "details_channel": "Canal: {name} ({id})",
         "details_user": "Usuario: <@{user_id}> ({user_id})",
         "details_command": "Comando: {command}",
-        "details_traceback": "Seguimiento:",
+        "details_traceback": "Rastreo:",
         "delete_success_title": "Error Eliminado",
         "delete_success_description": "El error `{error_id}` ha sido eliminado de la base de datos.",
         "delete_failed_title": "Eliminación Fallida",
@@ -365,7 +376,6 @@
         "list_hint": "Usa `/admin error check <id>` para ver detalles completos",
         "no_errors_title": "No se Encontraron Errores",
         "no_errors_description": "No se encontraron errores en la base de datos.",
-        "no_errors_note": "Los errores aparecerán aquí cuando ocurran",
         "clear_success_title": "Errores Limpiados",
         "clear_success_description": "Se limpiaron {count} error{s} de la base de datos.",
         "clear_success_note": "El registro de errores ahora está vacío",

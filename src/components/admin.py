@@ -12,18 +12,12 @@ from src.localization import get_translator
 class AdminOnlyView(discord.ui.LayoutView):
     """View for admin-only restriction message"""
     
-    def __init__(self, translator=None):
+    def __init__(self, translator):
         super().__init__()
         
-        if translator:
-            title = translator.get("commands.admin.permission_denied.title")
-            description = translator.get("commands.admin.permission_denied.description")
-            content = f"❌ **{title}**\n\n{description}"
-        else:
-            content = (
-                "❌ **Admin Only**\n\n"
-                "This command is restricted to the bot admins."
-            )
+        title = translator.get("commands.admin.permission_denied.title")
+        description = translator.get("commands.admin.permission_denied.description")
+        content = f"❌ **{title}**\n\n{description}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -38,30 +32,22 @@ class SimpleStatsView(discord.ui.LayoutView):
     """View for showing simple bot statistics"""
     
     def __init__(self, total_servers: int, total_channels: int, removed_servers: int, 
-                 blacklisted_servers: int, error_count: int, translator=None):
+                 blacklisted_servers: int, error_count: int, translator):
         super().__init__()
         
-        if translator:
-            title = translator.get("commands.admin.stats.title")
-            servers = translator.get("commands.admin.stats.servers", count=total_servers)
-            channels = translator.get("commands.admin.stats.subscribed_channels", count=total_channels)
-            removed = translator.get("commands.admin.stats.removed_servers", count=removed_servers)
-            blacklisted = translator.get("commands.admin.stats.blacklisted_servers", count=blacklisted_servers)
-            errors = translator.get("commands.admin.stats.saved_errors", count=error_count)
-            
-            content = f"📊 **{title}**\n\n"
-            content += f"**{servers}**\n"
-            content += f"**{channels}**\n"
-            content += f"**{removed}**\n"
-            content += f"**{blacklisted}**\n"
-            content += f"**{errors}**"
-        else:
-            content = "📊 **Bot Statistics**\n\n"
-            content += f"**Servers:** {total_servers}\n"
-            content += f"**Subscribed Channels:** {total_channels}\n"
-            content += f"**Removed Servers:** {removed_servers}\n"
-            content += f"**Blacklisted Servers:** {blacklisted_servers}\n"
-            content += f"**Saved Errors:** {error_count}"
+        title = translator.get("commands.admin.stats.title")
+        servers = translator.get("commands.admin.stats.servers", count=total_servers)
+        channels = translator.get("commands.admin.stats.subscribed_channels", count=total_channels)
+        removed = translator.get("commands.admin.stats.removed_servers", count=removed_servers)
+        blacklisted = translator.get("commands.admin.stats.blacklisted_servers", count=blacklisted_servers)
+        errors = translator.get("commands.admin.stats.saved_errors", count=error_count)
+        
+        content = f"📊 **{title}**\n\n"
+        content += f"**{servers}**\n"
+        content += f"**{channels}**\n"
+        content += f"**{removed}**\n"
+        content += f"**{blacklisted}**\n"
+        content += f"**{errors}**"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -74,49 +60,38 @@ class ServerStatsView(discord.ui.LayoutView):
     """View for showing server-specific statistics"""
     
     def __init__(self, server_id: str, server_name: str, channel_count: int,
-                 is_blacklisted: bool, error_count: int, bot, channels: dict, translator=None):
+                 is_blacklisted: bool, error_count: int, bot, channels: dict, translator):
         super().__init__()
         
-        if translator:
-            title = translator.get("commands.admin.stats.server_title")
-            server_label = translator.get("commands.admin.stats.server_name", name=server_name)
-            server_id_label = translator.get("commands.admin.stats.server_id", id=server_id)
-            channels_label = translator.get("commands.admin.stats.subscribed_channels", count=channel_count)
-            blacklisted_label = translator.get("commands.admin.stats.blacklisted", 
-                                              status='Yes ⛔' if is_blacklisted else 'No ✅')
-            errors_label = translator.get("commands.admin.stats.errors", count=error_count)
-            
-            content = f"📊 **{title}**\n\n"
-            content += f"**{server_label}**\n"
-            content += f"**{server_id_label}**\n"
-            content += f"**{channels_label}**\n"
-            content += f"**{blacklisted_label}**\n"
-            content += f"**{errors_label}**\n"
-        else:
-            content = f"📊 **Server Statistics**\n\n"
-            content += f"**Server:** {server_name}\n"
-            content += f"**Server ID:** {server_id}\n"
-            content += f"**Subscribed Channels:** {channel_count}\n"
-            content += f"**Blacklisted:** {'Yes ⛔' if is_blacklisted else 'No ✅'}\n"
-            content += f"**Errors:** {error_count}\n"
+        title = translator.get("commands.admin.stats.server_title")
+        server_label = translator.get("commands.admin.stats.server_name", name=server_name)
+        server_id_label = translator.get("commands.admin.stats.server_id", id=server_id)
+        channels_label = translator.get("commands.admin.stats.subscribed_channels", count=channel_count)
+        yes_status = translator.get("commands.admin.stats.blacklisted_yes")
+        no_status = translator.get("commands.admin.stats.blacklisted_no")
+        blacklisted_label = translator.get("commands.admin.stats.blacklisted", 
+                                          status=yes_status if is_blacklisted else no_status)
+        errors_label = translator.get("commands.admin.stats.errors", count=error_count)
+        
+        content = f"📊 **{title}**\n\n"
+        content += f"**{server_label}**\n"
+        content += f"**{server_id_label}**\n"
+        content += f"**{channels_label}**\n"
+        content += f"**{blacklisted_label}**\n"
+        content += f"**{errors_label}**\n"
         
         if channels:
-            if translator:
-                channels_header = translator.get("commands.admin.stats.channels_label")
-                content += f"\n**{channels_header}**\n"
-            else:
-                content += f"\n**Channels:**\n"
+            channels_header = translator.get("commands.admin.stats.channels_label")
+            content += f"\n**{channels_header}**\n"
             for channel_id, timer_data in list(channels.items())[:10]:
                 channel = bot.get_channel(int(channel_id))
-                channel_name = f"#{channel.name}" if channel else "Unknown Channel"
+                unknown_channel = translator.get("commands.admin.stats.unknown_channel")
+                channel_name = f"#{channel.name}" if channel else unknown_channel
                 content += f"• {channel_name} - `{timer_data.timer}`\n"
             
             if len(channels) > 10:
-                if translator:
-                    more_text = translator.get("commands.admin.stats.more_channels", count=len(channels) - 10)
-                    content += f"_{more_text}_"
-                else:
-                    content += f"_... and {len(channels) - 10} more channels_"
+                more_text = translator.get("commands.admin.stats.more_channels", count=len(channels) - 10)
+                content += f"_{more_text}_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -128,18 +103,13 @@ class ServerStatsView(discord.ui.LayoutView):
 class ServerNotFoundView(discord.ui.LayoutView):
     """View for when a server is not found in the database"""
     
-    def __init__(self, server_id: str, translator=None):
+    def __init__(self, server_id: str, translator):
         super().__init__()
         
-        if translator:
-            title = translator.get("commands.admin.stats.not_found_title")
-            description = translator.get("commands.admin.stats.not_found_description", server_id=server_id)
-            note = translator.get("commands.admin.stats.not_found_note")
-            content = f"❌ **{title}**\n\n{description}\n{note}"
-        else:
-            content = f"❌ **Server Not Found**\n\n"
-            content += f"Server ID `{server_id}` was not found in the database.\n"
-            content += f"This server has never been subscribed to the bot."
+        title = translator.get("commands.admin.stats.not_found_title")
+        description = translator.get("commands.admin.stats.not_found_description", server_id=server_id)
+        note = translator.get("commands.admin.stats.not_found_note")
+        content = f"❌ **{title}**\n\n{description}\n{note}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -153,32 +123,24 @@ class ServerNotFoundView(discord.ui.LayoutView):
 class BlacklistAddSuccessView(discord.ui.LayoutView):
     """View for blacklist add success"""
     
-    def __init__(self, server_name: str, server_id: str, reason: str = "No reason provided", translator=None):
+    def __init__(self, server_name: str, server_id: str, translator, reason: str = None):
         super().__init__()
         
-        if translator:
-            title = translator.get("commands.admin.blacklist.add.success_title")
-            description = translator.get("commands.admin.blacklist.add.success_description", 
-                                        server_name=server_name, server_id=server_id)
-            reason_text = translator.get("commands.admin.blacklist.add.success_reason", reason=reason)
-            note1 = translator.get("commands.admin.blacklist.add.success_note_1")
-            note2 = translator.get("commands.admin.blacklist.add.success_note_2")
-            
-            content = (
-                f"✅ **{title}**\n\n"
-                f"{description}\n\n"
-                f"📝 **{reason_text}**\n\n"
-                f"{note1}\n"
-                f"{note2}"
-            )
-        else:
-            content = (
-                f"✅ **Server Blacklisted**\n\n"
-                f"Added server **{server_name}** (`{server_id}`) to blacklist.\n\n"
-                f"📝 **Reason:** {reason}\n\n"
-                f"• All subscriptions have been removed\n"
-                f"• The server cannot use bot commands"
-            )
+        title = translator.get("commands.admin.blacklist.add.success_title")
+        description = translator.get("commands.admin.blacklist.add.success_description", 
+                                    server_name=server_name, server_id=server_id)
+        default_reason = translator.get("commands.admin.blacklist.no_reason_provided")
+        reason_text = translator.get("commands.admin.blacklist.add.success_reason", reason=reason or default_reason)
+        note1 = translator.get("commands.admin.blacklist.add.success_note_1")
+        note2 = translator.get("commands.admin.blacklist.add.success_note_2")
+        
+        content = (
+            f"✅ **{title}**\n\n"
+            f"{description}\n\n"
+            f"📝 **{reason_text}**\n\n"
+            f"{note1}\n"
+            f"{note2}"
+        )
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -190,18 +152,12 @@ class BlacklistAddSuccessView(discord.ui.LayoutView):
 class BlacklistAddAlreadyView(discord.ui.LayoutView):
     """View for server already blacklisted"""
     
-    def __init__(self, server_id: str, translator=None):
+    def __init__(self, server_id: str, translator):
         super().__init__()
         
-        if translator:
-            title = translator.get("commands.admin.blacklist.add.already_title")
-            description = translator.get("commands.admin.blacklist.add.already_description", server_id=server_id)
-            content = f"❌ **{title}**\n\n{description}"
-        else:
-            content = (
-                f"❌ **Already Blacklisted**\n\n"
-                f"Server `{server_id}` is already blacklisted."
-            )
+        title = translator.get("commands.admin.blacklist.add.already_title")
+        description = translator.get("commands.admin.blacklist.add.already_description", server_id=server_id)
+        content = f"❌ **{title}**\n\n{description}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -213,20 +169,13 @@ class BlacklistAddAlreadyView(discord.ui.LayoutView):
 class BlacklistRemoveSuccessView(discord.ui.LayoutView):
     """View for blacklist remove success"""
     
-    def __init__(self, server_id: str, translator=None):
+    def __init__(self, server_id: str, translator):
         super().__init__()
         
-        if translator:
-            title = translator.get("commands.admin.blacklist.remove.success_title")
-            description = translator.get("commands.admin.blacklist.remove.success_description", server_id=server_id)
-            note = translator.get("commands.admin.blacklist.remove.success_note")
-            content = f"✅ **{title}**\n\n{description}\n\n{note}"
-        else:
-            content = (
-                f"✅ **Server Unblacklisted**\n\n"
-                f"Removed server `{server_id}` from blacklist.\n\n"
-                f"The server can now use bot commands again."
-            )
+        title = translator.get("commands.admin.blacklist.remove.success_title")
+        description = translator.get("commands.admin.blacklist.remove.success_description", server_id=server_id)
+        note = translator.get("commands.admin.blacklist.remove.success_note")
+        content = f"✅ **{title}**\n\n{description}\n\n{note}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -238,18 +187,12 @@ class BlacklistRemoveSuccessView(discord.ui.LayoutView):
 class BlacklistRemoveNotFoundView(discord.ui.LayoutView):
     """View for server not blacklisted"""
     
-    def __init__(self, server_id: str, translator=None):
+    def __init__(self, server_id: str, translator):
         super().__init__()
         
-        if translator:
-            title = translator.get("commands.admin.blacklist.remove.not_found_title")
-            description = translator.get("commands.admin.blacklist.remove.not_found_description", server_id=server_id)
-            content = f"❌ **{title}**\n\n{description}"
-        else:
-            content = (
-                f"❌ **Not Blacklisted**\n\n"
-                f"Server `{server_id}` is not blacklisted."
-            )
+        title = translator.get("commands.admin.blacklist.remove.not_found_title")
+        description = translator.get("commands.admin.blacklist.remove.not_found_description", server_id=server_id)
+        content = f"❌ **{title}**\n\n{description}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -261,14 +204,13 @@ class BlacklistRemoveNotFoundView(discord.ui.LayoutView):
 class BlacklistCheckNotFoundView(discord.ui.LayoutView):
     """View for when a server is not blacklisted"""
     
-    def __init__(self, server_id: str):
+    def __init__(self, server_id: str, translator):
         super().__init__()
         
-        content = (
-            f"✅ **Server is NOT Blacklisted**\n\n"
-            f"Server `{server_id}` is not on the blacklist.\n"
-            f"This server can use bot commands normally."
-        )
+        title = translator.get("commands.admin.blacklist.check.not_blacklisted_title")
+        description = translator.get("commands.admin.blacklist.check.not_blacklisted_description", server_id=server_id)
+        note = translator.get("commands.admin.blacklist.check.not_blacklisted_note")
+        content = f"✅ **{title}**\n\n{description}\n{note}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -280,22 +222,31 @@ class BlacklistCheckNotFoundView(discord.ui.LayoutView):
 class BlacklistCheckFoundView(discord.ui.LayoutView):
     """View for when a server is blacklisted"""
     
-    def __init__(self, server_id: str, server_name: str, entry):
+    def __init__(self, server_id: str, server_name: str, entry, translator):
         super().__init__()
         
         # Format the blacklisted date
-        blacklisted_date = "Unknown"
+        blacklisted_date = translator.get("commands.admin.blacklist.check.unknown_date")
         if entry.blacklisted_at:
             blacklisted_date = f"<t:{int(entry.blacklisted_at.timestamp())}:F>"
         
+        title = translator.get("commands.admin.blacklist.check.blacklisted_title")
+        server_name_label = translator.get("commands.admin.blacklist.check.blacklisted_server_name")
+        server_id_label = translator.get("commands.admin.blacklist.check.blacklisted_server_id")
+        reason_label = translator.get("commands.admin.blacklist.check.blacklisted_reason")
+        default_reason = translator.get("commands.admin.blacklist.no_reason_provided")
+        blacklisted_label = translator.get("commands.admin.blacklist.check.blacklisted_date")
+        blacklisted_by_label = translator.get("commands.admin.blacklist.check.blacklisted_by")
+        note = translator.get("commands.admin.blacklist.check.blacklisted_note")
+        
         content = (
-            f"🚫 **Server is Blacklisted**\n\n"
-            f"**Server Name:** {server_name}\n"
-            f"**Server ID:** `{server_id}`\n"
-            f"**Reason:** {entry.reason or 'No reason provided'}\n"
-            f"**Blacklisted:** {blacklisted_date}\n"
-            f"**Blacklisted By:** <@{entry.blacklisted_by}>\n\n"
-            "This server cannot use bot commands."
+            f"🚫 **{title}**\n\n"
+            f"**{server_name_label}:** {server_name}\n"
+            f"**{server_id_label}:** `{server_id}`\n"
+            f"**{reason_label}:** {entry.reason or default_reason}\n"
+            f"**{blacklisted_label}:** {blacklisted_date}\n"
+            f"**{blacklisted_by_label}:** <@{entry.blacklisted_by}>\n\n"
+            f"{note}"
         )
         
         container = discord.ui.Container(
@@ -310,13 +261,12 @@ class BlacklistCheckFoundView(discord.ui.LayoutView):
 class ErrorNotFoundView(discord.ui.LayoutView):
     """View for error not found"""
     
-    def __init__(self, error_id: str):
+    def __init__(self, error_id: str, translator):
         super().__init__()
         
-        content = (
-            f"❌ **Error Not Found**\n\n"
-            f"No error found with ID: `{error_id}`"
-        )
+        title = translator.get("commands.admin.error.check.not_found_title")
+        description = translator.get("commands.admin.error.check.not_found_description", error_id=error_id)
+        content = f"❌ **{title}**\n\n{description}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -328,45 +278,58 @@ class ErrorNotFoundView(discord.ui.LayoutView):
 class ErrorDetailsView(discord.ui.LayoutView):
     """View for error details"""
     
-    def __init__(self, error_doc, bot):
+    def __init__(self, error_doc, bot, translator):
         super().__init__()
         
         timestamp = int(error_doc.timestamp.timestamp())
         
-        content = f"**Error Details: {error_doc.error_id}**\n\n"
-        content += f"**Level:** {error_doc.level}\n"
-        content += f"**Area:** {error_doc.area}\n"
-        content += f"**Time:** <t:{timestamp}:F>\n\n"
+        title = translator.get("commands.admin.error.check.details_title", error_id=error_doc.error_id)
+        level_label = translator.get("commands.admin.error.check.level")
+        area_label = translator.get("commands.admin.error.check.area")
+        time_label = translator.get("commands.admin.error.check.time")
+        message_label = translator.get("commands.admin.error.check.message")
+        server_label = translator.get("commands.admin.error.check.server")
+        channel_label = translator.get("commands.admin.error.check.channel")
+        user_label = translator.get("commands.admin.error.check.user")
+        command_label = translator.get("commands.admin.error.check.command")
+        traceback_label = translator.get("commands.admin.error.check.traceback")
+        no_message = translator.get("commands.admin.error.check.no_message")
+        unknown_text = translator.get("commands.admin.error.check.unknown")
+        
+        content = f"**{title}**\n\n"
+        content += f"**{level_label}:** {error_doc.level}\n"
+        content += f"**{area_label}:** {error_doc.area}\n"
+        content += f"**{time_label}:** <t:{timestamp}:F>\n\n"
         
         # Add message field
-        message = error_doc.message
+        message = error_doc.message or no_message
         if len(message) > 500:
             message = message[:497] + "..."
-        content += f"**Message:** {message}\n\n"
+        content += f"**{message_label}:** {message}\n\n"
         
         # Add context fields if present
         if error_doc.guild_id:
             guild = bot.get_guild(int(error_doc.guild_id))
-            guild_name = guild.name if guild else "Unknown"
-            content += f"**Server:** {guild_name} ({error_doc.guild_id})\n"
+            guild_name = guild.name if guild else unknown_text
+            content += f"**{server_label}:** {guild_name} ({error_doc.guild_id})\n"
         
         if error_doc.channel_id:
             channel = bot.get_channel(int(error_doc.channel_id))
-            channel_name = channel.name if channel else "Unknown"
-            content += f"**Channel:** {channel_name} ({error_doc.channel_id})\n"
+            channel_name = channel.name if channel else unknown_text
+            content += f"**{channel_label}:** {channel_name} ({error_doc.channel_id})\n"
         
         if error_doc.user_id:
-            content += f"**User:** <@{error_doc.user_id}> ({error_doc.user_id})\n"
+            content += f"**{user_label}:** <@{error_doc.user_id}> ({error_doc.user_id})\n"
         
         if error_doc.command:
-            content += f"**Command:** {error_doc.command}\n"
+            content += f"**{command_label}:** {error_doc.command}\n"
         
         # Add traceback if present (truncate if too long)
         if error_doc.stack_trace:
             tb = error_doc.stack_trace
             if len(tb) > 800:
                 tb = tb[:797] + "..."
-            content += f"\n**Traceback:**\n```python\n{tb}\n```"
+            content += f"\n**{traceback_label}:**\n```python\n{tb}\n```"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -378,13 +341,12 @@ class ErrorDetailsView(discord.ui.LayoutView):
 class ErrorDeleteSuccessView(discord.ui.LayoutView):
     """View for error delete success"""
     
-    def __init__(self, error_id: str):
+    def __init__(self, error_id: str, translator):
         super().__init__()
         
-        content = (
-            f"✅ **Error Deleted**\n\n"
-            f"Error `{error_id}` has been deleted from the database."
-        )
+        title = translator.get("commands.admin.error.delete_success_title")
+        description = translator.get("commands.admin.error.delete_success_description", error_id=error_id)
+        content = f"✅ **{title}**\n\n{description}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -396,14 +358,13 @@ class ErrorDeleteSuccessView(discord.ui.LayoutView):
 class ErrorDeleteFailedView(discord.ui.LayoutView):
     """View for error delete failed"""
     
-    def __init__(self, error_id: str):
+    def __init__(self, error_id: str, translator):
         super().__init__()
         
-        content = (
-            f"❌ **Delete Failed**\n\n"
-            f"Could not delete error `{error_id}`.\n"
-            f"It may not exist or has already been deleted."
-        )
+        title = translator.get("commands.admin.error.delete_failed_title")
+        description = translator.get("commands.admin.error.delete_failed_description", error_id=error_id)
+        note = translator.get("commands.admin.error.delete_failed_note")
+        content = f"❌ **{title}**\n\n{description}\n{note}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -415,14 +376,12 @@ class ErrorDeleteFailedView(discord.ui.LayoutView):
 class NoErrorsView(discord.ui.LayoutView):
     """View for no errors found"""
     
-    def __init__(self):
+    def __init__(self, translator):
         super().__init__()
         
-        content = (
-            "ℹ️ **No Errors Found**\n\n"
-            "No errors found in the database.\n\n"
-            "_Errors will appear here when they occur_"
-        )
+        title = translator.get("commands.admin.error.no_errors_title")
+        description = translator.get("commands.admin.error.no_errors_description")
+        content = f"ℹ️ **{title}**\n\n{description}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -434,10 +393,16 @@ class NoErrorsView(discord.ui.LayoutView):
 class ErrorListView(discord.ui.LayoutView):
     """View for error list"""
     
-    def __init__(self, errors: list):
+    def __init__(self, errors: list, translator):
         super().__init__()
         
-        content = f"**Recent Errors** (Last {len(errors)})\n\n"
+        title = translator.get("commands.admin.error.list_title")
+        content = f"**{title}** ({translator.get('commands.admin.error.list_last', count=len(errors))})\n\n"
+        
+        id_label = translator.get("commands.admin.error.list_item_id")
+        area_label = translator.get("commands.admin.error.list_item_area")
+        time_label = translator.get("commands.admin.error.list_item_time")
+        message_label = translator.get("commands.admin.error.list_item_message")
         
         for error in errors[:10]:  # Show first 10
             timestamp = f"<t:{int(error.timestamp.timestamp())}:R>"
@@ -446,17 +411,19 @@ class ErrorListView(discord.ui.LayoutView):
                 message = message[:47] + "..."
             
             content += (
-                f"**ID:** `{error.error_id}` | {error.level}\n"
-                f"**Area:** {error.area}\n"
-                f"**Time:** {timestamp}\n"
-                f"**Message:** {message}\n"
+                f"**{id_label}:** `{error.error_id}` | {error.level}\n"
+                f"**{area_label}:** {error.area}\n"
+                f"**{time_label}:** {timestamp}\n"
+                f"**{message_label}:** {message}\n"
                 f"---\n"
             )
         
         if len(errors) > 10:
-            content += f"\n... and {len(errors) - 10} more errors\n"
+            more_text = translator.get("commands.admin.error.list_more", count=len(errors) - 10)
+            content += f"\n{more_text}\n"
         
-        content += f"\n_Use `/admin error check <id>` to see full details_"
+        hint = translator.get("commands.admin.error.list_hint")
+        content += f"\n_{hint}_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -468,14 +435,13 @@ class ErrorListView(discord.ui.LayoutView):
 class ErrorsClearedView(discord.ui.LayoutView):
     """View for errors cleared"""
     
-    def __init__(self, count: int):
+    def __init__(self, count: int, translator):
         super().__init__()
         
-        content = (
-            f"✅ **Errors Cleared**\n\n"
-            f"Cleared {count} error{'s' if count != 1 else ''} from the database.\n\n"
-            f"_The error log is now empty_"
-        )
+        title = translator.get("commands.admin.error.clear_success_title")
+        description = translator.get("commands.admin.error.clear_success_description", count=count)
+        note = translator.get("commands.admin.error.clear_success_note")
+        content = f"✅ **{title}**\n\n{description}\n\n_{note}_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -487,15 +453,14 @@ class ErrorsClearedView(discord.ui.LayoutView):
 class ErrorsClearFailedView(discord.ui.LayoutView):
     """View for errors clear failed"""
     
-    def __init__(self, error_id: str):
+    def __init__(self, error_id: str, translator):
         super().__init__()
         
-        content = (
-            f"❌ **Clear Failed**\n\n"
-            f"Failed to clear errors from database.\n\n"
-            f"Error ID: `{error_id}`\n\n"
-            f"_Please check the logs for more details_"
-        )
+        title = translator.get("commands.admin.error.clear_failed_title")
+        description = translator.get("commands.admin.error.clear_failed_description")
+        error_text = translator.get("commands.admin.error.clear_failed_error_id", error_id=error_id)
+        note = translator.get("commands.admin.error.clear_failed_note")
+        content = f"❌ **{title}**\n\n{description}\n\n{error_text}\n\n_{note}_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -509,14 +474,13 @@ class ErrorsClearFailedView(discord.ui.LayoutView):
 class ForceUnsubNotFoundView(discord.ui.LayoutView):
     """View for force unsubscribe not found"""
     
-    def __init__(self, target_id: str):
+    def __init__(self, target_id: str, translator):
         super().__init__()
         
-        content = (
-            f"❌ **Not Found**\n\n"
-            f"No server or channel found with ID: `{target_id}`\n\n"
-            f"_Please check the ID and try again_"
-        )
+        title = translator.get("commands.admin.force.not_found_title")
+        description = translator.get("commands.admin.force.not_found_description", target_id=target_id)
+        note = translator.get("commands.admin.force.not_found_note")
+        content = f"❌ **{title}**\n\n{description}\n\n_{note}_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -528,21 +492,19 @@ class ForceUnsubNotFoundView(discord.ui.LayoutView):
 class ForceUnsubSuccessView(discord.ui.LayoutView):
     """View for force unsubscribe success"""
     
-    def __init__(self, target_type: str, target_id: str, count: int = None, server_id: str = None):
+    def __init__(self, target_type: str, target_id: str, translator, count: int = None, server_id: str = None):
         super().__init__()
         
         if target_type == "server":
-            content = (
-                f"✅ **Server Unsubscribed**\n\n"
-                f"Cleared {count} subscribed channel{'s' if count != 1 else ''} from server `{target_id}`.\n\n"
-                f"_The server can subscribe channels again using `/subscription add`_"
-            )
+            title = translator.get("commands.admin.force.server_unsubscribed_title")
+            description = translator.get("commands.admin.force.server_unsubscribed_description", count=count, target_id=target_id)
+            note = translator.get("commands.admin.force.server_unsubscribed_note")
+            content = f"✅ **{title}**\n\n{description}\n\n_{note}_"
         else:  # channel
-            content = (
-                f"✅ **Channel Unsubscribed**\n\n"
-                f"Removed channel `{target_id}` from server `{server_id}`.\n\n"
-                f"_The channel can be subscribed again using `/subscription add`_"
-            )
+            title = translator.get("commands.admin.force.channel_unsubscribed_title")
+            description = translator.get("commands.admin.force.channel_unsubscribed_description", target_id=target_id, server_id=server_id)
+            note = translator.get("commands.admin.force.channel_unsubscribed_note")
+            content = f"✅ **{title}**\n\n{description}\n\n_{note}_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -556,22 +518,24 @@ class ForceUnsubSuccessView(discord.ui.LayoutView):
 class RecacheSuccessView(discord.ui.LayoutView):
     """View for successful recache operation"""
     
-    def __init__(self, cache_type: str, servers: int = 0, blacklist: int = 0, channels: int = 0, timezones: int = 0):
+    def __init__(self, cache_type: str, translator, servers: int = 0, blacklist: int = 0, channels: int = 0, timezones: int = 0):
         super().__init__()
         
-        content = f"✅ **Cache Reloaded**\n\n"
-        content += f"Successfully reloaded: **{cache_type}**\n\n"
+        title = translator.get("commands.admin.recache.success_title")
+        description = translator.get("commands.admin.recache.success_description", cache_type=cache_type)
+        content = f"✅ **{title}**\n\n{description}\n\n"
         
         if servers > 0 or blacklist > 0 or channels > 0 or timezones > 0:
-            content += "**📊 Loaded Data**\n"
+            loaded_data = translator.get("commands.admin.recache.success_loaded_data")
+            content += f"**📊 {loaded_data}**\n"
             if servers > 0:
-                content += f"• Servers: {servers}\n"
+                content += translator.get("commands.admin.recache.success_servers", count=servers) + "\n"
             if channels > 0:
-                content += f"• Channels: {channels}\n"
+                content += translator.get("commands.admin.recache.success_channels", count=channels) + "\n"
             if blacklist > 0:
-                content += f"• Blacklisted: {blacklist}\n"
+                content += translator.get("commands.admin.recache.success_blacklist", count=blacklist) + "\n"
             if timezones > 0:
-                content += f"• Timezones: {timezones}\n"
+                content += translator.get("commands.admin.recache.success_timezones", count=timezones) + "\n"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -583,14 +547,13 @@ class RecacheSuccessView(discord.ui.LayoutView):
 class RecacheErrorView(discord.ui.LayoutView):
     """View for recache error"""
     
-    def __init__(self, cache_type: str, error: str):
+    def __init__(self, cache_type: str, error: str, translator):
         super().__init__()
         
-        content = (
-            f"❌ **Recache Failed**\n\n"
-            f"Failed to reload **{cache_type}** cache.\n\n"
-            f"**Error:** {error}"
-        )
+        title = translator.get("commands.admin.recache.error_title")
+        description = translator.get("commands.admin.recache.error_description", cache_type=cache_type)
+        error_msg = translator.get("commands.admin.recache.error_message", error=error)
+        content = f"❌ **{title}**\n\n{description}\n\n{error_msg}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -604,10 +567,11 @@ class RecacheErrorView(discord.ui.LayoutView):
 class ServerListView(discord.ui.LayoutView):
     """View for listing servers"""
     
-    def __init__(self, servers: dict, bot):
+    def __init__(self, servers: dict, bot, translator):
         super().__init__()
         
-        content = "📋 **Subscribed Servers and Channels**\n\n"
+        title = translator.get("commands.admin.servers.list_title")
+        content = f"📋 **{title}**\n\n"
         
         field_count = 0
         total_servers = len(servers)
@@ -653,17 +617,25 @@ class ServerListView(discord.ui.LayoutView):
 class CacheReloadView(discord.ui.LayoutView):
     """View for cache reload confirmation"""
     
-    def __init__(self, servers_count: int, blacklist_count: int, timezones_count: int):
+    def __init__(self, servers_count: int, blacklist_count: int, timezones_count: int, translator):
         super().__init__()
         
+        title = translator.get("commands.admin.cache.reload_title")
+        description = translator.get("commands.admin.cache.reload_description")
+        loaded_data = translator.get("commands.admin.cache.reload_loaded_data")
+        servers_text = translator.get("commands.admin.cache.reload_servers", count=servers_count)
+        blacklist_text = translator.get("commands.admin.cache.reload_blacklist", count=blacklist_count)
+        timezones_text = translator.get("commands.admin.cache.reload_timezones", count=timezones_count)
+        success_note = translator.get("commands.admin.cache.reload_success_note")
+        
         content = (
-            "🔄 **Cache Reloaded**\n\n"
-            "All caches have been cleared and reloaded from the database.\n\n"
-            "**📊 Loaded Data**\n"
-            f"• Servers: {servers_count}\n"
-            f"• Blacklisted: {blacklist_count}\n"
-            f"• Timezones: {timezones_count}\n\n"
-            "_Cache reload successful_"
+            f"🔄 **{title}**\n\n"
+            f"{description}\n\n"
+            f"**📊 {loaded_data}**\n"
+            f"{servers_text}\n"
+            f"{blacklist_text}\n"
+            f"{timezones_text}\n\n"
+            f"_{success_note}_"
         )
         
         container = discord.ui.Container(
@@ -676,7 +648,7 @@ class CacheReloadView(discord.ui.LayoutView):
 class StatsView(discord.ui.LayoutView):
     """View for bot statistics"""
     
-    def __init__(self, bot: commands.Bot, servers: dict, blacklist: set, jobs: list):
+    def __init__(self, bot: commands.Bot, servers: dict, blacklist: set, jobs: list, translator):
         super().__init__()
         
         content = (
@@ -704,7 +676,7 @@ class StatsView(discord.ui.LayoutView):
 class CacheStatsView(discord.ui.LayoutView):
     """View for cache statistics"""
     
-    def __init__(self, cache_stats: dict):
+    def __init__(self, cache_stats: dict, translator):
         super().__init__()
         
         memory_stats = cache_stats.get("memory", {})
@@ -754,14 +726,13 @@ class CacheStatsView(discord.ui.LayoutView):
 class NoServersView(discord.ui.LayoutView):
     """View for no servers message"""
     
-    def __init__(self):
+    def __init__(self, translator):
         super().__init__()
         
-        content = (
-            "ℹ️ **No Subscribed Channels**\n\n"
-            "No servers have subscribed channels yet.\n\n"
-            "_Servers can subscribe channels using `/subscription add`_"
-        )
+        title = translator.get("commands.admin.servers.no_servers_title")
+        description = translator.get("commands.admin.servers.no_servers_description")
+        hint = translator.get("commands.admin.servers.no_servers_hint")
+        content = f"ℹ️ **{title}**\n\n{description}\n\n_{hint}_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -773,13 +744,12 @@ class NoServersView(discord.ui.LayoutView):
 class NoBlacklistView(discord.ui.LayoutView):
     """View for empty blacklist"""
     
-    def __init__(self):
+    def __init__(self, translator):
         super().__init__()
         
-        content = (
-            "ℹ️ **No Blacklisted Servers**\n\n"
-            "No servers are currently blacklisted."
-        )
+        title = translator.get("commands.admin.blacklist.no_blacklist_title")
+        description = translator.get("commands.admin.blacklist.no_blacklist_description")
+        content = f"ℹ️ **{title}**\n\n{description}"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
@@ -791,15 +761,14 @@ class NoBlacklistView(discord.ui.LayoutView):
 class CacheReloadErrorView(discord.ui.LayoutView):
     """View for cache reload error"""
     
-    def __init__(self, error: str):
+    def __init__(self, error: str, translator):
         super().__init__()
         
-        content = (
-            f"❌ **Cache Reload Failed**\n\n"
-            f"Error reloading cache:\n"
-            f"`{error}`\n\n"
-            f"_Please check the logs for more details_"
-        )
+        title = translator.get("commands.admin.cache.reload_error_title")
+        description = translator.get("commands.admin.cache.reload_error_description")
+        error_text = translator.get("commands.admin.cache.reload_error_message", error=error)
+        note = translator.get("commands.admin.cache.reload_error_note")
+        content = f"❌ **{title}**\n\n{description}\n`{error_text}`\n\n_{note}_"
         
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),

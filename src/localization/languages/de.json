@@ -271,6 +271,9 @@
         "server_name": "Server: {name}",
         "server_id": "Server-ID: {id}",
         "blacklisted": "Gesperrt: {status}",
+        "blacklisted_yes": "Ja ⛔",
+        "blacklisted_no": "Nein ✅",
+        "unknown_channel": "Unbekannter Kanal",
         "errors": "Fehler: {count}",
         "channels_label": "Kanäle:",
         "more_channels": "... und {count} weitere Kanäle",
@@ -280,6 +283,7 @@
       },
       "blacklist": {
         "description": "Server-Sperrliste verwalten",
+        "no_reason_provided": "Kein Grund angegeben",
         "add": {
           "description": "Einen Server zur Sperrliste hinzufügen",
           "success_title": "Server gesperrt",
@@ -300,20 +304,21 @@
         },
         "check": {
           "description": "Überprüfen, ob ein Server gesperrt ist",
-          "not_found_title": "Server ist NICHT gesperrt",
-          "not_found_description": "Server `{server_id}` ist nicht auf der Sperrliste.",
-          "not_found_note": "Dieser Server kann Bot-Befehle normal verwenden.",
-          "found_title": "Server ist gesperrt",
-          "found_server_name": "Server-Name: {name}",
-          "found_server_id": "Server-ID: `{id}`",
-          "found_reason": "Grund: {reason}",
-          "found_blacklisted": "Gesperrt: {date}",
-          "found_blacklisted_by": "Gesperrt von: <@{user_id}>",
-          "found_note": "Dieser Server kann keine Bot-Befehle verwenden."
+          "not_blacklisted_title": "Server ist NICHT gesperrt",
+          "not_blacklisted_description": "Server `{server_id}` ist nicht auf der Sperrliste.",
+          "not_blacklisted_note": "Dieser Server kann Bot-Befehle normal verwenden.",
+          "blacklisted_title": "Server ist gesperrt",
+          "blacklisted_server_name": "Server-Name",
+          "blacklisted_server_id": "Server-ID",
+          "blacklisted_reason": "Grund",
+          "blacklisted_date": "Gesperrt",
+          "blacklisted_by": "Gesperrt von",
+          "blacklisted_note": "Dieser Server kann keine Bot-Befehle verwenden.",
+          "unknown_date": "Unbekannt"
         }
       },
       "recache": {
-        "description": "Alle Daten aus der Datenbank neu laden (außer Konfiguration)",
+        "description": "Alle Daten aus der Datenbank neu laden",
         "success_title": "Cache neu geladen",
         "success_description": "Erfolgreich neu geladen: **{cache_type}**",
         "success_loaded_data": "Geladene Daten",
@@ -328,7 +333,13 @@
       "error": {
         "description": "Fehlerprotokolle verwalten",
         "check": {
-          "description": "Einen Fehler anhand seiner ID überprüfen"
+          "description": "Einen Fehler anhand seiner ID überprüfen",
+          "channel": "Kanal",
+          "user": "Benutzer",
+          "command": "Befehl",
+          "traceback": "Traceback",
+          "no_message": "Keine Nachricht",
+          "unknown": "Unbekannt"
         },
         "delete": {
           "description": "Einen Fehler anhand seiner ID löschen"
@@ -365,7 +376,6 @@
         "list_hint": "Verwenden Sie `/admin error check <id>` für vollständige Details",
         "no_errors_title": "Keine Fehler gefunden",
         "no_errors_description": "Keine Fehler in der Datenbank gefunden.",
-        "no_errors_note": "Fehler werden hier angezeigt, wenn sie auftreten",
         "clear_success_title": "Fehler gelöscht",
         "clear_success_description": "{count} Fehler aus der Datenbank gelöscht.",
         "clear_success_note": "Das Fehlerprotokoll ist jetzt leer",

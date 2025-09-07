@@ -271,6 +271,9 @@
         "server_name": "Server: {name}",
         "server_id": "Server ID: {id}",
         "blacklisted": "Blacklisted: {status}",
+        "blacklisted_yes": "Yes ⛔",
+        "blacklisted_no": "No ✅",
+        "unknown_channel": "Unknown Channel",
         "errors": "Errors: {count}",
         "channels_label": "Channels:",
         "more_channels": "... and {count} more channels",
@@ -280,6 +283,7 @@
       },
       "blacklist": {
         "description": "Manage server blacklist",
+        "no_reason_provided": "No reason provided",
         "add": {
           "description": "Add a server to the blacklist",
           "success_title": "Server Blacklisted",
@@ -300,20 +304,21 @@
         },
         "check": {
           "description": "Check if a server is blacklisted",
-          "not_found_title": "Server is NOT Blacklisted",
-          "not_found_description": "Server `{server_id}` is not on the blacklist.",
-          "not_found_note": "This server can use bot commands normally.",
-          "found_title": "Server is Blacklisted",
-          "found_server_name": "Server Name: {name}",
-          "found_server_id": "Server ID: `{id}`",
-          "found_reason": "Reason: {reason}",
-          "found_blacklisted": "Blacklisted: {date}",
-          "found_blacklisted_by": "Blacklisted By: <@{user_id}>",
-          "found_note": "This server cannot use bot commands."
+          "not_blacklisted_title": "Server is NOT Blacklisted",
+          "not_blacklisted_description": "Server `{server_id}` is not on the blacklist.",
+          "not_blacklisted_note": "This server can use bot commands normally.",
+          "blacklisted_title": "Server is Blacklisted",
+          "blacklisted_server_name": "Server Name",
+          "blacklisted_server_id": "Server ID",
+          "blacklisted_reason": "Reason",
+          "blacklisted_date": "Blacklisted",
+          "blacklisted_by": "Blacklisted By",
+          "blacklisted_note": "This server cannot use bot commands.",
+          "unknown_date": "Unknown"
         }
       },
       "recache": {
-        "description": "Recache all data from database (except config)",
+        "description": "Recache all data from database",
         "success_title": "Cache Reloaded",
         "success_description": "Successfully reloaded: **{cache_type}**",
         "success_loaded_data": "Loaded Data",
@@ -328,7 +333,21 @@
       "error": {
         "description": "Manage error logs",
         "check": {
-          "description": "Check an error by its ID"
+          "description": "Check an error by its ID",
+          "not_found_title": "Error Not Found",
+          "not_found_description": "No error found with ID: `{error_id}`",
+          "details_title": "Error Details: {error_id}",
+          "level": "Level",
+          "area": "Area",
+          "time": "Time",
+          "message": "Message",
+          "server": "Server",
+          "channel": "Channel",
+          "user": "User",
+          "command": "Command",
+          "traceback": "Traceback",
+          "no_message": "No message",
+          "unknown": "Unknown"
         },
         "delete": {
           "description": "Delete an error by its ID"
@@ -365,7 +384,6 @@
         "list_hint": "Use `/admin error check <id>` to see full details",
         "no_errors_title": "No Errors Found",
         "no_errors_description": "No errors found in the database.",
-        "no_errors_note": "Errors will appear here when they occur",
         "clear_success_title": "Errors Cleared",
         "clear_success_description": "Cleared {count} error{s} from the database.",
         "clear_success_note": "The error log is now empty",

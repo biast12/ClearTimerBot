@@ -271,6 +271,9 @@
         "server_name": "सर्वर: {name}",
         "server_id": "सर्वर ID: {id}",
         "blacklisted": "ब्लैकलिस्टेड: {status}",
+        "blacklisted_yes": "हां ⛔",
+        "blacklisted_no": "नहीं ✅",
+        "unknown_channel": "अज्ञात चैनल",
         "errors": "त्रुटियां: {count}",
         "channels_label": "चैनल:",
         "more_channels": "... और {count} अधिक चैनल",
@@ -280,6 +283,7 @@
       },
       "blacklist": {
         "description": "सर्वर ब्लैकलिस्ट प्रबंधित करें",
+        "no_reason_provided": "कोई कारण प्रदान नहीं किया गया",
         "add": {
           "description": "सर्वर को ब्लैकलिस्ट में जोड़ें",
           "success_title": "सर्वर ब्लैकलिस्टेड",
@@ -300,20 +304,21 @@
         },
         "check": {
           "description": "जांचें कि क्या सर्वर ब्लैकलिस्टेड है",
-          "not_found_title": "सर्वर ब्लैकलिस्टेड नहीं है",
-          "not_found_description": "सर्वर `{server_id}` ब्लैकलिस्ट में नहीं है।",
-          "not_found_note": "यह सर्वर सामान्य रूप से बॉट कमांड का उपयोग कर सकता है।",
-          "found_title": "सर्वर ब्लैकलिस्टेड है",
-          "found_server_name": "सर्वर नाम: {name}",
-          "found_server_id": "सर्वर ID: `{id}`",
-          "found_reason": "कारण: {reason}",
-          "found_blacklisted": "ब्लैकलिस्टेड: {date}",
-          "found_blacklisted_by": "ब्लैकलिस्टेड द्वारा: <@{user_id}>",
-          "found_note": "यह सर्वर बॉट कमांड का उपयोग नहीं कर सकता।"
+          "not_blacklisted_title": "सर्वर ब्लैकलिस्टेड नहीं है",
+          "not_blacklisted_description": "सर्वर `{server_id}` ब्लैकलिस्ट में नहीं है।",
+          "not_blacklisted_note": "यह सर्वर सामान्य रूप से बॉट कमांड का उपयोग कर सकता है।",
+          "blacklisted_title": "सर्वर ब्लैकलिस्टेड है",
+          "blacklisted_server_name": "सर्वर नाम",
+          "blacklisted_server_id": "सर्वर ID",
+          "blacklisted_reason": "कारण",
+          "blacklisted_date": "ब्लैकलिस्टेड",
+          "blacklisted_by": "ब्लैकलिस्टेड द्वारा",
+          "blacklisted_note": "यह सर्वर बॉट कमांड का उपयोग नहीं कर सकता।",
+          "unknown_date": "अज्ञात"
         }
       },
       "recache": {
-        "description": "डेटाबेस से सभी डेटा पुनः कैश करें (कॉन्फ़िगरेशन छोड़कर)",
+        "description": "डेटाबेस से सभी डेटा पुनः कैश करें",
         "success_title": "कैश रीलोड किया गया",
         "success_description": "सफलतापूर्वक रीलोड किया गया: **{cache_type}**",
         "success_loaded_data": "लोड किया गया डेटा",
@@ -328,7 +333,13 @@
       "error": {
         "description": "त्रुटि लॉग प्रबंधित करें",
         "check": {
-          "description": "अपने ID से एक त्रुटि जांचें"
+          "description": "अपने ID से एक त्रुटि जांचें",
+          "channel": "चैनल",
+          "user": "उपयोगकर्ता",
+          "command": "कमांड",
+          "traceback": "ट्रेसबैक",
+          "no_message": "कोई संदेश नहीं",
+          "unknown": "अज्ञात"
         },
         "delete": {
           "description": "अपने ID से एक त्रुटि हटाएं"
@@ -365,7 +376,6 @@
         "list_hint": "पूर्ण विवरण देखने के लिए `/admin error check <id>` का उपयोग करें",
         "no_errors_title": "कोई त्रुटि नहीं मिली",
         "no_errors_description": "डेटाबेस में कोई त्रुटि नहीं मिली।",
-        "no_errors_note": "त्रुटियां होने पर यहां दिखाई देंगी",
         "clear_success_title": "त्रुटियां साफ़ की गईं",
         "clear_success_description": "डेटाबेस से {count} त्रुटि{s} साफ़ की गईं।",
         "clear_success_note": "त्रुटि लॉग अब खाली है",

@@ -271,6 +271,9 @@
         "server_name": "服务器：{name}",
         "server_id": "服务器ID：{id}",
         "blacklisted": "黑名单：{status}",
+        "blacklisted_yes": "是 ⛔",
+        "blacklisted_no": "否 ✅",
+        "unknown_channel": "未知频道",
         "errors": "错误：{count}",
         "channels_label": "频道：",
         "more_channels": "... 还有 {count} 个频道",
@@ -280,6 +283,7 @@
       },
       "blacklist": {
         "description": "管理服务器黑名单",
+        "no_reason_provided": "未提供原因",
         "add": {
           "description": "将服务器添加到黑名单",
           "success_title": "服务器已列入黑名单",
@@ -300,20 +304,21 @@
         },
         "check": {
           "description": "检查服务器是否在黑名单中",
-          "not_found_title": "服务器不在黑名单中",
-          "not_found_description": "服务器 `{server_id}` 不在黑名单中。",
-          "not_found_note": "此服务器可以正常使用机器人命令。",
-          "found_title": "服务器在黑名单中",
-          "found_server_name": "服务器名称：{name}",
-          "found_server_id": "服务器ID：`{id}`",
-          "found_reason": "原因：{reason}",
-          "found_blacklisted": "列入黑名单：{date}",
-          "found_blacklisted_by": "列入者：<@{user_id}>",
-          "found_note": "此服务器不能使用机器人命令。"
+          "not_blacklisted_title": "服务器不在黑名单中",
+          "not_blacklisted_description": "服务器 `{server_id}` 不在黑名单中。",
+          "not_blacklisted_note": "此服务器可以正常使用机器人命令。",
+          "blacklisted_title": "服务器在黑名单中",
+          "blacklisted_server_name": "服务器名称",
+          "blacklisted_server_id": "服务器ID",
+          "blacklisted_reason": "原因",
+          "blacklisted_date": "列入黑名单",
+          "blacklisted_by": "列入者",
+          "blacklisted_note": "此服务器不能使用机器人命令。",
+          "unknown_date": "未知"
         }
       },
       "recache": {
-        "description": "从数据库重新缓存所有数据（配置除外）",
+        "description": "从数据库重新缓存所有数据",
         "success_title": "缓存已重新加载",
         "success_description": "成功重新加载：**{cache_type}**",
         "success_loaded_data": "加载的数据",
@@ -328,7 +333,13 @@
       "error": {
         "description": "管理错误日志",
         "check": {
-          "description": "通过ID检查错误"
+          "description": "通过ID检查错误",
+          "channel": "频道",
+          "user": "用户",
+          "command": "命令",
+          "traceback": "追踪",
+          "no_message": "无消息",
+          "unknown": "未知"
         },
         "delete": {
           "description": "通过ID删除错误"
@@ -365,7 +376,6 @@
         "list_hint": "使用 `/admin error check <id>` 查看完整详情",
         "no_errors_title": "未找到错误",
         "no_errors_description": "数据库中未找到错误。",
-        "no_errors_note": "错误发生时将出现在这里",
         "clear_success_title": "错误已清除",
         "clear_success_description": "从数据库中清除了 {count} 个错误。",
         "clear_success_note": "错误日志现在为空",

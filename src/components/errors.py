@@ -10,7 +10,7 @@ from src.utils.footer import add_footer
 class ErrorView(discord.ui.LayoutView):
     """View for error messages"""
     
-    def __init__(self, title: str, description: str, error_id: Optional[str] = None, translator=None):
+    def __init__(self, title: str, description: str, translator, error_id: Optional[str] = None):
         super().__init__()
         
         content = f"{title}\n\n{description}"

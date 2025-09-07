@@ -261,6 +261,9 @@
         "server_name": "الخادم: {name}",
         "server_id": "معرف الخادم: {id}",
         "blacklisted": "محظور: {status}",
+        "blacklisted_yes": "نعم ⛔",
+        "blacklisted_no": "لا ✅",
+        "unknown_channel": "قناة غير معروفة",
         "errors": "أخطاء: {count}",
         "channels_label": "القنوات:",
         "more_channels": "... و {count} قناة أخرى",
@@ -270,6 +273,7 @@
         "description": "عرض إحصائيات البوت"
       },
       "blacklist": {
+        "no_reason_provided": "لم يتم تقديم سبب",
         "add": {
           "success_title": "تم حظر الخادم",
           "success_description": "تمت إضافة الخادم **{server_name}** (`{server_id}`) إلى القائمة السوداء.",
@@ -289,16 +293,17 @@
           "description": "إزالة خادم من القائمة السوداء"
         },
         "check": {
-          "not_found_title": "الخادم غير محظور",
-          "not_found_description": "الخادم `{server_id}` ليس في القائمة السوداء.",
-          "not_found_note": "يمكن لهذا الخادم استخدام أوامر البوت بشكل طبيعي.",
-          "found_title": "الخادم محظور",
-          "found_server_name": "اسم الخادم: {name}",
-          "found_server_id": "معرف الخادم: `{id}`",
-          "found_reason": "السبب: {reason}",
-          "found_blacklisted": "محظور: {date}",
-          "found_blacklisted_by": "محظور بواسطة: <@{user_id}>",
-          "found_note": "لا يمكن لهذا الخادم استخدام أوامر البوت.",
+          "not_blacklisted_title": "الخادم غير محظور",
+          "not_blacklisted_description": "الخادم `{server_id}` ليس في القائمة السوداء.",
+          "not_blacklisted_note": "يمكن لهذا الخادم استخدام أوامر البوت بشكل طبيعي.",
+          "blacklisted_title": "الخادم محظور",
+          "blacklisted_server_name": "اسم الخادم",
+          "blacklisted_server_id": "معرف الخادم",
+          "blacklisted_reason": "السبب",
+          "blacklisted_date": "محظور",
+          "blacklisted_by": "محظور بواسطة",
+          "blacklisted_note": "لا يمكن لهذا الخادم استخدام أوامر البوت.",
+          "unknown_date": "غير معروف",
           "description": "التحقق مما إذا كان الخادم في القائمة السوداء"
         },
         "description": "إدارة القائمة السوداء للخوادم"
@@ -314,7 +319,7 @@
         "error_title": "فشلت إعادة التخزين المؤقت",
         "error_description": "فشلت إعادة تحميل ذاكرة التخزين المؤقت **{cache_type}**.",
         "error_message": "خطأ: {error}",
-        "description": "إعادة تحميل جميع البيانات من قاعدة البيانات (باستثناء التكوين)"
+        "description": "إعادة تحميل جميع البيانات من قاعدة البيانات"
       },
       "error": {
         "not_found_title": "الخطأ غير موجود",
@@ -343,7 +348,6 @@
         "list_hint": "استخدم `/admin error check <id>` لرؤية التفاصيل الكاملة",
         "no_errors_title": "لم يتم العثور على أخطاء",
         "no_errors_description": "لم يتم العثور على أخطاء في قاعدة البيانات.",
-        "no_errors_note": "ستظهر الأخطاء هنا عند حدوثها",
         "clear_success_title": "تم مسح الأخطاء",
         "clear_success_description": "تم مسح {count} خطأ من قاعدة البيانات.",
         "clear_success_note": "سجل الأخطاء فارغ الآن",
@@ -353,7 +357,13 @@
         "clear_failed_note": "يرجى التحقق من السجلات للحصول على مزيد من التفاصيل",
         "description": "إدارة سجلات الأخطاء",
         "check": {
-          "description": "فحص خطأ بواسطة معرفه"
+          "description": "فحص خطأ بواسطة معرفه",
+          "channel": "القناة",
+          "user": "المستخدم",
+          "command": "الأمر",
+          "traceback": "التتبع",
+          "no_message": "لا توجد رسالة",
+          "unknown": "غير معروف"
         },
         "delete": {
           "description": "حذف خطأ بواسطة معرفه"
