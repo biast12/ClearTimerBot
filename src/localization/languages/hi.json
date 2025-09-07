@@ -40,10 +40,18 @@
       "description": "केवल-प्रशासक प्रबंधन आदेश",
       "error": {
         "check": {
+          "area": "क्षेत्र",
           "channel": "चैनल",
           "command": "कमांड",
           "description": "अपने ID से एक त्रुटि जांचें",
+          "details_title": "त्रुटि विवरण: {error_id}",
+          "level": "स्तर",
+          "message": "संदेश",
           "no_message": "कोई संदेश नहीं",
+          "not_found_description": "ID के साथ कोई त्रुटि नहीं मिली: `{error_id}`",
+          "not_found_title": "त्रुटि नहीं मिली",
+          "server": "सर्वर",
+          "time": "समय",
           "traceback": "ट्रेसबैक",
           "unknown": "अज्ञात",
           "user": "उपयोगकर्ता"

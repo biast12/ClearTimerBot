@@ -40,10 +40,18 @@
       "description": "أوامر الإدارة الخاصة بالمسؤولين فقط",
       "error": {
         "check": {
+          "area": "المنطقة",
           "channel": "القناة",
           "command": "الأمر",
           "description": "فحص خطأ بواسطة معرفه",
+          "details_title": "تفاصيل الخطأ: {error_id}",
+          "level": "المستوى",
+          "message": "الرسالة",
           "no_message": "لا توجد رسالة",
+          "not_found_description": "لم يتم العثور على خطأ بالمعرف: `{error_id}`",
+          "not_found_title": "لم يتم العثور على الخطأ",
+          "server": "الخادم",
+          "time": "الوقت",
           "traceback": "التتبع",
           "unknown": "غير معروف",
           "user": "المستخدم"

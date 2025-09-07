@@ -40,10 +40,18 @@
       "description": "Comandos de administración solo para administradores",
       "error": {
         "check": {
+          "area": "Área",
           "channel": "Canal",
           "command": "Comando",
           "description": "Verificar un error por su ID",
+          "details_title": "Detalles del error: {error_id}",
+          "level": "Nivel",
+          "message": "Mensaje",
           "no_message": "Sin mensaje",
+          "not_found_description": "No se encontró ningún error con ID: `{error_id}`",
+          "not_found_title": "Error no encontrado",
+          "server": "Servidor",
+          "time": "Tiempo",
           "traceback": "Rastreo",
           "unknown": "Desconocido",
           "user": "Usuario"

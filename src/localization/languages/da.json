@@ -40,10 +40,18 @@
       "description": "Kun-admin administrationskommandoer",
       "error": {
         "check": {
+          "area": "Område",
           "channel": "Kanal",
           "command": "Kommando",
           "description": "Tjek en fejl ved dens ID",
+          "details_title": "Fejldetaljer: {error_id}",
+          "level": "Niveau",
+          "message": "Besked",
           "no_message": "Ingen besked",
+          "not_found_description": "Ingen fejl fundet med ID: `{error_id}`",
+          "not_found_title": "Fejl ikke fundet",
+          "server": "Server",
+          "time": "Tid",
           "traceback": "Traceback",
           "unknown": "Ukendt",
           "user": "Bruger"

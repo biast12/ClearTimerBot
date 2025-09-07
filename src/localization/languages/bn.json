@@ -40,10 +40,18 @@
       "description": "শুধুমাত্র অ্যাডমিন ব্যবস্থাপনা কমান্ড",
       "error": {
         "check": {
+          "area": "এলাকা",
           "channel": "চ্যানেল",
           "command": "কমান্ড",
           "description": "এর আইডি দ্বারা একটি ত্রুটি পরীক্ষা করুন",
+          "details_title": "ত্রুটির বিবরণ: {error_id}",
+          "level": "স্তর",
+          "message": "বার্তা",
           "no_message": "কোন বার্তা নেই",
+          "not_found_description": "আইডি সহ কোন ত্রুটি পাওয়া যায়নি: `{error_id}`",
+          "not_found_title": "ত্রুটি পাওয়া যায়নি",
+          "server": "সার্ভার",
+          "time": "সময়",
           "traceback": "ট্রেসব্যাক",
           "unknown": "অজানা",
           "user": "ব্যবহারকারী"

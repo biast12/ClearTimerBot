@@ -40,10 +40,18 @@
       "description": "仅限管理员的管理命令",
       "error": {
         "check": {
+          "area": "区域",
           "channel": "频道",
           "command": "命令",
           "description": "通过ID检查错误",
+          "details_title": "错误详情：{error_id}",
+          "level": "级别",
+          "message": "消息",
           "no_message": "无消息",
+          "not_found_description": "未找到ID为 `{error_id}` 的错误",
+          "not_found_title": "未找到错误",
+          "server": "服务器",
+          "time": "时间",
           "traceback": "追踪",
           "unknown": "未知",
           "user": "用户"

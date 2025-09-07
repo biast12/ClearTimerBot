@@ -40,10 +40,18 @@
       "description": "Nur-Admin-Verwaltungsbefehle",
       "error": {
         "check": {
+          "area": "Bereich",
           "channel": "Kanal",
           "command": "Befehl",
           "description": "Einen Fehler anhand seiner ID überprüfen",
+          "details_title": "Fehlerdetails: {error_id}",
+          "level": "Stufe",
+          "message": "Nachricht",
           "no_message": "Keine Nachricht",
+          "not_found_description": "Kein Fehler mit ID gefunden: `{error_id}`",
+          "not_found_title": "Fehler nicht gefunden",
+          "server": "Server",
+          "time": "Zeit",
           "traceback": "Traceback",
           "unknown": "Unbekannt",
           "user": "Benutzer"
