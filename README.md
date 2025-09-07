@@ -1,95 +1,86 @@
 # ClearTimer Bot
 
-ClearTimer is a powerful Discord bot that automatically clears messages in specified channels at scheduled intervals. Built with Discord.py and APScheduler, it provides flexible scheduling options and comprehensive server management features.
+> **Keep your Discord channels clean automatically** 🧹✨
 
-## Adding the Bot to Your Server
+ClearTimer is the ultimate solution for Discord servers that need automatic channel maintenance. Whether you're managing a gaming community, support server, or any active Discord server, ClearTimer ensures your channels stay organized without manual intervention.
 
-You can add the bot to your server using [this link](https://discord.com/oauth2/authorize?client_id=1290353946308775987&permissions=277025483776&integration_type=0&scope=bot). Alternatively, you can self-host the bot using the guide provided below.
+## 🚀 Quick Start
 
-## Features
+**[➕ Add ClearTimer to Your Server](https://discord.com/oauth2/authorize?client_id=1290353946308775987&permissions=277025483776&integration_type=0&scope=bot)**
 
-- ⏰ **Flexible Scheduling**: Set timers using intervals (e.g., `24h`, `1d2h3m`) or specific daily times with timezone support
-- 🔄 **Automatic Message Cleanup**: Reliably clears messages at scheduled intervals
-- 🌍 **Timezone Support**: Schedule cleanups at specific times in any timezone
-- 🌐 **Multi-Language Support**: Automatic language detection on server join with support for multiple languages (English, Danish, and more)
-- 🛡️ **Server Blacklist System**: Prevent specific servers from using the bot
-- 📊 **Comprehensive Management**: Track all subscribed channels and schedules
-- 🔐 **Owner Controls**: Advanced administrative commands for bot management
+Just click the link above and select your server - setup takes less than a minute!
 
-## Required Permissions
+## ✨ Why ClearTimer?
 
-### User Permissions
+### 🎯 Perfect For
 
-- **Manage Messages**: Required to use subscription commands (`/subscription add`, `/subscription remove`, `/subscription list`, etc.)
+- **Support Servers**: Keep ticket channels clean after resolution
+- **Gaming Communities**: Clear LFG channels regularly
+- **Trading Servers**: Auto-clear old trade posts
+- **Event Servers**: Reset announcement channels after events
+- **Learning Communities**: Clear practice/spam channels daily
+- **Any Active Server**: Maintain clean, organized channels effortlessly
 
-### Bot Permissions
+### 💪 Core Features
 
-The bot requires the following permissions to function properly:
+- ⏰ **Smart Scheduling**
+  - Set intervals: "Clear every 6 hours" (`/subscription add 6h`)
+  - Set daily times: "Clear at 3 AM EST" (`/subscription add 03:00 EST`)
+  - Combine multiple timers for different channels
 
-- **View Channel**: See and access channels
-- **Send Messages**: Send messages and responses
-- **Send Messages in Threads**: Send messages in thread channels
-- **Read Message History**: Read past messages for clearing
-- **Manage Messages**: Delete messages during clearing operations
-- **Embed Links**: Display rich embeds for command responses
-- **Use Application Commands**: Register and respond to slash commands
+- 🛡️ **Intelligent Protection**
+  - Preserve important messages while clearing the rest
+  - Ignore specific users' messages (bots, admins, etc.)
 
-## Requirements
+- 🌍 **Global Timezone Support**
+  - Schedule in your local timezone
+  - Perfect for international communities
+  - Automatic DST adjustments
 
-- Python 3.8+
-- Discord Bot Token
-- Required Python packages (listed in `requirements.txt`)
+- 📊 **Full Control**
+  - View all active timers at a glance
+  - Manually trigger clears when needed
+  - Skip upcoming clears temporarily
+  - Update schedules on the fly
 
-## Installation
+## 📝 How to Use
 
-1. **Clone the repository:**
+### Getting Started
 
-    ```sh
-    git clone https://github.com/biast12/ClearTimerBot.git
-    cd ClearTimerBot
-    ```
+1. **Add the bot** using the invite link above
+2. **Use** `/subscription add 24h` in any channel to clear it daily
+3. **That's it!** The channel will be cleared automatically
 
-2. **Create a virtual environment and activate it:**
+### Example Commands
 
-    ```sh
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
+```
+/subscription add 12h              # Clear this channel every 12 hours
+/subscription add 09:00 PST        # Clear daily at 9 AM Pacific Time
+/subscription add 24h #general     # Clear #general channel daily
+/subscription list                 # See all active timers
+/subscription info                 # Check current channel's timer
+```
 
-3. **Install the required packages:**
+### Pro Tips
 
-    ```sh
-    pip install -r requirements.txt
-    ```
+- 💡 Combine different timers for different channels
+- 💡 Use `/subscription ignore @user` to preserve specific users' messages
+- 💡 Set up quiet hours with timezone-specific scheduling
+- 💡 Use `/subscription skip` to temporarily skip the next clear
 
-4. **Set up environment variables:**
-    - Copy `.env.example` to `.env`
-    - Add your Discord bot token
-    - Optionally add `OWNER_ID` and `GUILD_ID` for owner commands and testing
+## 🛠️ Required Permissions
 
-5. **Initialize the bot:**
+ClearTimer needs these permissions to work properly:
 
-    ```sh
-    python main.py
-    ```
+- ✅ **Read Messages** - To see channels
+- ✅ **Manage Messages** - To delete messages  
+- ✅ **Send Messages** - To respond to commands
+- ✅ **Embed Links** - To send formatted responses
+- ✅ **Use Slash Commands** - To register commands
 
-    The bot will automatically set up required files and database on first run.
+> **Note**: Users need "Manage Messages" permission to configure timers
 
-## Running the Bot
-
-1. **Run the bot on Linux:**
-
-    ```sh
-    python3 main.py
-    ```
-
-2. **Run the bot on Windows:**
-
-    ```sh
-    python main.py
-    ```
-
-## Commands
+## 📚 Complete Command Reference
 
 ### Subscription Commands
 
@@ -311,17 +302,341 @@ Commands for managing bot shards under `/owner shard` (if bot is sharded):
 
 </details>
 
-## Terms of Service
+## 💙 Support & Community
 
-By using this bot, you agree to the [Terms of Service](https://biast12.com/cleartimer/termsofservice).
+- **[💬 Join Our Support Server](https://biast12.com/botsupport)** - Get help and chat with the community
+- **[📝 Terms of Service](https://biast12.com/cleartimer/termsofservice)** - Usage guidelines
+- **[🔒 Privacy Policy](https://biast12.com/cleartimer/privacypolicy)** - How we handle your data
 
-## Privacy Policy
+---
 
-Your privacy is important to us. Please review our [Privacy Policy](https://biast12.com/cleartimer/privacypolicy) for more information.
+# 🎨 Self-Hosting Guide
 
-## Support
+> **Note**: Most users should use the hosted version by [adding the bot to their server](#-quick-start). Self-hosting is for advanced users who want complete control.
 
-For further assistance, join our [support Discord server](https://biast12.com/botsupport).
+## Requirements
+
+- Python 3.8+
+- Discord Bot Token
+- MongoDB (local or cloud instance)
+- Required Python packages (listed in `requirements.txt`)
+
+## Prerequisites
+
+### 1. Discord Bot Setup
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Create a new application
+3. Navigate to the "Bot" section
+4. Create a bot and copy the token
+5. Enable the following Privileged Gateway Intents:
+   - Server Members Intent (required for user mentions)
+   - Message Content Intent (required for message clearing)
+
+### 2. MongoDB Setup
+
+#### Option A: Local MongoDB Installation
+
+1. Download and install [MongoDB Community Server](https://www.mongodb.com/try/download/community)
+2. Start MongoDB service:
+   - **Windows**: MongoDB should start automatically as a service
+   - **Linux/Mac**: `sudo systemctl start mongod` or `brew services start mongodb-community`
+3. Default connection URL: `mongodb://localhost:27017/ClearTimerBot`
+
+#### Option B: MongoDB Atlas (Cloud)
+
+1. Create a free account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create a new cluster (free tier available)
+3. Set up database access (create a database user)
+4. Add your IP address to the IP Access List
+5. Get your connection string from "Connect" → "Connect your application"
+6. Replace `<password>` with your database user password
+
+## Installation
+
+### Windows Setup
+
+1. **Clone the repository:**
+
+    ```cmd
+    git clone https://github.com/biast12/ClearTimerBot.git
+    cd ClearTimerBot
+    ```
+
+2. **Run the automated setup script:**
+
+    ```cmd
+    setup_environment.bat
+    ```
+
+    This will create a virtual environment and install all dependencies.
+
+3. **Configure environment variables:**
+    - Copy `.env.example` to `.env`
+    - Edit `.env` and add your configuration:
+
+    ```env
+    # Required
+    DISCORD_BOT_TOKEN=your_bot_token_here
+    DATABASE_URL=mongodb://localhost:27017/ClearTimerBot  # or your MongoDB Atlas URL
+    
+    # Optional but recommended
+    OWNER_ID=your_discord_user_id
+    GUILD_ID=your_test_server_id
+    ```
+
+4. **Register slash commands (first time only):**
+
+    ```cmd
+    register_commands.bat
+    ```
+
+5. **Start the bot:**
+
+    ```cmd
+    start_bot.bat
+    ```
+
+### Linux/Mac Setup
+
+1. **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/biast12/ClearTimerBot.git
+    cd ClearTimerBot
+    ```
+
+2. **Run the automated setup script:**
+
+    ```bash
+    ./setup_environment.sh
+    ```
+
+    This will create a virtual environment and install all dependencies.
+
+3. **Configure environment variables:**
+
+    ```bash
+    cp .env.example .env
+    nano .env  # or use your preferred editor
+    ```
+
+    Add your configuration as shown in the Windows setup.
+
+4. **Register slash commands (first time only):**
+
+    ```bash
+    ./register_commands.sh
+    ```
+
+5. **Start the bot:**
+
+    ```bash
+    ./start_bot.sh
+    ```
+
+    For sharded instances:
+
+    ```bash
+    ./start_bot.sh --shards 4
+    ./start_bot.sh --shard-ids "0,1,2,3"
+    ```
+
+## Configuration Details
+
+### Environment Variables
+
+The bot uses the following environment variables (configured in `.env`):
+
+#### Required Variables
+
+- `DISCORD_BOT_TOKEN`: Your Discord bot token
+- `DATABASE_URL`: MongoDB connection string
+
+#### Optional Variables
+
+- `OWNER_ID`: Discord user ID for owner-only commands
+- `GUILD_ID`: Test server ID for development
+- `APPLICATION_ID`: Discord application ID (auto-detected if not set)
+
+#### Advanced Configuration (Optional)
+
+```env
+# Bot Branding
+POWERED_BY_EMOJI_ID=1411854240443531384
+POWERED_BY_EMOJI_NAME=logo
+BOT_NAME=ClearTimerBot
+BOT_COLOR=5865F2
+ERROR_COLOR=ED4245
+SUCCESS_COLOR=57F287
+WARNING_COLOR=FEE75C
+SHOW_POWERED_BY_FOOTER=true
+
+# Rate Limiting
+MAX_CLEARS_PER_MINUTE=5
+MAX_SUBSCRIPTIONS_PER_SERVER=50
+
+# Cache Configuration (seconds)
+CACHE_TTL_MEMORY=60
+CACHE_TTL_WARM=300
+CACHE_TTL_COLD=3600
+
+# Message Settings
+EPHEMERAL_ERROR_TIMEOUT=60.0
+MISSED_CLEAR_NOTIFICATION_TIMEOUT=0.0
+
+# Scheduler Settings
+MAX_RESTART_ATTEMPTS=3
+RESTART_COOLDOWN=30
+CACHE_CLEANUP_INTERVAL=900
+
+# Database Retention (days)
+REMOVED_SERVERS_RETENTION_DAYS=30
+ERROR_LOGS_RETENTION_DAYS=7
+
+# Support Links
+SUPPORT_SERVER_URL=https://biast12.com/botsupport
+TERMS_OF_SERVICE_URL=https://biast12.com/cleartimer/termsofservice
+PRIVACY_POLICY_URL=https://biast12.com/cleartimer/privacypolicy
+BOT_INVITE_URL=https://discord.com/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=277025483776&integration_type=0&scope=bot
+GITHUB_URL=https://github.com/biast12/ClearTimerBot
+```
+
+### Database Structure
+
+The bot uses MongoDB with the following collections:
+
+- **servers**: Stores server configurations and channel subscriptions
+- **blacklist**: Manages blacklisted servers
+- **removed_servers**: Tracks servers the bot has left
+- **errors**: Logs bot errors for debugging
+- **config**: Stores bot configuration and admin users
+
+## Running the Bot
+
+### Development Mode
+
+For development with auto-restart on file changes:
+
+```bash
+# Install nodemon globally (optional)
+npm install -g nodemon
+
+# Run with auto-restart
+nodemon --exec python main.py
+```
+
+### Production Mode
+
+#### Using Process Manager (PM2)
+
+```bash
+# Install PM2
+npm install -g pm2
+
+# Start the bot
+pm2 start main.py --interpreter python3 --name ClearTimerBot
+
+# Save PM2 configuration
+pm2 save
+pm2 startup
+```
+
+#### Using systemd (Linux)
+
+Create `/etc/systemd/system/cleartimer.service`:
+
+```ini
+[Unit]
+Description=ClearTimer Discord Bot
+After=network.target mongodb.service
+
+[Service]
+Type=simple
+User=your_user
+WorkingDirectory=/path/to/ClearTimerBot
+Environment="PATH=/path/to/ClearTimerBot/venv/bin"
+ExecStart=/path/to/ClearTimerBot/venv/bin/python /path/to/ClearTimerBot/main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then enable and start:
+
+```bash
+sudo systemctl enable cleartimer
+sudo systemctl start cleartimer
+```
+
+### Sharding (Large Bot Instances)
+
+The bot supports automatic sharding for large instances:
+
+```bash
+# Auto-detect shard count
+python main.py
+
+# Manual shard configuration
+python main.py --shards 4 --shard-ids 0,1,2,3
+
+# Force specific shard count
+python main.py --force-shards 8
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Bot Won't Start
+
+- **Error: "DATABASE_URL not found"**: Ensure MongoDB is running and the connection string is correct in `.env`
+- **Error: "Bot token is required"**: Add your Discord bot token to `.env`
+- **MongoDB connection failed**:
+
+  - Check if MongoDB service is running
+  - Verify the connection string format
+  - For Atlas, ensure your IP is whitelisted
+
+#### Commands Not Showing
+
+- Run `register_commands.py` or `register_commands.bat` to register slash commands
+- Wait 1-2 hours for global commands to propagate
+- For instant testing, use guild-specific commands with `GUILD_ID` in `.env`
+
+#### Permission Issues
+
+- Ensure the bot has all required permissions listed in the "Bot Permissions" section
+- Check that the bot role is higher than roles it needs to manage
+- Verify channel-specific permissions aren't blocking the bot
+
+#### Database Issues
+
+- **Collections not created**: The bot creates collections automatically on first use
+- **Data not persisting**: Check MongoDB logs for write errors
+- **High memory usage**: Configure cache TTL values in `.env`
+
+#### Timezone Problems
+
+- Use `/timezone list` to see available timezones
+- Ensure timezone format matches (e.g., `America/New_York`, not `EST`)
+- Check pytz is installed correctly
+
+#### Message Clearing Issues
+
+- **Not clearing messages**: Check bot has "Manage Messages" permission
+- **Skipping messages**: Some messages might be ignored (pinned, or in ignore list)
+- **Rate limiting**: Discord API limits bulk delete to messages < 14 days old
+
+### Debug Mode
+
+Enable detailed logging by setting in `.env`:
+
+```env
+LOG_LEVEL=DEBUG
+ENVIRONMENT=development
+```
 
 ## License
 
@@ -337,11 +652,15 @@ Contributions are welcome! Please:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## Troubleshooting
-
-- **Commands not showing**: Register the commands with `register_commands.py` / `register_commands.bat`
-- **Timezone issues**: Check supported timezones in the bot's timezone configuration
-
 ---
 
-Thank you for using ClearTimer! If you have any questions or feedback, feel free to reach out on our [support server](biast12.com/support).
+<div align="center">
+  <h3>🎉 Thank you for using ClearTimer!</h3>
+  <p>Made with ❤️ by Biast12</p>
+  <p>
+    <a href="https://biast12.com/botsupport">Support Server</a> •
+    <a href="https://github.com/biast12/ClearTimerBot">GitHub</a> •
+    <a href="https://biast12.com/cleartimer/termsofservice">Terms</a> •
+    <a href="https://biast12.com/cleartimer/privacypolicy">Privacy</a>
+  </p>
+</div>
