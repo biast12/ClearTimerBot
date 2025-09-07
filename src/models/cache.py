@@ -39,6 +39,30 @@ class CacheEntry:
             "ttl": self.ttl,
             "access_count": self.access_count
         }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "CacheEntry":
+        created_at = data.get("created_at")
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+        elif created_at is None:
+            created_at = datetime.now(timezone.utc)
+        
+        last_accessed = data.get("last_accessed")
+        if isinstance(last_accessed, str):
+            last_accessed = datetime.fromisoformat(last_accessed)
+        elif last_accessed is None:
+            last_accessed = datetime.now(timezone.utc)
+        
+        return cls(
+            key=data["key"],
+            value=data.get("value"),  # Note: value not stored in to_dict, might need adjustment
+            level=CacheLevel(data.get("level", "memory")),
+            created_at=created_at,
+            last_accessed=last_accessed,
+            ttl=data.get("ttl"),
+            access_count=data.get("access_count", 0)
+        )
 
 
 @dataclass
@@ -68,6 +92,24 @@ class CacheStats:
             "memory_usage_bytes": self.memory_usage_bytes,
             "evictions": self.evictions
         }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "CacheStats":
+        stats = cls(
+            level=CacheLevel(data.get("level", "memory")),
+            total_entries=data.get("total_entries", 0),
+            total_hits=data.get("total_hits", 0),
+            total_misses=data.get("total_misses", 0),
+            memory_usage_bytes=data.get("memory_usage_bytes", 0),
+            evictions=data.get("evictions", 0)
+        )
+        # Parse hit_rate if it's a string percentage
+        hit_rate = data.get("hit_rate", "0.0%")
+        if isinstance(hit_rate, str) and hit_rate.endswith("%"):
+            stats.hit_rate = float(hit_rate[:-1])
+        else:
+            stats.calculate_hit_rate()
+        return stats
 
 
 @dataclass
@@ -97,3 +139,18 @@ class GlobalCacheStats:
                 "cold": self.cold.to_dict()
             }
         }
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "memory": self.memory.to_dict(),
+            "warm": self.warm.to_dict(),
+            "cold": self.cold.to_dict()
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "GlobalCacheStats":
+        return cls(
+            memory=CacheStats.from_dict(data.get("memory", {"level": "memory"})) if "memory" in data else CacheStats(CacheLevel.MEMORY),
+            warm=CacheStats.from_dict(data.get("warm", {"level": "warm"})) if "warm" in data else CacheStats(CacheLevel.WARM),
+            cold=CacheStats.from_dict(data.get("cold", {"level": "cold"})) if "cold" in data else CacheStats(CacheLevel.COLD)
+        )

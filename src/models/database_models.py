@@ -253,3 +253,15 @@ class DatabaseStats:
             "total_errors": self.total_errors,
             "unresolved_errors": self.unresolved_errors
         }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "DatabaseStats":
+        return cls(
+            total_servers=data.get("total_servers", 0),
+            total_channels=data.get("total_channels", 0),
+            blacklisted_servers=data.get("blacklisted_servers", 0),
+            removed_servers=data.get("removed_servers", 0),
+            active_timers=data.get("active_timers", 0),
+            total_errors=data.get("total_errors", 0),
+            unresolved_errors=data.get("unresolved_errors", 0)
+        )
