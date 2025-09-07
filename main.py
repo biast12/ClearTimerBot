@@ -9,6 +9,12 @@ import os
 from pathlib import Path
 from typing import Optional, List, Dict
 import argparse
+import io
+
+# Set UTF-8 encoding for Windows console
+if sys.platform == "win32":
+    # Set console code page to UTF-8
+    os.system("chcp 65001 >nul 2>&1")
 
 sys.path.insert(0, str(Path(__file__).parent))
 

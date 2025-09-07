@@ -84,7 +84,12 @@ class BotLogger:
 
         if self.console_enabled:
             formatted = self._format_message(level, area, message)
-            print(formatted)
+            try:
+                print(formatted)
+            except UnicodeEncodeError:
+                # Fallback: encode with 'replace' to substitute unencodable characters
+                safe_formatted = formatted.encode(sys.stdout.encoding or 'utf-8', errors='replace').decode(sys.stdout.encoding or 'utf-8')
+                print(safe_formatted)
 
         if level in [LogLevel.ERROR, LogLevel.CRITICAL]:
             return self._generate_error_id()
@@ -131,9 +136,17 @@ class BotLogger:
             formatted = self._format_message(
                 LogLevel.ERROR, area, f"{message} [Error ID: {error_id}]"
             )
-            print(formatted)
+            try:
+                print(formatted)
+            except UnicodeEncodeError:
+                safe_formatted = formatted.encode(sys.stdout.encoding or 'utf-8', errors='replace').decode(sys.stdout.encoding or 'utf-8')
+                print(safe_formatted)
             if tb_str and self.min_level == LogLevel.DEBUG:
-                print(tb_str)
+                try:
+                    print(tb_str)
+                except UnicodeEncodeError:
+                    safe_tb = tb_str.encode(sys.stdout.encoding or 'utf-8', errors='replace').decode(sys.stdout.encoding or 'utf-8')
+                    print(safe_tb)
 
         await self._save_error_to_db(error_record)
 
@@ -179,7 +192,12 @@ class BotLogger:
         else:
             color_code = "\033[36m"
         reset = self._reset_color()
-        print(f"{color_code}{char * terminal_width}{reset}")
+        output = f"{color_code}{char * terminal_width}{reset}"
+        try:
+            print(output)
+        except UnicodeEncodeError:
+            safe_output = output.encode(sys.stdout.encoding or 'utf-8', errors='replace').decode(sys.stdout.encoding or 'utf-8')
+            print(safe_output)
 
     async def get_error(self, error_id: str) -> Optional[ErrorDocument]:
         try:
