@@ -12,7 +12,7 @@ from src.utils.ignore_target_parser import (
     validate_and_add_multiple_ignore_targets
 )
 from src.utils.command_validation import CommandValidator, ValidationCheck
-from src.localization import get_translator
+from src.localization import get_translator, get_command_description
 from src.utils.logger import logger, LogArea
 
 
@@ -28,11 +28,11 @@ class SubscriptionCommands(commands.Cog):
         self.add_context_menus()
 
     def add_context_menus(self) -> None:
-        @self.bot.tree.context_menu(name='Ignore Message')
+        @self.bot.tree.context_menu(name='Ignore Message', auto_locale_strings=False)
         async def ignore_message_context(interaction: discord.Interaction, message: discord.Message):
             await self.handle_ignore_message_context(interaction, message)
         
-        @self.bot.tree.context_menu(name='Ignore User')
+        @self.bot.tree.context_menu(name='Ignore User', auto_locale_strings=False)
         async def ignore_user_context(interaction: discord.Interaction, user: discord.User):
             await self.handle_ignore_user_context(interaction, user)
     
@@ -162,11 +162,16 @@ class SubscriptionCommands(commands.Cog):
             )
 
     # Create the main /subscription command group
-    subscription_group = app_commands.Group(name="subscription", description="Manage automatic message clearing for channels")
+    subscription_group = app_commands.Group(
+        name="subscription", 
+        description=get_command_description("subscription"),
+        auto_locale_strings=False
+    )
 
     @subscription_group.command(
         name="add",
-        description="Subscribe a channel to automatic message deletion"
+        description=get_command_description("subscription.add"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
@@ -285,7 +290,8 @@ class SubscriptionCommands(commands.Cog):
 
     @subscription_group.command(
         name="remove",
-        description="Unsubscribe a channel from automatic message deletion"
+        description=get_command_description("subscription.remove"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
@@ -353,7 +359,8 @@ class SubscriptionCommands(commands.Cog):
 
     @subscription_group.command(
         name="list",
-        description="List all active subscriptions in this server"
+        description=get_command_description("subscription.list"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_messages=True)
     async def subscription_list(
@@ -392,7 +399,8 @@ class SubscriptionCommands(commands.Cog):
 
     @subscription_group.command(
         name="info",
-        description="View detailed subscription information for a channel"
+        description=get_command_description("subscription.info"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
@@ -442,7 +450,8 @@ class SubscriptionCommands(commands.Cog):
 
     @subscription_group.command(
         name="update",
-        description="Update the timer for an existing subscription"
+        description=get_command_description("subscription.update"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
@@ -606,7 +615,8 @@ class SubscriptionCommands(commands.Cog):
 
     @subscription_group.command(
         name="ignore",
-        description="Toggle messages or users to be ignored during channel clearing"
+        description=get_command_description("subscription.ignore"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
@@ -702,7 +712,8 @@ class SubscriptionCommands(commands.Cog):
 
     @subscription_group.command(
         name="clear",
-        description="Manually trigger a message clear for a subscribed channel"
+        description=get_command_description("subscription.clear"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
@@ -787,7 +798,8 @@ class SubscriptionCommands(commands.Cog):
 
     @subscription_group.command(
         name="skip",
-        description="Skip the next scheduled clear for a channel"
+        description=get_command_description("subscription.skip"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(

@@ -22,8 +22,9 @@
   
   "commands": {
     "help": {
+      "description": "Display help information about the bot",
       "title": "Help",
-      "description": "Automatically clear messages in Discord channels on a schedule.",
+      "content": "Automatically clear messages in Discord channels on a schedule.",
       "subscription_commands": "📝 Subscription Commands",
       "other_commands": "🔧 Other Commands",
       "timer_formats": "⏱️ Timer Formats",
@@ -38,6 +39,7 @@
     },
     
     "ping": {
+      "description": "Check the bot's latency",
       "title": "🏓 Pong!",
       "websocket_latency": "**WebSocket Latency:** {latency}ms",
       "response_time": "**Response Time:** {time}ms",
@@ -49,15 +51,18 @@
     },
     
     "timezone": {
+      "description": "Manage server timezone preferences",
+      "list": {
+        "description": "List available timezones from the configuration",
+        "title": "🌍 Available Timezones",
+        "content": "Here are the configured timezone abbreviations and their full names:"
+      },
       "change": {
+        "description": "Change the default timezone for your server",
         "success": "✅ Server timezone has been set to **{timezone}**",
         "success_auto": "✅ Server timezone has been automatically detected and set to **{timezone}**",
         "invalid": "❌ Invalid timezone: `{timezone}`",
         "suggestion": "Did you mean: `{suggestion}`?"
-      },
-      "list": {
-        "title": "🌍 Available Timezones",
-        "description": "Here are the configured timezone abbreviations and their full names:"
       },
       "current": {
         "title": "Current Server Timezone",
@@ -79,13 +84,16 @@
     },
     
     "language": {
+      "description": "Manage server language preferences",
       "list": {
+        "description": "Display all supported languages",
         "title": "🌐 Available Languages",
-        "description": "The bot currently supports the following languages:",
+        "content": "The bot currently supports the following languages:",
         "current": "Current language: **{language}**",
         "change_hint": "Use `/language change <language>` to change the server language"
       },
       "change": {
+        "description": "Change the language for your server",
         "success": "✅ Server language has been changed to **{language}**",
         "already_set": "ℹ️ The server language is already set to **{language}**",
         "invalid": "❌ Invalid language: `{language}`",
@@ -94,16 +102,20 @@
     },
     
     "subscription": {
+      "description": "Manage automatic message clearing for channels",
       "add": {
+        "description": "Subscribe a channel to automatic message deletion",
         "success": "✅ Successfully subscribed {channel} to automatic message clearing every **{timer}**",
         "success_with_ignored": "✅ Successfully subscribed {channel} to automatic message clearing every **{timer}**\n\n**Ignored targets added:** {count}",
         "already_subscribed": "❌ {channel} is already subscribed with a {timer} timer.\nUse `/subscription update` to change the timer.",
         "invalid_timer": "❌ Invalid timer format: `{timer}`"
       },
       "remove": {
+        "description": "Unsubscribe a channel from automatic message deletion",
         "success": "✅ Successfully unsubscribed {channel} from automatic message clearing"
       },
       "list": {
+        "description": "List all active subscriptions in this server",
         "title": "📋 Active Subscriptions",
         "no_subscriptions": "No active subscriptions in this server",
         "subscription_item": "• {channel} - Every **{timer}** (Next: {next_clear})",
@@ -111,6 +123,7 @@
         "tip": "💡 Use `/subscription info` for detailed information"
       },
       "info": {
+        "description": "View detailed subscription information for a channel",
         "title": "Subscription Information",
         "subscribed": "✅ Subscribed",
         "timer": "**Timer:** {timer}",
@@ -120,10 +133,12 @@
         "commands_hint": "Use `/subscription` commands to manage this subscription"
       },
       "update": {
+        "description": "Update the timer for an existing subscription",
         "success": "✅ Successfully updated timer for {channel} to **{timer}**",
         "success_with_ignored": "✅ Successfully updated timer for {channel} to **{timer}**\n\n**Ignored targets added:** {count}"
       },
       "clear": {
+        "description": "Manually trigger a message clear for a subscribed channel",
         "success": "✅ Manual clear triggered for {channel}",
         "in_progress": "⏳ A clear is already in progress for {channel}. Please wait for it to complete.",
         "messages_cleared": "Messages Cleared",
@@ -131,24 +146,29 @@
         "error": "❌ Failed to clear messages in {channel}: {error}"
       },
       "ignore": {
+        "description": "Toggle messages or users to be ignored during channel clearing",
         "message_added": "✅ Message from {author} will be **ignored** during clearing in {channel}",
         "message_removed": "✅ Message from {author} will **no longer be ignored** during clearing in {channel}",
         "user_added": "✅ {user}'s messages will be **ignored** during clearing in {channel}",
         "user_removed": "✅ {user}'s messages will **no longer be ignored** during clearing in {channel}"
       },
       "skip": {
+        "description": "Skip the next scheduled clear for a channel",
         "success": "✅ Next scheduled clear for {channel} has been skipped.\n**New next clear:** {next_clear}",
         "no_scheduled": "❌ No scheduled clear found for {channel}"
       }
     },
     
     "owner": {
+      "description": "Owner-only management commands",
       "permission_denied": {
         "title": "Owner Only",
         "description": "This command is restricted to the bot owner."
       },
       "admin": {
+        "description": "Manage bot administrators",
         "list": {
+          "description": "List all bot administrators",
           "title": "Bot Administrators",
           "no_admins_title": "No Admins Configured",
           "no_admins_description": "There are no administrators configured.",
@@ -156,6 +176,7 @@
           "total": "Total: {count} {admin_text}"
         },
         "add": {
+          "description": "Add a new bot administrator",
           "success_title": "Administrator Added",
           "success_description": "Successfully added **{username}** as a bot administrator.",
           "success_user_id": "User ID: `{user_id}`",
@@ -168,6 +189,7 @@
           "self_note": "No need to add yourself as an administrator"
         },
         "remove": {
+          "description": "Remove a bot administrator",
           "success_title": "Administrator Removed",
           "success_description": "Successfully removed `{user_id}` from administrators.",
           "success_previous": "Previous admin: <@{user_id}>",
@@ -178,7 +200,9 @@
         }
       },
       "shard": {
+        "description": "Manage bot shards",
         "reload": {
+          "description": "Reload all shards or a specific shard",
           "single_title": "Reloading Single Shard",
           "single_description": "Restarting shard {shard_id} only...",
           "single_what_happens": "What happens:",
@@ -211,6 +235,7 @@
           "failed_note": "Please check the logs for more details"
         },
         "status": {
+          "description": "View current shard status",
           "title": "Shard Status",
           "current_runtime": "Current Runtime:",
           "shard_info": "• Shard: {shard_id}/{max_shard}",
@@ -229,11 +254,13 @@
     },
     
     "admin": {
+      "description": "Admin-only management commands",
       "permission_denied": {
         "title": "Admin Only",
         "description": "This command is restricted to the bot admins."
       },
       "stats": {
+        "description": "View bot statistics",
         "title": "Bot Statistics",
         "server_title": "Server Statistics",
         "servers": "Servers: {count}",
@@ -252,7 +279,9 @@
         "not_found_note": "This server has never been subscribed to the bot."
       },
       "blacklist": {
+        "description": "Manage server blacklist",
         "add": {
+          "description": "Add a server to the blacklist",
           "success_title": "Server Blacklisted",
           "success_description": "Added server **{server_name}** (`{server_id}`) to blacklist.",
           "success_reason": "Reason: {reason}",
@@ -262,6 +291,7 @@
           "already_description": "Server `{server_id}` is already blacklisted."
         },
         "remove": {
+          "description": "Remove a server from the blacklist",
           "success_title": "Server Unblacklisted",
           "success_description": "Removed server `{server_id}` from blacklist.",
           "success_note": "The server can now use bot commands again.",
@@ -269,6 +299,7 @@
           "not_found_description": "Server `{server_id}` is not blacklisted."
         },
         "check": {
+          "description": "Check if a server is blacklisted",
           "not_found_title": "Server is NOT Blacklisted",
           "not_found_description": "Server `{server_id}` is not on the blacklist.",
           "not_found_note": "This server can use bot commands normally.",
@@ -282,6 +313,7 @@
         }
       },
       "recache": {
+        "description": "Recache all data from database (except config)",
         "success_title": "Cache Reloaded",
         "success_description": "Successfully reloaded: **{cache_type}**",
         "success_loaded_data": "Loaded Data",
@@ -294,6 +326,19 @@
         "error_message": "Error: {error}"
       },
       "error": {
+        "description": "Manage error logs",
+        "check": {
+          "description": "Check an error by its ID"
+        },
+        "delete": {
+          "description": "Delete an error by its ID"
+        },
+        "list": {
+          "description": "List recent errors"
+        },
+        "clear": {
+          "description": "Clear all errors from the database"
+        },
         "not_found_title": "Error Not Found",
         "not_found_description": "No error found with ID: `{error_id}`",
         "details_title": "Error Details: {error_id}",
@@ -330,6 +375,13 @@
         "clear_failed_note": "Please check the logs for more details"
       },
       "force": {
+        "description": "Force management actions",
+        "remove_server": {
+          "description": "Force remove all subscriptions for a server"
+        },
+        "remove_channel": {
+          "description": "Force remove a specific channel subscription"
+        },
         "not_found_title": "Not Found",
         "not_found_description": "No server or channel found with ID: `{target_id}`",
         "not_found_note": "Please check the ID and try again",

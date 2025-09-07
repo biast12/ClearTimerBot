@@ -22,8 +22,9 @@
   
   "commands": {
     "help": {
+      "description": "Hilfeinformationen über den Bot anzeigen",
       "title": "Hilfe",
-      "description": "Automatisches Löschen von Nachrichten in Discord-Kanälen nach einem Zeitplan.",
+      "content": "Automatisches Löschen von Nachrichten in Discord-Kanälen nach einem Zeitplan.",
       "subscription_commands": "📝 Abonnement-Befehle",
       "other_commands": "🔧 Weitere Befehle",
       "timer_formats": "⏱️ Timer-Formate",
@@ -38,6 +39,7 @@
     },
     
     "ping": {
+      "description": "Die Latenz des Bots überprüfen",
       "title": "🏓 Pong!",
       "websocket_latency": "**WebSocket-Latenz:** {latency}ms",
       "response_time": "**Antwortzeit:** {time}ms",
@@ -49,15 +51,18 @@
     },
     
     "timezone": {
+      "description": "Server-Zeitzoneneinstellungen verwalten",
+      "list": {
+        "description": "Verfügbare Zeitzonen aus der Konfiguration auflisten",
+        "title": "🌍 Verfügbare Zeitzonen",
+        "content": "Hier sind die konfigurierten Zeitzonenabkürzungen und ihre vollständigen Namen:"
+      },
       "change": {
+        "description": "Die Standard-Zeitzone für Ihren Server ändern",
         "success": "✅ Server-Zeitzone wurde auf **{timezone}** gesetzt",
         "success_auto": "✅ Server-Zeitzone wurde automatisch erkannt und auf **{timezone}** gesetzt",
         "invalid": "❌ Ungültige Zeitzone: `{timezone}`",
         "suggestion": "Meinten Sie: `{suggestion}`?"
-      },
-      "list": {
-        "title": "🌍 Verfügbare Zeitzonen",
-        "description": "Hier sind die konfigurierten Zeitzonenabkürzungen und ihre vollständigen Namen:"
       },
       "current": {
         "title": "Aktuelle Server-Zeitzone",
@@ -79,13 +84,16 @@
     },
     
     "language": {
+      "description": "Server-Spracheinstellungen verwalten",
       "list": {
+        "description": "Alle unterstützten Sprachen anzeigen",
         "title": "🌐 Verfügbare Sprachen",
-        "description": "Der Bot unterstützt derzeit folgende Sprachen:",
+        "content": "Der Bot unterstützt derzeit folgende Sprachen:",
         "current": "Aktuelle Sprache: **{language}**",
         "change_hint": "Verwenden Sie `/language change <language>`, um die Serversprache zu ändern"
       },
       "change": {
+        "description": "Die Sprache für Ihren Server ändern",
         "success": "✅ Serversprache wurde zu **{language}** geändert",
         "already_set": "ℹ️ Die Serversprache ist bereits auf **{language}** eingestellt",
         "invalid": "❌ Ungültige Sprache: `{language}`",
@@ -94,16 +102,20 @@
     },
     
     "subscription": {
+      "description": "Automatisches Nachrichtenlöschen für Kanäle verwalten",
       "add": {
+        "description": "Einen Kanal für automatisches Nachrichtenlöschen abonnieren",
         "success": "✅ {channel} erfolgreich für automatisches Nachrichtenlöschen alle **{timer}** abonniert",
         "success_with_ignored": "✅ {channel} erfolgreich für automatisches Nachrichtenlöschen alle **{timer}** abonniert\n\n**Ignorierte Ziele hinzugefügt:** {count}",
         "already_subscribed": "❌ {channel} ist bereits mit einem {timer} Timer abonniert.\nVerwenden Sie `/subscription update`, um den Timer zu ändern.",
         "invalid_timer": "❌ Ungültiges Timer-Format: `{timer}`"
       },
       "remove": {
+        "description": "Einen Kanal vom automatischen Nachrichtenlöschen abmelden",
         "success": "✅ {channel} erfolgreich vom automatischen Nachrichtenlöschen abgemeldet"
       },
       "list": {
+        "description": "Alle aktiven Abonnements auf diesem Server auflisten",
         "title": "📋 Aktive Abonnements",
         "no_subscriptions": "Keine aktiven Abonnements auf diesem Server",
         "subscription_item": "• {channel} - Alle **{timer}** (Nächstes: {next_clear})",
@@ -111,6 +123,7 @@
         "tip": "💡 Verwenden Sie `/subscription info` für detaillierte Informationen"
       },
       "info": {
+        "description": "Detaillierte Abonnement-Informationen für einen Kanal anzeigen",
         "title": "Abonnement-Informationen",
         "subscribed": "✅ Abonniert",
         "timer": "**Timer:** {timer}",
@@ -120,10 +133,12 @@
         "commands_hint": "Verwenden Sie `/subscription` Befehle, um dieses Abonnement zu verwalten"
       },
       "update": {
+        "description": "Den Timer für ein bestehendes Abonnement aktualisieren",
         "success": "✅ Timer für {channel} erfolgreich auf **{timer}** aktualisiert",
         "success_with_ignored": "✅ Timer für {channel} erfolgreich auf **{timer}** aktualisiert\n\n**Ignorierte Ziele hinzugefügt:** {count}"
       },
       "clear": {
+        "description": "Eine Nachrichtenlöschung für einen abonnierten Kanal manuell auslösen",
         "success": "✅ Manuelle Löschung für {channel} ausgelöst",
         "in_progress": "⏳ Eine Löschung läuft bereits für {channel}. Bitte warten Sie, bis sie abgeschlossen ist.",
         "messages_cleared": "Nachrichten gelöscht",
@@ -131,24 +146,29 @@
         "error": "❌ Fehler beim Löschen von Nachrichten in {channel}: {error}"
       },
       "ignore": {
+        "description": "Nachrichten oder Benutzer während der Kanallöschung ignorieren umschalten",
         "message_added": "✅ Nachricht von {author} wird beim Löschen in {channel} **ignoriert**",
         "message_removed": "✅ Nachricht von {author} wird beim Löschen in {channel} **nicht mehr ignoriert**",
         "user_added": "✅ Nachrichten von {user} werden beim Löschen in {channel} **ignoriert**",
         "user_removed": "✅ Nachrichten von {user} werden beim Löschen in {channel} **nicht mehr ignoriert**"
       },
       "skip": {
+        "description": "Die nächste geplante Löschung für einen Kanal überspringen",
         "success": "✅ Nächste geplante Löschung für {channel} wurde übersprungen.\n**Neue nächste Löschung:** {next_clear}",
         "no_scheduled": "❌ Keine geplante Löschung für {channel} gefunden"
       }
     },
     
     "owner": {
+      "description": "Nur-Eigentümer-Verwaltungsbefehle",
       "permission_denied": {
         "title": "Nur Eigentümer",
         "description": "Dieser Befehl ist auf den Bot-Eigentümer beschränkt."
       },
       "admin": {
+        "description": "Bot-Administratoren verwalten",
         "list": {
+          "description": "Alle Bot-Administratoren auflisten",
           "title": "Bot-Administratoren",
           "no_admins_title": "Keine Administratoren konfiguriert",
           "no_admins_description": "Es sind keine Administratoren konfiguriert.",
@@ -156,6 +176,7 @@
           "total": "Gesamt: {count} {admin_text}"
         },
         "add": {
+          "description": "Einen neuen Bot-Administrator hinzufügen",
           "success_title": "Administrator hinzugefügt",
           "success_description": "**{username}** erfolgreich als Bot-Administrator hinzugefügt.",
           "success_user_id": "Benutzer-ID: `{user_id}`",
@@ -168,6 +189,7 @@
           "self_note": "Es ist nicht nötig, sich selbst als Administrator hinzuzufügen"
         },
         "remove": {
+          "description": "Einen Bot-Administrator entfernen",
           "success_title": "Administrator entfernt",
           "success_description": "`{user_id}` erfolgreich von Administratoren entfernt.",
           "success_previous": "Vorheriger Admin: <@{user_id}>",
@@ -178,7 +200,9 @@
         }
       },
       "shard": {
+        "description": "Bot-Shards verwalten",
         "reload": {
+          "description": "Alle Shards oder einen bestimmten Shard neu laden",
           "single_title": "Einzelnen Shard neu laden",
           "single_description": "Nur Shard {shard_id} wird neu gestartet...",
           "single_what_happens": "Was passiert:",
@@ -211,6 +235,7 @@
           "failed_note": "Bitte überprüfen Sie die Logs für weitere Details"
         },
         "status": {
+          "description": "Aktuellen Shard-Status anzeigen",
           "title": "Shard-Status",
           "current_runtime": "Aktuelle Laufzeit:",
           "shard_info": "• Shard: {shard_id}/{max_shard}",
@@ -229,11 +254,13 @@
     },
     
     "admin": {
+      "description": "Nur-Admin-Verwaltungsbefehle",
       "permission_denied": {
         "title": "Nur Admin",
         "description": "Dieser Befehl ist auf Bot-Administratoren beschränkt."
       },
       "stats": {
+        "description": "Bot-Statistiken anzeigen",
         "title": "Bot-Statistiken",
         "server_title": "Server-Statistiken",
         "servers": "Server: {count}",
@@ -252,7 +279,9 @@
         "not_found_note": "Dieser Server hat den Bot nie abonniert."
       },
       "blacklist": {
+        "description": "Server-Sperrliste verwalten",
         "add": {
+          "description": "Einen Server zur Sperrliste hinzufügen",
           "success_title": "Server gesperrt",
           "success_description": "Server **{server_name}** (`{server_id}`) zur Sperrliste hinzugefügt.",
           "success_reason": "Grund: {reason}",
@@ -262,6 +291,7 @@
           "already_description": "Server `{server_id}` ist bereits gesperrt."
         },
         "remove": {
+          "description": "Einen Server von der Sperrliste entfernen",
           "success_title": "Server entsperrt",
           "success_description": "Server `{server_id}` von der Sperrliste entfernt.",
           "success_note": "Der Server kann jetzt wieder Bot-Befehle verwenden.",
@@ -269,6 +299,7 @@
           "not_found_description": "Server `{server_id}` ist nicht gesperrt."
         },
         "check": {
+          "description": "Überprüfen, ob ein Server gesperrt ist",
           "not_found_title": "Server ist NICHT gesperrt",
           "not_found_description": "Server `{server_id}` ist nicht auf der Sperrliste.",
           "not_found_note": "Dieser Server kann Bot-Befehle normal verwenden.",
@@ -282,6 +313,7 @@
         }
       },
       "recache": {
+        "description": "Alle Daten aus der Datenbank neu laden (außer Konfiguration)",
         "success_title": "Cache neu geladen",
         "success_description": "Erfolgreich neu geladen: **{cache_type}**",
         "success_loaded_data": "Geladene Daten",
@@ -294,6 +326,19 @@
         "error_message": "Fehler: {error}"
       },
       "error": {
+        "description": "Fehlerprotokolle verwalten",
+        "check": {
+          "description": "Einen Fehler anhand seiner ID überprüfen"
+        },
+        "delete": {
+          "description": "Einen Fehler anhand seiner ID löschen"
+        },
+        "list": {
+          "description": "Aktuelle Fehler auflisten"
+        },
+        "clear": {
+          "description": "Alle Fehler aus der Datenbank löschen"
+        },
         "not_found_title": "Fehler nicht gefunden",
         "not_found_description": "Kein Fehler mit ID gefunden: `{error_id}`",
         "details_title": "Fehlerdetails: {error_id}",
@@ -330,6 +375,13 @@
         "clear_failed_note": "Bitte überprüfen Sie die Logs für weitere Details"
       },
       "force": {
+        "description": "Erzwungene Verwaltungsaktionen",
+        "remove_server": {
+          "description": "Alle Abonnements für einen Server zwangsweise entfernen"
+        },
+        "remove_channel": {
+          "description": "Ein bestimmtes Kanalabonnement zwangsweise entfernen"
+        },
         "not_found_title": "Nicht gefunden",
         "not_found_description": "Kein Server oder Kanal mit ID gefunden: `{target_id}`",
         "not_found_note": "Bitte überprüfen Sie die ID und versuchen Sie es erneut",

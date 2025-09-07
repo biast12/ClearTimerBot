@@ -73,6 +73,12 @@ class ClearTimerBot(commands.Bot):
         await self.data_service.initialize()
         logger.info(LogArea.STARTUP, "Data service initialized")
 
+        # Set up the translator for command localizations
+        from src.localization.discord_translator import ClearTimerTranslator
+        translator = ClearTimerTranslator()
+        await self.tree.set_translator(translator)
+        logger.info(LogArea.STARTUP, "Command translator initialized")
+
         await self.load_commands()
 
     async def on_ready(self) -> None:

@@ -2,11 +2,14 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from src.utils.logger import logger, LogArea
-from src.localization import get_translator
+from src.localization import get_translator, get_command_description
 
 
 class AdminCommands(
-    commands.GroupCog, group_name="admin", description="Admin-only management commands"
+    commands.GroupCog, 
+    group_name="admin", 
+    description=get_command_description("admin"),
+    group_auto_locale_strings=False
 ):
     def __init__(self, bot):
         self.bot = bot
@@ -35,24 +38,29 @@ class AdminCommands(
     
     blacklist_group = app_commands.Group(
         name="blacklist",
-        description="Manage server blacklist",
-        parent=None
+        description=get_command_description("admin.blacklist"),
+        parent=None,
+        auto_locale_strings=False
     )
     
     error_group = app_commands.Group(
         name="error",
-        description="Manage error logs",
-        parent=None
+        description=get_command_description("admin.error"),
+        parent=None,
+        auto_locale_strings=False
     )
     
     force_group = app_commands.Group(
         name="force",
-        description="Force management actions",
-        parent=None
+        description=get_command_description("admin.force"),
+        parent=None,
+        auto_locale_strings=False
     )
     
     @app_commands.command(
-        name="stats", description="View bot statistics"
+        name="stats", 
+        description=get_command_description("admin.stats"),
+        auto_locale_strings=False
     )
     @app_commands.describe(
         server_id="Server ID to get specific stats for (optional)"
@@ -143,7 +151,9 @@ class AdminCommands(
 
 
     @blacklist_group.command(
-        name="add", description="Add a server to the blacklist"
+        name="add", 
+        description=get_command_description("admin.blacklist.add"),
+        auto_locale_strings=False
     )
     @app_commands.describe(
         server_id="Server ID to blacklist",
@@ -186,7 +196,9 @@ class AdminCommands(
             await interaction.followup.send(view=view)
 
     @blacklist_group.command(
-        name="remove", description="Remove a server from the blacklist"
+        name="remove", 
+        description=get_command_description("admin.blacklist.remove"),
+        auto_locale_strings=False
     )
     @app_commands.describe(server_id="Server ID to remove from blacklist")
     async def blacklist_remove(self, interaction: discord.Interaction, server_id: str):
@@ -214,7 +226,9 @@ class AdminCommands(
             await interaction.followup.send(view=view)
 
     @blacklist_group.command(
-        name="check", description="Check if a server is blacklisted"
+        name="check", 
+        description=get_command_description("admin.blacklist.check"),
+        auto_locale_strings=False
     )
     @app_commands.describe(server_id="Server ID to check blacklist status")
     async def blacklist_check(self, interaction: discord.Interaction, server_id: str):
@@ -241,7 +255,8 @@ class AdminCommands(
 
     @app_commands.command(
         name="recache",
-        description="Recache all data from database (except config)"
+        description=get_command_description("admin.recache"),
+        auto_locale_strings=False
     )
     async def recache(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True, ephemeral=True)
@@ -274,7 +289,9 @@ class AdminCommands(
             await interaction.followup.send(view=view)
 
     @error_group.command(
-        name="check", description="Check an error by its ID"
+        name="check", 
+        description=get_command_description("admin.error.check"),
+        auto_locale_strings=False
     )
     @app_commands.describe(error_id="The error ID to check")
     async def error_check(self, interaction: discord.Interaction, error_id: str):
@@ -298,7 +315,9 @@ class AdminCommands(
         await interaction.followup.send(view=view)
 
     @error_group.command(
-        name="delete", description="Delete an error by its ID"
+        name="delete", 
+        description=get_command_description("admin.error.delete"),
+        auto_locale_strings=False
     )
     @app_commands.describe(error_id="The error ID to delete")
     async def error_delete(self, interaction: discord.Interaction, error_id: str):
@@ -319,7 +338,9 @@ class AdminCommands(
             await interaction.followup.send(view=view)
 
     @error_group.command(
-        name="list", description="List recent errors"
+        name="list", 
+        description=get_command_description("admin.error.list"),
+        auto_locale_strings=False
     )
     @app_commands.describe(limit="Number of errors to show (default: 10, max: 25)")
     async def error_list(self, interaction: discord.Interaction, limit: int = 10):
@@ -344,7 +365,9 @@ class AdminCommands(
         await interaction.followup.send(view=view)
 
     @error_group.command(
-        name="clear", description="Clear all errors from the database"
+        name="clear", 
+        description=get_command_description("admin.error.clear"),
+        auto_locale_strings=False
     )
     async def error_clear(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True, ephemeral=True)
@@ -372,7 +395,9 @@ class AdminCommands(
 
 
     @force_group.command(
-        name="remove_server", description="Force remove all subscriptions for a server"
+        name="remove_server", 
+        description=get_command_description("admin.force.remove_server"),
+        auto_locale_strings=False
     )
     @app_commands.describe(id="Server ID to remove all subscriptions from")
     async def force_remove_server(self, interaction: discord.Interaction, id: str):
@@ -403,7 +428,9 @@ class AdminCommands(
         await interaction.followup.send(view=view)
 
     @force_group.command(
-        name="remove_channel", description="Force remove a specific channel subscription"
+        name="remove_channel", 
+        description=get_command_description("admin.force.remove_channel"),
+        auto_locale_strings=False
     )
     @app_commands.describe(id="Channel ID to unsubscribe")
     async def force_remove_channel(self, interaction: discord.Interaction, id: str):

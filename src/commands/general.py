@@ -4,7 +4,7 @@ from discord.ext import commands
 import time
 import pytz
 from src.utils.command_validation import CommandValidator, ValidationCheck
-from src.localization import get_translator, get_i18n
+from src.localization import get_translator, get_i18n, get_command_description
 
 
 class GeneralCommands(commands.Cog):
@@ -15,7 +15,9 @@ class GeneralCommands(commands.Cog):
         self.i18n = get_i18n()
 
     @app_commands.command(
-        name="help", description="Display help information about the bot"
+        name="help", 
+        description=get_command_description("help"),
+        auto_locale_strings=False
     )
     async def help_command(self, interaction: discord.Interaction):
         checks = {
@@ -94,7 +96,11 @@ class GeneralCommands(commands.Cog):
         view = HelpView(translator, commands_dict)
         await interaction.response.send_message(view=view)
 
-    @app_commands.command(name="ping", description="Check the bot's latency")
+    @app_commands.command(
+        name="ping", 
+        description=get_command_description("ping"),
+        auto_locale_strings=False
+    )
     async def ping(self, interaction: discord.Interaction):
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -168,12 +174,14 @@ class GeneralCommands(commands.Cog):
     
     timezone_group = app_commands.Group(
         name="timezone",
-        description="Manage server timezone preferences"
+        description=get_command_description("timezone"),
+        auto_locale_strings=False
     )
 
     @timezone_group.command(
         name="list",
-        description="List available timezones from the configuration"
+        description=get_command_description("timezone.list"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_guild=True)
     async def timezone_list(
@@ -259,7 +267,8 @@ class GeneralCommands(commands.Cog):
     
     @timezone_group.command(
         name="change",
-        description="Change the default timezone for your server"
+        description=get_command_description("timezone.change"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_guild=True)
     @app_commands.describe(
@@ -326,12 +335,14 @@ class GeneralCommands(commands.Cog):
 
     language_group = app_commands.Group(
         name="language",
-        description="Manage server language preferences"
+        description=get_command_description("language"),
+        auto_locale_strings=False
     )
 
     @language_group.command(
         name="list",
-        description="Display all supported languages"
+        description=get_command_description("language.list"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_guild=True)
     async def language_list(
@@ -366,7 +377,8 @@ class GeneralCommands(commands.Cog):
 
     @language_group.command(
         name="change",
-        description="Change the language for your server"
+        description=get_command_description("language.change"),
+        auto_locale_strings=False
     )
     @app_commands.default_permissions(manage_guild=True)
     @app_commands.describe(

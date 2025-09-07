@@ -2,13 +2,16 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from src.utils.logger import logger, LogArea
-from src.localization import get_translator
+from src.localization import get_translator, get_command_description
 import asyncio
 from typing import Optional
 
 
 class OwnerCommands(
-    commands.GroupCog, group_name="owner", description="Owner-only management commands"
+    commands.GroupCog, 
+    group_name="owner", 
+    description=get_command_description("owner"),
+    group_auto_locale_strings=False
 ):
     def __init__(self, bot):
         self.bot = bot
@@ -35,20 +38,23 @@ class OwnerCommands(
     
     admin_group = app_commands.Group(
         name="admin",
-        description="Manage bot administrators",
-        parent=None
+        description=get_command_description("owner.admin"),
+        parent=None,
+        auto_locale_strings=False
     )
     
     
     shard_group = app_commands.Group(
         name="shard",
-        description="Manage bot shards",
-        parent=None
+        description=get_command_description("owner.shard"),
+        parent=None,
+        auto_locale_strings=False
     )
     
     @admin_group.command(
         name="list",
-        description="List all bot administrators"
+        description=get_command_description("owner.admin.list"),
+        auto_locale_strings=False
     )
     async def admin_list(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
@@ -79,7 +85,8 @@ class OwnerCommands(
     
     @admin_group.command(
         name="add",
-        description="Add a new bot administrator"
+        description=get_command_description("owner.admin.add"),
+        auto_locale_strings=False
     )
     @app_commands.describe(
         user_id="Discord user ID to add as admin"
@@ -136,7 +143,8 @@ class OwnerCommands(
     
     @admin_group.command(
         name="remove",
-        description="Remove a bot administrator"
+        description=get_command_description("owner.admin.remove"),
+        auto_locale_strings=False
     )
     @app_commands.describe(
         user_id="Discord user ID to remove from admins"
@@ -167,7 +175,8 @@ class OwnerCommands(
     
     @shard_group.command(
         name="reload",
-        description="Reload all shards or a specific shard"
+        description=get_command_description("owner.shard.reload"),
+        auto_locale_strings=False
     )
     @app_commands.describe(
         shard_id="Specific shard ID to reload (leave empty to reload all)"
@@ -231,7 +240,8 @@ class OwnerCommands(
     
     @shard_group.command(
         name="status",
-        description="View current shard status"
+        description=get_command_description("owner.shard.status"),
+        auto_locale_strings=False
     )
     async def shard_status(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)

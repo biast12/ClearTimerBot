@@ -60,6 +60,11 @@ class CommandRegisterBot(commands.Bot):
         self.message_service = MockMessageService()
 
     async def setup_hook(self):
+        # Set up the translator for command localizations
+        from src.localization.discord_translator import ClearTimerTranslator
+        translator = ClearTimerTranslator()
+        await self.tree.set_translator(translator)
+        
         # Load command cogs
         command_modules = [
             "src.commands.subscription",
