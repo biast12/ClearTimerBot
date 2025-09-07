@@ -8,7 +8,6 @@ import sys
 import os
 from pathlib import Path
 
-# Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.core.bot import ClearTimerBot
@@ -18,15 +17,10 @@ from src.utils.logger import logger, LogArea
 
 async def run_shard():
     """Run a single shard based on environment variables"""
-    # Get shard configuration from environment
     shard_id = int(os.environ.get('SHARD_ID', 0))
     shard_count = int(os.environ.get('SHARD_COUNT', 1))
-    
-    # Load configuration
     config_manager = ConfigManager()
     config = config_manager.load_config()
-    
-    # Create bot with shard configuration
     bot = ClearTimerBot(config, shard=(shard_id, shard_count))
     bot.restart_requested = False
     
@@ -46,16 +40,11 @@ async def run_shard():
             raise
     finally:
         await bot.close()
-        # Exit with code 99 if restart was requested
         if hasattr(bot, 'restart_requested') and bot.restart_requested:
             sys.exit(99)
 
 
 if __name__ == "__main__":
-    # Set up asyncio for Windows
     if sys.platform == "win32":
-        # Use ProactorEventLoop for consistency with main.py
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-    
-    # Run the shard
     asyncio.run(run_shard())

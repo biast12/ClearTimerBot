@@ -22,10 +22,7 @@ def add_footer(content: str, translator: Optional[object] = None) -> str:
     if not config.show_powered_by_footer:
         return content
     
-    # Build the footer
     emoji = f"<:{config.powered_by_emoji_name}:{config.powered_by_emoji_id}> " if config.powered_by_emoji_id else ""
-    
-    # Use localized text
     text = translator.get("components.powered_by", bot_name=config.bot_name)
     
     footer = f"\n\n{emoji}{text}"

@@ -77,7 +77,6 @@ class BotLogger:
         if not self._should_log(level):
             return None
         
-        # Console output
         if self.console_enabled:
             formatted = self._format_message(level, area, message)
             print(formatted)

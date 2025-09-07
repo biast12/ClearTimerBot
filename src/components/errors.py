@@ -37,25 +37,20 @@ class MissedClearView(discord.ui.LayoutView):
         self.translator = translator
         self.bot = bot
         
-        # Get the main notification text without footer
         main_text = translator.get("errors.missed_clear_notification")
         
-        # Get the footer text separately
         from src.config import get_global_config
         config = get_global_config()
         footer_text = f"**{translator.get('components.powered_by', bot_name=config.bot_name)}**"
         
-        # Create Clear Now button
         clear_button = discord.ui.Button(
             label=translator.get("components.buttons.clear_now"),
             style=discord.ButtonStyle.primary
         )
         clear_button.callback = self.clear_now_callback
         
-        # Create action row with the button
         action_row = discord.ui.ActionRow(clear_button)
         
-        # Add text display, button, and footer to container with yellow accent color
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=main_text),
             action_row,
@@ -68,10 +63,8 @@ class MissedClearView(discord.ui.LayoutView):
         """Handle the Clear Now button click"""
         from src.utils.command_validation import CommandValidator, ValidationCheck
         
-        # Create validator and perform checks
         validator = CommandValidator(self.bot)
         
-        # Check for manage_messages permission, blacklist, and bot permissions
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: "manage_messages",
@@ -91,10 +84,8 @@ class MissedClearView(discord.ui.LayoutView):
         
         await interaction.response.defer(ephemeral=True)
         
-        # Execute the channel clear
         await self.message_clearing_service.execute_channel_message_clear(self.channel)
         
-        # Send confirmation message
         await interaction.followup.send(
             self.translator.get("components.messages.channel_cleared_manually"),
             ephemeral=True

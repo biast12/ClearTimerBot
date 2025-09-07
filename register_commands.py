@@ -10,14 +10,11 @@ import argparse
 import discord
 from discord.ext import commands
 
-# Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.core.config import ConfigManager
 from src.utils.logger import logger, LogArea
 
-
-# Mock classes for command registration
 class MockScheduleParser:
     """Mock schedule parser for command registration"""
 
@@ -35,7 +32,6 @@ class MockDataService:
     """Mock data service for command registration"""
 
     def get_timezones_list(self):
-        """Return empty dict for command registration"""
         return {}
 
 
@@ -54,18 +50,15 @@ class CommandRegisterBot(commands.Bot):
         super().__init__(command_prefix=lambda bot, msg: None, intents=intents, help_command=None)
 
         self.config = config
-        # Mock services that commands expect
         self.data_service = MockDataService()
         self.scheduler_service = MockSchedulerService()
         self.message_service = MockMessageService()
 
     async def setup_hook(self):
-        # Set up the translator for command localizations
         from src.localization.discord_translator import ClearTimerTranslator
         translator = ClearTimerTranslator()
         await self.tree.set_translator(translator)
         
-        # Load command cogs
         command_modules = [
             "src.commands.subscription",
             "src.commands.general",
@@ -78,7 +71,6 @@ class CommandRegisterBot(commands.Bot):
             except Exception as e:
                 logger.error(LogArea.NONE, f"Failed to load extension {module}: {e}")
 
-        # Load admin commands if GUILD_ID is configured
         if self.config.guild_id:
             try:
                 await self.load_extension("src.commands.admin")
@@ -86,7 +78,6 @@ class CommandRegisterBot(commands.Bot):
             except Exception as e:
                 logger.error(LogArea.NONE, f"Failed to load admin commands: {e}")
         
-        # Load owner commands if both OWNER_ID and GUILD_ID are configured
         if self.config.owner_id and self.config.guild_id:
             try:
                 await self.load_extension("src.commands.owner")
@@ -99,12 +90,10 @@ class CommandRegisterBot(commands.Bot):
         if not commands:
             return
             
-        # Separate context menu commands from regular commands
         slash_commands = []
         context_menus = []
         
         for cmd in commands:
-            # Check if it's a context menu command
             if hasattr(cmd, 'type'):
                 if cmd.type == discord.AppCommandType.user:
                     context_menus.append(cmd.name)
@@ -115,32 +104,24 @@ class CommandRegisterBot(commands.Bot):
             else:
                 slash_commands.append(cmd)
         
-        # Display slash commands
         if slash_commands:
             logger.info(LogArea.NONE, f"{command_type} Slash commands registered:")
             for cmd in slash_commands:
                 logger.info(LogArea.NONE, f"  - /{cmd.name}: {cmd.description}")
-                # Check if it's a group command with subcommands
                 if hasattr(cmd, "options"):
                     for option in cmd.options:
-                        # Skip parameters - they have 'required' or 'choices' attributes
-                        # Only show subcommands - they have 'description' but not 'required'
                         if hasattr(option, "required") or hasattr(option, "choices"):
-                            continue  # Skip parameters
+                            continue
                         
-                        # Check if this option is a subgroup (has its own options)
                         if hasattr(option, "options") and option.options:
                             logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
                             for suboption in option.options:
-                                # Skip parameters in suboptions too
                                 if hasattr(suboption, "required") or hasattr(suboption, "choices"):
                                     continue
                                 logger.info(LogArea.NONE, f"          - {suboption.name}: {suboption.description}")
                         else:
-                            # Regular subcommand
                             logger.info(LogArea.NONE, f"      - {option.name}: {option.description}")
         
-        # Display context menu commands
         if context_menus:
             logger.info(LogArea.NONE, f"{command_type} Context menu commands registered:")
             for cmd_name in context_menus:
@@ -151,16 +132,13 @@ class CommandRegisterBot(commands.Bot):
         logger.spacer()
 
         try:
-            # Register global commands
             logger.info(LogArea.NONE, "Registering global commands...")
             registered = await self.tree.sync()
             logger.info(LogArea.NONE, f"Successfully registered {len(registered)} global commands")
 
-            # Display the registered global commands
             if registered:
                 self.display_commands(registered, "Global")
 
-            # Register guild-specific commands (admin and owner) if configured
             if self.config.guild_id:
                 logger.spacer()
                 logger.info(LogArea.NONE, f"Registering guild-specific commands to guild {self.config.guild_id}...")
@@ -168,7 +146,6 @@ class CommandRegisterBot(commands.Bot):
                 registered_guild = await self.tree.sync(guild=guild)
                 logger.info(LogArea.NONE, f"Successfully registered {len(registered_guild)} commands to guild")
 
-                # Display the registered guild-specific commands
                 if registered_guild:
                     self.display_commands(registered_guild, "Guild-specific")
 
@@ -178,11 +155,9 @@ class CommandRegisterBot(commands.Bot):
             logger.error(LogArea.NONE, f"Failed to register commands: {e}")
             logger.spacer()
 
-        # Close the bot after registering
         await self.close()
 
     async def close(self):
-        # Properly close the HTTP session
         if self.http is not None:
             await self.http.close()
         await super().close()
@@ -194,11 +169,9 @@ async def main(guild_id_override=None, owner_id_override=None):
     logger.spacer()
     logger.info(LogArea.NONE, "Starting command registration")
 
-    # Load configuration
     config_manager = ConfigManager()
     config = config_manager.load_config()
 
-    # Override guild_id if provided via command line
     if guild_id_override:
         config.guild_id = int(guild_id_override)
         logger.info(LogArea.NONE, f"Using guild ID from command line: {config.guild_id}")
@@ -207,7 +180,6 @@ async def main(guild_id_override=None, owner_id_override=None):
     else:
         logger.info(LogArea.NONE, "No guild ID specified (owner commands will be global)")
 
-    # Override owner_id if provided via command line
     if owner_id_override:
         config.owner_id = int(owner_id_override)
         logger.info(LogArea.NONE, f"Using owner ID from command line: {config.owner_id}")
@@ -216,10 +188,8 @@ async def main(guild_id_override=None, owner_id_override=None):
     else:
         logger.info(LogArea.NONE, "No owner ID specified")
 
-    # Create bot instance
     bot = CommandRegisterBot(config)
 
-    # Run the bot
     try:
         await bot.start(config.token)
     except KeyboardInterrupt:
@@ -227,13 +197,11 @@ async def main(guild_id_override=None, owner_id_override=None):
     except Exception as e:
         logger.error(LogArea.NONE, f"Error during registration: {e}")
     finally:
-        # Ensure proper cleanup
         if bot and not bot.is_closed():
             await bot.close()
 
 
 if __name__ == "__main__":
-    # Parse command line arguments
     parser = argparse.ArgumentParser(description="Register Discord bot slash commands")
     parser.add_argument(
         "--guild-id",
@@ -247,9 +215,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # Set up asyncio for Windows
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
-    # Run the registration
     asyncio.run(main(args.guild_id, args.owner_id))

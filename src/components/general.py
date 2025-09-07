@@ -25,42 +25,34 @@ class HelpView(discord.ui.LayoutView):
     def create_help_display(self):
         config = get_global_config()
         
-        # Build the help text using translations
         sections = []
         
-        # Title and description
         sections.append(f"**{config.bot_name} {self.translator.get('commands.help.title')}**\n")
         sections.append(self.translator.get("commands.help.description") + "\n")
         
-        # Use the dynamically provided commands
         all_commands = self.commands_dict or {'subscription': [], 'general': []}
         
-        # Subscription commands
         if all_commands.get('subscription'):
             sections.append(f"**{self.translator.get('commands.help.subscription_commands')}**")
             for cmd in all_commands['subscription']:
                 sections.append(f"`/{cmd['name']}` - {cmd['description']}")
             sections.append("")
         
-        # General commands
         if all_commands.get('general'):
             sections.append(f"**{self.translator.get('commands.help.other_commands')}**")
             for cmd in all_commands['general']:
                 sections.append(f"`/{cmd['name']}` - {cmd['description']}")
             sections.append("")
         
-        # Timer formats
         sections.append(f"**{self.translator.get('commands.help.timer_formats')}**")
         sections.append(self.translator.get("commands.help.timer_intervals"))
         sections.append(self.translator.get("commands.help.timer_daily"))
         sections.append(self.translator.get("commands.help.timer_examples") + "\n")
         
-        # Required permissions
         sections.append(f"**{self.translator.get('commands.help.required_permissions')}**")
         sections.append(self.translator.get("commands.help.permissions_for_you"))
         sections.append(self.translator.get("commands.help.permissions_for_bot") + "\n")
         
-        # Links
         sections.append(f"**{self.translator.get('commands.help.links')}**")
         sections.append(
             f"[Support Server]({config.support_server_url}) | "
@@ -84,7 +76,6 @@ class PingView(discord.ui.LayoutView):
     def __init__(self, ws_latency: int, response_time: int, translator):
         super().__init__()
 
-        # Determine status
         if ws_latency < 100:
             status_key = "commands.ping.status_excellent"
         elif ws_latency < 200:
@@ -132,16 +123,13 @@ class LanguageListView(discord.ui.LayoutView):
     def __init__(self, languages: Dict[str, str], current_language: str, translator):
         super().__init__()
         
-        # Build language list
         language_lines = []
         language_lines.append(f"**{translator.get('commands.language.list.title')}**\n")
         language_lines.append(translator.get("commands.language.list.description") + "\n")
         
-        # Current language
         current_name = languages.get(current_language, current_language)
         language_lines.append(translator.get("commands.language.list.current", language=current_name) + "\n")
         
-        # Available languages
         for code, name in sorted(languages.items()):
             language_lines.append(f"• {name} (`{code}`)")
         
@@ -195,7 +183,6 @@ class LanguageInvalidView(discord.ui.LayoutView):
     def __init__(self, invalid_language: str, available_languages: list, translator):
         super().__init__()
         
-        # Format available languages list
         languages_str = ", ".join([f"`{lang}`" for lang in sorted(available_languages)])
         
         message = translator.get("commands.language.change.invalid", language=invalid_language)

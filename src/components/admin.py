@@ -7,7 +7,6 @@ from discord.ext import commands
 from src.localization import get_translator
 
 
-# ==================== COMMON VIEWS ====================
 
 class AdminOnlyView(discord.ui.LayoutView):
     """View for admin-only restriction message"""
@@ -26,7 +25,6 @@ class AdminOnlyView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-# ==================== STATS COMMAND VIEWS ====================
 
 class SimpleStatsView(discord.ui.LayoutView):
     """View for showing simple bot statistics"""
@@ -118,7 +116,6 @@ class ServerNotFoundView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-# ==================== BLACKLIST COMMAND VIEWS ====================
 
 class BlacklistAddSuccessView(discord.ui.LayoutView):
     """View for blacklist add success"""
@@ -225,7 +222,6 @@ class BlacklistCheckFoundView(discord.ui.LayoutView):
     def __init__(self, server_id: str, server_name: str, entry, translator):
         super().__init__()
         
-        # Format the blacklisted date
         blacklisted_date = translator.get("commands.admin.blacklist.check.unknown_date")
         if entry.blacklisted_at:
             blacklisted_date = f"<t:{int(entry.blacklisted_at.timestamp())}:F>"
@@ -256,7 +252,6 @@ class BlacklistCheckFoundView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-# ==================== ERROR COMMAND VIEWS ====================
 
 class ErrorNotFoundView(discord.ui.LayoutView):
     """View for error not found"""
@@ -301,13 +296,11 @@ class ErrorDetailsView(discord.ui.LayoutView):
         content += f"**{area_label}:** {error_doc.area}\n"
         content += f"**{time_label}:** <t:{timestamp}:F>\n\n"
         
-        # Add message field
         message = error_doc.message or no_message
         if len(message) > 500:
             message = message[:497] + "..."
         content += f"**{message_label}:** {message}\n\n"
         
-        # Add context fields if present
         if error_doc.guild_id:
             guild = bot.get_guild(int(error_doc.guild_id))
             guild_name = guild.name if guild else unknown_text
@@ -324,7 +317,6 @@ class ErrorDetailsView(discord.ui.LayoutView):
         if error_doc.command:
             content += f"**{command_label}:** {error_doc.command}\n"
         
-        # Add traceback if present (truncate if too long)
         if error_doc.stack_trace:
             tb = error_doc.stack_trace
             if len(tb) > 800:
@@ -469,7 +461,6 @@ class ErrorsClearFailedView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-# ==================== FORCE COMMAND VIEWS ====================
 
 class ForceUnsubNotFoundView(discord.ui.LayoutView):
     """View for force unsubscribe not found"""
@@ -513,7 +504,6 @@ class ForceUnsubSuccessView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-# ==================== RECACHE COMMAND VIEWS ====================
 
 class RecacheSuccessView(discord.ui.LayoutView):
     """View for successful recache operation"""
@@ -562,7 +552,6 @@ class RecacheErrorView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-# ==================== UTILITY VIEWS ====================
 
 class ServerListView(discord.ui.LayoutView):
     """View for listing servers"""
@@ -581,13 +570,11 @@ class ServerListView(discord.ui.LayoutView):
             if not server.channels:
                 continue
             
-            # Get guild name
             guild = bot.get_guild(int(server_id))
             guild_name = guild.name if guild else f"Unknown ({server.server_name})"
             
             content += f"**{guild_name}** ({server_id})\n"
             
-            # Build channel list
             for channel_id, timer_data in list(server.channels.items())[:5]:
                 channel = bot.get_channel(int(channel_id))
                 channel_name = channel.name if channel else "Unknown"
@@ -683,7 +670,6 @@ class CacheStatsView(discord.ui.LayoutView):
         warm_stats = cache_stats.get("warm", {})
         cold_stats = cache_stats.get("cold", {})
         
-        # Calculate overall stats
         total_hits = memory_stats.get('hits', 0) + warm_stats.get('hits', 0) + cold_stats.get('hits', 0)
         total_misses = memory_stats.get('misses', 0) + warm_stats.get('misses', 0) + cold_stats.get('misses', 0)
         total_requests = total_hits + total_misses

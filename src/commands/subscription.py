@@ -24,7 +24,6 @@ class SubscriptionCommands(commands.Cog):
         self.schedule_parser = bot.scheduler_service.schedule_parser
         self.validator = CommandValidator(bot)
         
-        # Add context menu commands
         self.add_context_menus()
 
     def add_context_menus(self) -> None:
@@ -37,7 +36,6 @@ class SubscriptionCommands(commands.Cog):
             await self.handle_ignore_user_context(interaction, user)
     
     async def handle_ignore_message_context(self, interaction: discord.Interaction, message: discord.Message) -> None:
-        # Validate command with blacklist and permission checks
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: True,
@@ -54,7 +52,6 @@ class SubscriptionCommands(commands.Cog):
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
         
-        # Check if channel is subscribed
         server_id = str(interaction.guild.id)
         channel_id = str(message.channel.id)
         
@@ -69,9 +66,7 @@ class SubscriptionCommands(commands.Cog):
         channel_timer = server.channels[channel_id]
         message_id = str(message.id)
         
-        # Toggle ignore status
         if message_id in channel_timer.ignored.messages:
-            # Remove from ignored
             channel_timer.remove_ignored_message(message_id)
             await self.data_service.save_servers()
             
@@ -82,7 +77,6 @@ class SubscriptionCommands(commands.Cog):
                 ephemeral=True
             )
         else:
-            # Add to ignored
             channel_timer.add_ignored_message(message_id)
             await self.data_service.save_servers()
             
@@ -95,8 +89,6 @@ class SubscriptionCommands(commands.Cog):
             )
     
     async def handle_ignore_user_context(self, interaction: discord.Interaction, user: discord.User) -> None:
-        """Handle the ignore user context menu command"""
-        # Validate command with blacklist and permission checks
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: True,
@@ -113,7 +105,6 @@ class SubscriptionCommands(commands.Cog):
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
         
-        # Get the channel where the context menu was invoked
         channel = interaction.channel
         if not isinstance(channel, discord.TextChannel):
             await interaction.response.send_message(
@@ -125,7 +116,6 @@ class SubscriptionCommands(commands.Cog):
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
         
-        # Check if channel is subscribed
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
             await interaction.response.send_message(
@@ -137,9 +127,7 @@ class SubscriptionCommands(commands.Cog):
         channel_timer = server.channels[channel_id]
         user_id = str(user.id)
         
-        # Toggle ignore status
         if user_id in channel_timer.ignored.users:
-            # Remove from ignored
             channel_timer.remove_ignored_user(user_id)
             await self.data_service.save_servers()
             
@@ -150,7 +138,6 @@ class SubscriptionCommands(commands.Cog):
                 ephemeral=True
             )
         else:
-            # Add to ignored
             channel_timer.add_ignored_user(user_id)
             await self.data_service.save_servers()
             

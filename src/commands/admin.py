@@ -22,7 +22,6 @@ class AdminCommands(
         is_admin = await self.bot.is_admin(interaction.user)
         
         if not (is_owner or is_admin):
-            # Get translator for localization
             if interaction.guild:
                 translator = await get_translator(str(interaction.guild.id), self.data_service)
             
@@ -67,7 +66,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         if interaction.guild:
             translator = await get_translator(str(interaction.guild.id), self.data_service)
         
@@ -157,7 +155,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         if interaction.guild:
             translator = await get_translator(str(interaction.guild.id), self.data_service)
         
@@ -195,7 +192,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         if interaction.guild:
             translator = await get_translator(str(interaction.guild.id), self.data_service)
         
@@ -221,7 +217,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         translator = await get_translator(str(interaction.guild.id), self.data_service)
         
         blacklist_entries = await self.data_service.get_blacklist_entries()
@@ -251,7 +246,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         translator = await get_translator(str(interaction.guild.id), self.data_service)
         
         try:
@@ -291,7 +285,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         translator = await get_translator(str(interaction.guild.id), self.data_service)
         
         error_doc = await logger.get_error(error_id)
@@ -320,7 +313,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         translator = await get_translator(str(interaction.guild.id), self.data_service)
         
         success = await logger.delete_error(error_id)
@@ -346,7 +338,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         translator = await get_translator(str(interaction.guild.id), self.data_service)
         
         limit = min(max(1, limit), 25)
@@ -375,7 +366,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         translator = await get_translator(str(interaction.guild.id), self.data_service)
         
         from src.services.database_connection_manager import db_manager
@@ -409,7 +399,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         translator = await get_translator(str(interaction.guild.id), self.data_service)
 
         servers = await self.data_service.get_all_servers()
@@ -445,7 +434,6 @@ class AdminCommands(
         if not await self._check_admin_permission_before_defer(interaction):
             return
         
-        # Get translator for localization
         translator = await get_translator(str(interaction.guild.id), self.data_service)
 
         servers = await self.data_service.get_all_servers()

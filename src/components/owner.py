@@ -52,7 +52,6 @@ class AdminListView(discord.ui.LayoutView):
         content = f"👥 **{title}**\n\n"
         
         for user_id in sorted(admins):
-            # Try to get current username from bot
             try:
                 user = bot.get_user(int(user_id))
                 current_name = str(user) if user else f"User {user_id}"
@@ -344,7 +343,6 @@ class ShardStatusCompleteView(discord.ui.LayoutView):
             content += translator.get("commands.owner.shard.status.guilds_on_shard", 
                                      count=len(bot.guilds)) + "\n"
             
-            # Get shard latency
             try:
                 shard = bot.get_shard(bot.shard_id)
                 latency = shard.latency if shard and shard.latency is not None else bot.latency

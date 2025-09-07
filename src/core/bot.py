@@ -73,7 +73,6 @@ class ClearTimerBot(commands.Bot):
         await self.data_service.initialize()
         logger.info(LogArea.STARTUP, "Data service initialized")
 
-        # Set up the translator for command localizations
         from src.localization.discord_translator import ClearTimerTranslator
         translator = ClearTimerTranslator()
         await self.tree.set_translator(translator)
@@ -213,7 +212,6 @@ class ClearTimerBot(commands.Bot):
 
         await self.data_service.add_server(guild)
         
-        # Auto-detect and set language for the server
         from src.localization import get_i18n
         i18n = get_i18n()
         detected_language = i18n.detect_server_language(guild)
@@ -257,11 +255,9 @@ class ClearTimerBot(commands.Bot):
                     old_name = server.server_name or "(empty)"
                     await self.data_service.update_server_name(server_id, guild.name)
                     updated_count += 1
-                    logger.debug(LogArea.DATABASE, f"Updated server name: {old_name} -> {guild.name} (ID: {server_id})")
             else:
                 await self.data_service.add_server(guild)
                 updated_count += 1
-                logger.debug(LogArea.DATABASE, f"Added new server: {guild.name} (ID: {server_id})")
         
         if updated_count > 0:
             logger.info(LogArea.DATABASE, f"Updated {updated_count} server name(s)")
@@ -335,8 +331,7 @@ class ClearTimerBot(commands.Bot):
         if server and channel_id in server.channels:
             if await self.data_service.remove_channel_subscription(server_id, channel_id):
                 job_id = f"{server_id}_{channel_id}"
-                if await self.scheduler_service.cancel_job_by_id(job_id):
-                    logger.debug(LogArea.SCHEDULER, f"Cancelled scheduled job for deleted channel: {job_id}")
+                await self.scheduler_service.cancel_job_by_id(job_id)
     
     async def _cleanup_server_channels(self, guild: discord.Guild) -> None:
         """Clean up deleted channels when bot rejoins a server"""
@@ -375,7 +370,6 @@ class ClearTimerBot(commands.Bot):
         failed_count = 0
         
         for server_id, server in servers.items():
-            # Skip servers bot is not in
             guild = self.get_guild(int(server_id))
             if not guild:
                 continue
@@ -400,7 +394,6 @@ class ClearTimerBot(commands.Bot):
                         updated_count += 1
                 except Exception as e:
                     failed_count += 1
-                    logger.debug(LogArea.STARTUP, f"Failed to update view message in {channel.name}: {e}")
         
         if updated_count > 0 or failed_count > 0:
             logger.info(

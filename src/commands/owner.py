@@ -21,7 +21,6 @@ class OwnerCommands(
         """Check if user is the bot owner (using OWNER_ID from config)"""
         if not self.bot.is_owner(interaction.user):
             from src.components.owner import OwnerOnlyView
-            # Try to get translator for localization
             if interaction.guild:
                 translator = await get_translator(str(interaction.guild.id), self.data_service)
             view = OwnerOnlyView(translator)
@@ -60,7 +59,6 @@ class OwnerCommands(
         
         admins = await self.data_service.get_admins()
         
-        # Get translator for localization
         if interaction.guild:
             translator = await get_translator(str(interaction.guild.id), self.data_service)
         
@@ -89,7 +87,6 @@ class OwnerCommands(
         if not await self._check_owner_permission(interaction):
             return
         
-        # Get translator for localization
         if interaction.guild:
             translator = await get_translator(str(interaction.guild.id), self.data_service)
         
@@ -143,7 +140,6 @@ class OwnerCommands(
         if not await self._check_owner_permission(interaction):
             return
         
-        # Get translator for localization
         if interaction.guild:
             translator = await get_translator(str(interaction.guild.id), self.data_service)
         
@@ -171,7 +167,6 @@ class OwnerCommands(
         if not await self._check_owner_permission(interaction):
             return
         
-        # Get translator for localization
         if interaction.guild:
             translator = await get_translator(str(interaction.guild.id), self.data_service)
         
@@ -229,7 +224,6 @@ class OwnerCommands(
         if not await self._check_owner_permission(interaction):
             return
         
-        # Get translator for localization
         if interaction.guild:
             translator = await get_translator(str(interaction.guild.id), self.data_service)
         

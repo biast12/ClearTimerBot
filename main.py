@@ -21,14 +21,6 @@ class ShardManager:
     """Manages bot sharding"""
     
     def __init__(self, shard_count: Optional[int] = None, shard_ids: Optional[List[int]] = None, original_args: Optional[List[str]] = None) -> None:
-        """
-        Initialize the shard manager
-        
-        Args:
-            shard_count: Total number of shards (None for auto-detection)
-            shard_ids: List of shard IDs to run on this process (None for all)
-            original_args: Original command-line arguments to preserve on restart
-        """
         self.config_manager = ConfigManager()
         self.config = self.config_manager.load_config()
         self.shard_count = shard_count
