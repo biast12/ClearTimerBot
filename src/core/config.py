@@ -20,6 +20,8 @@ class ConfigManager:
         self, key: str, prompt: str, required: bool = True
     ) -> Optional[str]:
         value = os.getenv(key)
+        if value:
+            value = value.strip()
         if not value and (
             required or input(f"{prompt} (press Enter to skip): ").strip()
         ):

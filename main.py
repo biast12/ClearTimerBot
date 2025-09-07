@@ -41,7 +41,7 @@ class ShardManager:
 
     async def get_recommended_shards(self) -> int:
         try:
-            token = self.config.token
+            token = self.config.token.strip()
 
             import aiohttp
 
