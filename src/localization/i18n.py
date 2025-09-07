@@ -123,6 +123,15 @@ class I18n:
             "en-GB": "en",
             "da": "da",
             "da-DK": "da",
+            "de": "de",
+            "de-DE": "de",
+            "es-ES": "es",
+            "es-419": "es",
+            "zh-CN": "zh",
+            "zh-TW": "zh",
+            "hi": "hi",
+            "ar": "ar",
+            "bn": "bn",
         }
         
         # Try to use guild's preferred locale

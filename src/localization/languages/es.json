@@ -1,0 +1,437 @@
+{
+  "language_name": "Spanish",
+  "language_native_name": "Español",
+  "language_code": "es",
+  
+  "common": {
+    "yes": "Sí",
+    "no": "No",
+    "enabled": "Habilitado",
+    "disabled": "Deshabilitado",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información",
+    "none": "Ninguno",
+    "unknown": "Desconocido",
+    "channel": "Canal",
+    "server": "Servidor",
+    "user": "Usuario",
+    "message": "Mensaje"
+  },
+  
+  "commands": {
+    "help": {
+      "title": "Ayuda",
+      "description": "Limpia automáticamente los mensajes en los canales de Discord según un horario.",
+      "subscription_commands": "📝 Comandos de Suscripción",
+      "other_commands": "🔧 Otros Comandos",
+      "timer_formats": "⏱️ Formatos de Temporizador",
+      "timer_intervals": "**Intervalos:** `1d2h3m` (días, horas, minutos)",
+      "timer_daily": "**Horario Diario:** `15:30 EST` (hora + zona horaria)",
+      "timer_examples": "**Ejemplos:** `24h`, `1d`, `30m`, `09:00 PST`",
+      "required_permissions": "🔒 Permisos Requeridos",
+      "permissions_for_you": "**Para Ti:** Gestionar Mensajes",
+      "permissions_for_bot": "**Para el Bot:** Ver Canal, Enviar Mensajes, Enviar Mensajes en Hilos, Leer Historial de Mensajes, Gestionar Mensajes, Insertar Enlaces, Usar Comandos de Aplicación",
+      "links": "🔗 Enlaces",
+      "select_command": "Selecciona un comando para saber más..."
+    },
+    
+    "ping": {
+      "title": "🏓 ¡Pong!",
+      "websocket_latency": "**Latencia WebSocket:** {latency}ms",
+      "response_time": "**Tiempo de Respuesta:** {time}ms",
+      "status": "**Estado:** {status}",
+      "status_excellent": "🟢 Excelente",
+      "status_good": "🟡 Bueno",
+      "status_fair": "🟠 Regular",
+      "status_poor": "🔴 Pobre"
+    },
+    
+    "timezone": {
+      "change": {
+        "success": "✅ La zona horaria del servidor se ha establecido en **{timezone}**",
+        "success_auto": "✅ La zona horaria del servidor se ha detectado y establecido automáticamente en **{timezone}**",
+        "invalid": "❌ Zona horaria inválida: `{timezone}`",
+        "suggestion": "¿Quisiste decir: `{suggestion}`?"
+      },
+      "list": {
+        "title": "🌍 Zonas Horarias Disponibles",
+        "description": "Aquí están las abreviaturas de zona horaria configuradas y sus nombres completos:"
+      },
+      "current": {
+        "title": "Zona Horaria Actual del Servidor",
+        "timezone": "**Zona Horaria:** `{timezone}`",
+        "offset": "**Diferencia:** {offset}",
+        "time": "**Hora Actual:** {time}",
+        "how_it_works": "Esto significa:",
+        "benefit_1": "• Los usuarios pueden establecer temporizadores solo con la hora: `/subscription add 21:30`",
+        "benefit_2": "• La zona horaria del servidor se usará automáticamente",
+        "benefit_3": "• Los usuarios aún pueden anular: `/subscription add 21:30 PST`",
+        "change_hint": "Para cambiar la zona horaria, usa `/timezone change <timezone>`",
+        "error": "**Error:** No se pudieron cargar los detalles de la zona horaria",
+        "no_timezone_title": "Sin Zona Horaria Establecida",
+        "no_timezone_description": "Este servidor no tiene una zona horaria predeterminada configurada. Cuando los usuarios crean temporizadores sin especificar una zona horaria, se usará UTC.",
+        "set_timezone_benefits": "Establece una zona horaria para:",
+        "set_hint": "Usa `/timezone change <timezone>` para establecer una zona horaria predeterminada.",
+        "list_hint": "Usa `/timezone list` para ver las zonas horarias disponibles."
+      }
+    },
+    
+    "language": {
+      "list": {
+        "title": "🌐 Idiomas Disponibles",
+        "description": "El bot actualmente admite los siguientes idiomas:",
+        "current": "Idioma actual: **{language}**",
+        "change_hint": "Usa `/language change <language>` para cambiar el idioma del servidor"
+      },
+      "change": {
+        "success": "✅ El idioma del servidor se ha cambiado a **{language}**",
+        "already_set": "ℹ️ El idioma del servidor ya está establecido en **{language}**",
+        "invalid": "❌ Idioma inválido: `{language}`",
+        "available": "Idiomas disponibles: {languages}"
+      }
+    },
+    
+    "subscription": {
+      "add": {
+        "success": "✅ Se suscribió exitosamente {channel} a la limpieza automática de mensajes cada **{timer}**",
+        "success_with_ignored": "✅ Se suscribió exitosamente {channel} a la limpieza automática de mensajes cada **{timer}**\n\n**Objetivos ignorados añadidos:** {count}",
+        "already_subscribed": "❌ {channel} ya está suscrito con un temporizador de {timer}.\nUsa `/subscription update` para cambiar el temporizador.",
+        "invalid_timer": "❌ Formato de temporizador inválido: `{timer}`"
+      },
+      "remove": {
+        "success": "✅ Se canceló exitosamente la suscripción de {channel} a la limpieza automática de mensajes"
+      },
+      "list": {
+        "title": "📋 Suscripciones Activas",
+        "no_subscriptions": "No hay suscripciones activas en este servidor",
+        "subscription_item": "• {channel} - Cada **{timer}** (Próximo: {next_clear})",
+        "subscription_item_with_ignored": "• {channel} - Cada **{timer}** (Próximo: {next_clear}) - {ignored_count} ignorados",
+        "tip": "💡 Usa `/subscription info` para información detallada"
+      },
+      "info": {
+        "title": "Información de Suscripción",
+        "subscribed": "✅ Suscrito",
+        "timer": "**Temporizador:** {timer}",
+        "next_clear": "**Próxima Limpieza:** {time}",
+        "ignored_messages": "**Mensajes Ignorados:** {count}",
+        "ignored_users": "**Usuarios Ignorados:** {count}",
+        "commands_hint": "Usa comandos `/subscription` para gestionar esta suscripción"
+      },
+      "update": {
+        "success": "✅ Se actualizó exitosamente el temporizador para {channel} a **{timer}**",
+        "success_with_ignored": "✅ Se actualizó exitosamente el temporizador para {channel} a **{timer}**\n\n**Objetivos ignorados añadidos:** {count}"
+      },
+      "clear": {
+        "success": "✅ Limpieza manual activada para {channel}",
+        "in_progress": "⏳ Ya hay una limpieza en progreso para {channel}. Por favor espera a que termine.",
+        "messages_cleared": "Mensajes Limpiados",
+        "no_messages": "📭 No hay mensajes para limpiar en {channel}",
+        "error": "❌ Error al limpiar mensajes en {channel}: {error}"
+      },
+      "ignore": {
+        "message_added": "✅ El mensaje de {author} será **ignorado** durante la limpieza en {channel}",
+        "message_removed": "✅ El mensaje de {author} **ya no será ignorado** durante la limpieza en {channel}",
+        "user_added": "✅ Los mensajes de {user} serán **ignorados** durante la limpieza en {channel}",
+        "user_removed": "✅ Los mensajes de {user} **ya no serán ignorados** durante la limpieza en {channel}"
+      },
+      "skip": {
+        "success": "✅ Se ha omitido la próxima limpieza programada para {channel}.\n**Nueva próxima limpieza:** {next_clear}",
+        "no_scheduled": "❌ No se encontró limpieza programada para {channel}"
+      }
+    },
+    
+    "owner": {
+      "permission_denied": {
+        "title": "Solo Propietario",
+        "description": "Este comando está restringido al propietario del bot."
+      },
+      "admin": {
+        "list": {
+          "title": "Administradores del Bot",
+          "no_admins_title": "Sin Administradores Configurados",
+          "no_admins_description": "No hay administradores configurados.",
+          "no_admins_hint": "Usa `/owner admin add` para añadir administradores",
+          "total": "Total: {count} {admin_text}"
+        },
+        "add": {
+          "success_title": "Administrador Añadido",
+          "success_description": "Se añadió exitosamente a **{username}** como administrador del bot.",
+          "success_user_id": "ID de Usuario: `{user_id}`",
+          "success_mention": "Mención: <@{user_id}>",
+          "success_note": "Este usuario ahora puede usar comandos de administrador",
+          "already_title": "Ya es Administrador",
+          "already_description": "El usuario `{user_id}` ya es administrador del bot.",
+          "self_title": "Ya eres Propietario",
+          "self_description": "Eres el propietario del bot y ya tienes permisos completos.",
+          "self_note": "No necesitas añadirte como administrador"
+        },
+        "remove": {
+          "success_title": "Administrador Eliminado",
+          "success_description": "Se eliminó exitosamente a `{user_id}` de los administradores.",
+          "success_previous": "Administrador anterior: <@{user_id}>",
+          "success_note": "Este usuario ya no puede usar comandos de administrador",
+          "not_found_title": "No es Administrador",
+          "not_found_description": "El usuario `{user_id}` no es administrador del bot.",
+          "not_found_note": "No se puede eliminar a alguien que no es administrador"
+        }
+      },
+      "shard": {
+        "reload": {
+          "single_title": "Recargando Fragmento Único",
+          "single_description": "Reiniciando solo el fragmento {shard_id}...",
+          "single_what_happens": "Qué sucede:",
+          "single_note_1": "• Solo este fragmento específico se reinicia",
+          "single_note_2": "• Otros fragmentos continúan ejecutándose",
+          "single_note_3": "• Gremios en este fragmento temporalmente fuera de línea",
+          "all_title": "Recargando Todos los Fragmentos",
+          "all_description": "Recarga completa del bot iniciada...",
+          "all_what_happens": "Qué sucede:",
+          "all_note_1": "• Todos los fragmentos se apagan juntos",
+          "all_note_2": "• El gestor de fragmentos se reinicia",
+          "all_note_3": "• Todos los fragmentos se reinician con estado nuevo",
+          "all_note_4": "• Bot fuera de línea por ~5-10 segundos",
+          "all_hint": "Usa `/owner shard reload <id>` para recargar solo un fragmento",
+          "not_sharded_title": "No se Puede Recargar el Fragmento",
+          "not_sharded_description": "El bot está ejecutándose en modo de instancia única (no fragmentado).",
+          "not_sharded_hint": "Usa `/owner shard reload` para recargar el bot",
+          "invalid_id_title": "ID de Fragmento Inválido",
+          "invalid_id_description": "El ID de fragmento `{shard_id}` es inválido.",
+          "invalid_id_range": "Rango Válido: 0 a {max_shard}",
+          "invalid_id_note": "Por favor especifica un ID de fragmento válido",
+          "signal_sent_title": "Señal de Recarga Enviada",
+          "signal_sent_description": "Señal de recarga enviada al fragmento {shard_id}.",
+          "signal_sent_note": "Nota: La comunicación entre fragmentos aún no está implementada.",
+          "signal_sent_manual": "Por favor reinicia el fragmento manualmente.",
+          "signal_sent_future": "Las futuras actualizaciones permitirán la recarga automática entre fragmentos",
+          "failed_title": "Recarga Fallida",
+          "failed_description": "Error al recargar el fragmento.",
+          "failed_error": "Error: {error}",
+          "failed_note": "Por favor revisa los registros para más detalles"
+        },
+        "status": {
+          "title": "Estado del Fragmento",
+          "current_runtime": "Tiempo de Ejecución Actual:",
+          "shard_info": "• Fragmento: {shard_id}/{max_shard}",
+          "total_shards": "• Fragmentos Totales: {count}",
+          "guilds_on_shard": "• Gremios en Este Fragmento: {count}",
+          "latency": "• Latencia: {latency}ms",
+          "single_mode": "• Modo: Instancia única (no fragmentado)",
+          "total_guilds": "• Gremios Totales: {count}",
+          "process_id": "• ID de Proceso: `{pid}`",
+          "available_commands": "Comandos Disponibles:",
+          "cmd_reload_all": "• `/owner shard reload` - Recargar todos los fragmentos",
+          "cmd_reload_single": "• `/owner shard reload <id>` - Recargar fragmento específico",
+          "cmd_status": "• `/owner shard status` - Ver este estado"
+        }
+      }
+    },
+    
+    "admin": {
+      "permission_denied": {
+        "title": "Solo Administrador",
+        "description": "Este comando está restringido a los administradores del bot."
+      },
+      "stats": {
+        "title": "Estadísticas del Bot",
+        "server_title": "Estadísticas del Servidor",
+        "servers": "Servidores: {count}",
+        "subscribed_channels": "Canales Suscritos: {count}",
+        "removed_servers": "Servidores Eliminados: {count}",
+        "blacklisted_servers": "Servidores en Lista Negra: {count}",
+        "saved_errors": "Errores Guardados: {count}",
+        "server_name": "Servidor: {name}",
+        "server_id": "ID del Servidor: {id}",
+        "blacklisted": "En Lista Negra: {status}",
+        "errors": "Errores: {count}",
+        "channels_label": "Canales:",
+        "more_channels": "... y {count} canales más",
+        "not_found_title": "Servidor No Encontrado",
+        "not_found_description": "El ID del servidor `{server_id}` no se encontró en la base de datos.",
+        "not_found_note": "Este servidor nunca ha estado suscrito al bot."
+      },
+      "blacklist": {
+        "add": {
+          "success_title": "Servidor en Lista Negra",
+          "success_description": "Se añadió el servidor **{server_name}** (`{server_id}`) a la lista negra.",
+          "success_reason": "Razón: {reason}",
+          "success_note_1": "• Todas las suscripciones han sido eliminadas",
+          "success_note_2": "• El servidor no puede usar comandos del bot",
+          "already_title": "Ya en Lista Negra",
+          "already_description": "El servidor `{server_id}` ya está en la lista negra."
+        },
+        "remove": {
+          "success_title": "Servidor Eliminado de Lista Negra",
+          "success_description": "Se eliminó el servidor `{server_id}` de la lista negra.",
+          "success_note": "El servidor ahora puede usar comandos del bot nuevamente.",
+          "not_found_title": "No en Lista Negra",
+          "not_found_description": "El servidor `{server_id}` no está en la lista negra."
+        },
+        "check": {
+          "not_found_title": "El Servidor NO está en Lista Negra",
+          "not_found_description": "El servidor `{server_id}` no está en la lista negra.",
+          "not_found_note": "Este servidor puede usar comandos del bot normalmente.",
+          "found_title": "El Servidor está en Lista Negra",
+          "found_server_name": "Nombre del Servidor: {name}",
+          "found_server_id": "ID del Servidor: `{id}`",
+          "found_reason": "Razón: {reason}",
+          "found_blacklisted": "En Lista Negra: {date}",
+          "found_blacklisted_by": "En Lista Negra Por: <@{user_id}>",
+          "found_note": "Este servidor no puede usar comandos del bot."
+        }
+      },
+      "recache": {
+        "success_title": "Caché Recargado",
+        "success_description": "Se recargó exitosamente: **{cache_type}**",
+        "success_loaded_data": "Datos Cargados",
+        "success_servers": "• Servidores: {count}",
+        "success_channels": "• Canales: {count}",
+        "success_blacklist": "• En Lista Negra: {count}",
+        "success_timezones": "• Zonas Horarias: {count}",
+        "error_title": "Recarga Fallida",
+        "error_description": "Error al recargar el caché **{cache_type}**.",
+        "error_message": "Error: {error}"
+      },
+      "error": {
+        "not_found_title": "Error No Encontrado",
+        "not_found_description": "No se encontró error con ID: `{error_id}`",
+        "details_title": "Detalles del Error: {error_id}",
+        "details_level": "Nivel: {level}",
+        "details_area": "Área: {area}",
+        "details_time": "Hora: <t:{timestamp}:F>",
+        "details_message": "Mensaje: {message}",
+        "details_server": "Servidor: {name} ({id})",
+        "details_channel": "Canal: {name} ({id})",
+        "details_user": "Usuario: <@{user_id}> ({user_id})",
+        "details_command": "Comando: {command}",
+        "details_traceback": "Seguimiento:",
+        "delete_success_title": "Error Eliminado",
+        "delete_success_description": "El error `{error_id}` ha sido eliminado de la base de datos.",
+        "delete_failed_title": "Eliminación Fallida",
+        "delete_failed_description": "No se pudo eliminar el error `{error_id}`.",
+        "delete_failed_note": "Puede que no exista o ya haya sido eliminado.",
+        "list_title": "Errores Recientes",
+        "list_item_id": "ID: `{error_id}` | {level}",
+        "list_item_area": "Área: {area}",
+        "list_item_time": "Hora: {timestamp}",
+        "list_item_message": "Mensaje: {message}",
+        "list_more": "... y {count} errores más",
+        "list_hint": "Usa `/admin error check <id>` para ver detalles completos",
+        "no_errors_title": "No se Encontraron Errores",
+        "no_errors_description": "No se encontraron errores en la base de datos.",
+        "no_errors_note": "Los errores aparecerán aquí cuando ocurran",
+        "clear_success_title": "Errores Limpiados",
+        "clear_success_description": "Se limpiaron {count} error{s} de la base de datos.",
+        "clear_success_note": "El registro de errores ahora está vacío",
+        "clear_failed_title": "Limpieza Fallida",
+        "clear_failed_description": "Error al limpiar errores de la base de datos.",
+        "clear_failed_error_id": "ID de Error: `{error_id}`",
+        "clear_failed_note": "Por favor revisa los registros para más detalles"
+      },
+      "force": {
+        "not_found_title": "No Encontrado",
+        "not_found_description": "No se encontró servidor o canal con ID: `{target_id}`",
+        "not_found_note": "Por favor verifica el ID e intenta de nuevo",
+        "server_success_title": "Servidor Desuscrito",
+        "server_success_description": "Se limpiaron {count} canal{s} suscrito{s} del servidor `{server_id}`.",
+        "server_success_note": "El servidor puede suscribir canales nuevamente usando `/subscription add`",
+        "channel_success_title": "Canal Desuscrito",
+        "channel_success_description": "Se eliminó el canal `{channel_id}` del servidor `{server_id}`.",
+        "channel_success_note": "El canal puede ser suscrito nuevamente usando `/subscription add`"
+      }
+    }
+  },
+  
+  "subscription": {
+    "timer_view": {
+      "title": "Temporizador Activo para {channel}",
+      "timer_setting": "Configuración del Temporizador",
+      "next_clear": "Próxima Limpieza",
+      "time_remaining": "Tiempo Restante",
+      "auto_update": "Este mensaje se actualiza automáticamente después de cada limpieza."
+    },
+    "ignore": {
+      "user_added": {
+        "title": "Usuario Añadido a Lista de Ignorados"
+      },
+      "user_removed": {
+        "title": "Usuario Eliminado de Lista de Ignorados"
+      },
+      "message_added": {
+        "title": "Mensaje Añadido a Lista de Ignorados"
+      },
+      "message_removed": {
+        "title": "Mensaje Eliminado de Lista de Ignorados"
+      }
+    },
+    "errors": {
+      "user_not_found": {
+        "title": "Usuario No Encontrado",
+        "description": "Usuario con ID `{user_id}` no encontrado en este servidor.",
+        "help": "Por favor asegúrate de que el usuario es miembro de este servidor."
+      },
+      "message_not_found": {
+        "title": "Mensaje No Encontrado",
+        "description": "Mensaje con ID `{message_id}` no encontrado en {channel}.",
+        "help": "Por favor asegúrate de que el mensaje existe en el canal especificado."
+      }
+    }
+  },
+  
+  "errors": {
+    "generic": "❌ Ocurrió un error: {error}",
+    "command_failed": "❌ Comando fallido: {error}",
+    "invalid_channel": "❌ Canal inválido: {channel}",
+    "invalid_user": "❌ Usuario inválido: {user}",
+    "missing_permissions": "❌ Faltan permisos requeridos: {permissions}",
+    "bot_missing_permissions": "❌ Al bot le faltan permisos requeridos: {permissions}",
+    "invalid_timer": "❌ Formato de temporizador inválido: `{timer}`\n\nPor favor usa formatos como:\n• `24h` para 24 horas\n• `1d12h30m` para 1 día, 12 horas, 30 minutos\n• `15:30 EST` para diario a las 3:30 PM EST",
+    "invalid_target": "❌ Objetivo inválido. Por favor proporciona un ID/enlace de mensaje válido o mención/ID de usuario.",
+    "channel_in_progress": "⏳ Ya hay una limpieza en progreso para {channel}. Por favor espera a que termine.",
+    "job_not_found": "❌ No se encontró trabajo programado para {channel}",
+    "next_time_not_found": "❌ No se pudo determinar el próximo tiempo programado para {channel}",
+    "missed_clear_notification": "⚠️ **Notificación de Limpieza Perdida**\n\nSe perdió una limpieza de mensajes programada para este canal.\nEl temporizador ha sido reprogramado."
+  },
+  
+  "validation": {
+    "error_titles": {
+      "blacklisted": "Servidor en Lista Negra",
+      "insufficient_permissions": "Permisos Insuficientes",
+      "bot_missing_permissions": "Al Bot le Faltan Permisos",
+      "channel_already_subscribed": "Canal Ya Suscrito",
+      "general": "Error de Validación"
+    },
+    "blacklisted": "❌ Este servidor ha sido puesto en lista negra y no puede usar este bot.",
+    "blacklisted_detailed": "❌ **Servidor en Lista Negra**\n\nEste servidor ha sido puesto en lista negra y no puede usar este bot.\n\nSi crees que esto es un error, por favor contacta al soporte.",
+    "insufficient_permissions": "❌ Necesitas el permiso `Gestionar Mensajes` para usar este comando.",
+    "insufficient_permissions_detailed": "❌ **Permisos Insuficientes**\n\nNecesitas el siguiente permiso para usar este comando:\n{permissions}\n\nPor favor contacta a un administrador del servidor si necesitas acceso.",
+    "bot_missing_permissions": "❌ Me faltan los siguientes permisos en {channel}: {permissions}",
+    "bot_missing_permissions_detailed": "❌ **Al Bot le Faltan Permisos**\n\nMe faltan los siguientes permisos en {channel}:\n{permissions}\n\nPor favor otorga estos permisos e intenta de nuevo.",
+    "channel_already_subscribed": "❌ {channel} ya tiene un temporizador establecido. Usa `/subscription update` para actualizar la suscripción.",
+    "channel_already_subscribed_detailed": "❌ **Canal Ya Suscrito**\n\n{channel} ya tiene un temporizador establecido.\n\nUsa `/subscription update` para actualizar la suscripción.",
+    "not_subscribed": "❌ **Canal No Suscrito**\n\n{channel} no está suscrito a la limpieza automática de mensajes.\n\nUsa `/subscription add` para configurar la limpieza automática primero.",
+    "not_subscribed_status": "❌ No Suscrito",
+    "permission_denied": "❌ Necesitas el permiso **{permission}** para usar este comando.",
+    "blacklisted_server": "❌ **Servidor en Lista Negra**\n\nEste servidor ha sido puesto en lista negra y no puede usar este bot.\n\nSi crees que esto es un error, puedes apelar la lista negra en nuestro [Servidor de Soporte](https://biast12.com/botsupport).",
+    "no_permissions": "❌ Necesitas el permiso **{permission}** para usar este comando.",
+    "bot_no_permissions": "❌ Necesito los siguientes permisos en {channel}: {permissions}",
+    "already_subscribed": "❌ {channel} ya está suscrito con un temporizador de {timer}.\nUsa `/subscription update` para cambiar el temporizador.",
+    "invalid_channel": "❌ Por favor proporciona un canal de texto válido."
+  },
+  
+  "components": {
+    "powered_by": "**Desarrollado por {bot_name}**",
+    "buttons": {
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "yes": "Sí",
+      "no": "No",
+      "clear_now": "Limpiar Ahora"
+    },
+    "messages": {
+      "channel_cleared_manually": "¡Canal limpiado exitosamente!"
+    },
+    "no_data": "❌ No se encontraron datos para {channel}"
+  }
+}
