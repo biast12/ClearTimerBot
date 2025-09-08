@@ -46,9 +46,8 @@ class MissedClearView(discord.ui.LayoutView):
         from src.config import get_global_config
 
         config = get_global_config()
-        footer_text = (
-            f"**{translator.get('components.powered_by', bot_name=config.bot_name)}**"
-        )
+        powered_by_text = translator.get('components.powered_by', bot_name=config.bot_name)
+        footer_text = f"**{powered_by_text}**"
 
         clear_button = discord.ui.Button(
             label=translator.get("components.buttons.clear_now"),

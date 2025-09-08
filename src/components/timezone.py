@@ -32,7 +32,8 @@ class TimezoneListView(discord.ui.LayoutView):
         super().__init__()
 
         lines = []
-        lines.append(f"**{translator.get('commands.timezone.list.title')}**\n")
+        title = translator.get('commands.timezone.list.title')
+        lines.append(f"**{title}**\n")
         lines.append(translator.get("commands.timezone.list.description") + "\n")
 
         if not timezones_dict:

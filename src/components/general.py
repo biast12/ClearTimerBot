@@ -27,41 +27,47 @@ class HelpView(discord.ui.LayoutView):
 
         sections = []
 
+        help_title = self.translator.get('commands.help.title')
         sections.append(
-            f"**{config.bot_name} {self.translator.get('commands.help.title')}**\n"
+            f"**{config.bot_name} {help_title}**\n"
         )
         sections.append(self.translator.get("commands.help.description") + "\n")
 
         all_commands = self.commands_dict or {"subscription": [], "general": []}
 
         if all_commands.get("subscription"):
+            subscription_title = self.translator.get('commands.help.subscription_commands')
             sections.append(
-                f"**{self.translator.get('commands.help.subscription_commands')}**"
+                f"**{subscription_title}**"
             )
             for cmd in all_commands["subscription"]:
                 sections.append(f"`/{cmd['name']}` - {cmd['description']}")
             sections.append("")
 
         if all_commands.get("general"):
+            other_commands_title = self.translator.get('commands.help.other_commands')
             sections.append(
-                f"**{self.translator.get('commands.help.other_commands')}**"
+                f"**{other_commands_title}**"
             )
             for cmd in all_commands["general"]:
                 sections.append(f"`/{cmd['name']}` - {cmd['description']}")
             sections.append("")
 
-        sections.append(f"**{self.translator.get('commands.help.timer_formats')}**")
+        timer_formats_title = self.translator.get('commands.help.timer_formats')
+        sections.append(f"**{timer_formats_title}**")
         sections.append(self.translator.get("commands.help.timer_intervals"))
         sections.append(self.translator.get("commands.help.timer_daily"))
         sections.append(self.translator.get("commands.help.timer_examples") + "\n")
 
+        permissions_title = self.translator.get('commands.help.required_permissions')
         sections.append(
-            f"**{self.translator.get('commands.help.required_permissions')}**"
+            f"**{permissions_title}**"
         )
         sections.append(self.translator.get("commands.help.permissions_for_you"))
         sections.append(self.translator.get("commands.help.permissions_for_bot") + "\n")
 
-        sections.append(f"**{self.translator.get('commands.help.links')}**")
+        links_title = self.translator.get('commands.help.links')
+        sections.append(f"**{links_title}**")
         sections.append(
             f"[Support Server]({config.support_server_url}) | "
             f"[Add Bot]({config.bot_invite_url}) | "
@@ -133,7 +139,8 @@ class LanguageListView(discord.ui.LayoutView):
         super().__init__()
 
         language_lines = []
-        language_lines.append(f"**{translator.get('commands.language.list.title')}**\n")
+        language_title = translator.get('commands.language.list.title')
+        language_lines.append(f"**{language_title}**\n")
         language_lines.append(
             translator.get("commands.language.list.description") + "\n"
         )

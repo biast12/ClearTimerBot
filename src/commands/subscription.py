@@ -596,7 +596,7 @@ class SubscriptionCommands(commands.Cog):
                     except discord.HTTPException as e:
                         logger.warning(
                             LogArea.COMMANDS,
-                            f"Failed to delete view message {view_message_id}: {e}",
+                            f"Failed to delete view message {old_view_message_id}: {e}",
                         )
 
                 view_message = await channel.send(view=timer_view)

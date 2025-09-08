@@ -458,7 +458,8 @@ class ErrorListView(discord.ui.LayoutView):
         super().__init__()
 
         title = translator.get("commands.admin.error.list_title")
-        content = f"**{title}** ({translator.get('commands.admin.error.list_last', count=len(errors))})\n\n"
+        last_text = translator.get('commands.admin.error.list_last', count=len(errors))
+        content = f"**{title}** ({last_text})\n\n"
 
         id_label = translator.get("commands.admin.error.list_item_id")
         area_label = translator.get("commands.admin.error.list_item_area")

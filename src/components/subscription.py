@@ -133,7 +133,8 @@ class SubscriptionListView(discord.ui.LayoutView):
     ):
         super().__init__()
 
-        lines = [f"**{translator.get('commands.subscription.list.title')}**", ""]
+        title = translator.get('commands.subscription.list.title')
+        lines = [f"**{title}**", ""]
 
         if not channels:
             lines.append(translator.get("commands.subscription.list.no_subscriptions"))
@@ -221,9 +222,11 @@ class SubscriptionInfoView(discord.ui.LayoutView):
     ):
         super().__init__()
 
-        lines = [f"**{translator.get('commands.subscription.info.title')}**", ""]
+        info_title = translator.get('commands.subscription.info.title')
+        lines = [f"**{info_title}**", ""]
 
-        lines.append(f"**{translator.get('common.channel')}:** {channel.mention}")
+        channel_label = translator.get('common.channel')
+        lines.append(f"**{channel_label}:** {channel.mention}")
 
         if timer_info:
             timestamp = int(next_run_time.timestamp())
@@ -367,10 +370,14 @@ class UserNotFoundView(discord.ui.LayoutView):
     def __init__(self, user_id: str, translator):
         super().__init__()
 
+        error_title = translator.get('subscription.errors.user_not_found.title')
+        error_desc = translator.get('subscription.errors.user_not_found.description', user_id=user_id)
+        error_help = translator.get('subscription.errors.user_not_found.help')
         content = add_footer(
-            f"❌ **{translator.get('subscription.errors.user_not_found.title')}**\n\n"
-            f"{translator.get('subscription.errors.user_not_found.description', user_id=user_id)}\n\n"
-            f"{translator.get('subscription.errors.user_not_found.help')}"
+            f"❌ **{error_title}**\n\n"
+            f"{error_desc}\n\n"
+            f"{error_help}",
+            translator
         )
 
         container = discord.ui.Container(
@@ -386,10 +393,14 @@ class MessageNotFoundView(discord.ui.LayoutView):
     def __init__(self, message_id: str, channel: discord.TextChannel, translator):
         super().__init__()
 
+        error_title = translator.get('subscription.errors.message_not_found.title')
+        error_desc = translator.get('subscription.errors.message_not_found.description', message_id=message_id, channel=channel.mention)
+        error_help = translator.get('subscription.errors.message_not_found.help')
         content = add_footer(
-            f"❌ **{translator.get('subscription.errors.message_not_found.title')}**\n\n"
-            f"{translator.get('subscription.errors.message_not_found.description', message_id=message_id, channel=channel.mention)}\n\n"
-            f"{translator.get('subscription.errors.message_not_found.help')}"
+            f"❌ **{error_title}**\n\n"
+            f"{error_desc}\n\n"
+            f"{error_help}",
+            translator
         )
 
         container = discord.ui.Container(
@@ -415,14 +426,24 @@ class IgnoreEntityView(discord.ui.LayoutView):
         entity_name = entity_type.lower()
 
         if added:
+            title_key = f'subscription.ignore.{entity_name}_added.title'
+            desc_key = f'subscription.ignore.{entity_name}_added.description'
+            title = translator.get(title_key)
+            description = translator.get(desc_key, entity_id=entity_id, channel=channel.mention)
             content = add_footer(
-                f"✅ **{translator.get(f'subscription.ignore.{entity_name}_added.title')}**\n\n"
-                f"{translator.get(f'subscription.ignore.{entity_name}_added.description', entity_id=entity_id, channel=channel.mention)}"
+                f"✅ **{title}**\n\n"
+                f"{description}",
+                translator
             )
         else:
+            title_key = f'subscription.ignore.{entity_name}_removed.title'
+            desc_key = f'subscription.ignore.{entity_name}_removed.description'
+            title = translator.get(title_key)
+            description = translator.get(desc_key, entity_id=entity_id, channel=channel.mention)
             content = add_footer(
-                f"✅ **{translator.get(f'subscription.ignore.{entity_name}_removed.title')}**\n\n"
-                f"{translator.get(f'subscription.ignore.{entity_name}_removed.description', entity_id=entity_id, channel=channel.mention)}"
+                f"✅ **{title}**\n\n"
+                f"{description}",
+                translator
             )
 
         container = discord.ui.Container(
@@ -442,7 +463,8 @@ class ManualClearSuccessView(discord.ui.LayoutView):
             content = translator.get(
                 "commands.subscription.clear.success", channel=channel.mention
             )
-            content += f"\n\n**{translator.get("commands.subscription.clear.messages_cleared")}:** {deleted_count}"
+            messages_cleared = translator.get("commands.subscription.clear.messages_cleared")
+            content += f"\n\n**{messages_cleared}:** {deleted_count}"
             color = discord.Color.green()
         else:
             content = translator.get(
@@ -681,12 +703,18 @@ class TimerViewMessage(discord.ui.LayoutView):
 
         timestamp = int(next_run_time.timestamp())
 
+        view_title = translator.get('subscription.timer_view.title', channel=channel.mention)
+        timer_setting_label = translator.get('subscription.timer_view.timer_setting')
+        next_clear_label = translator.get('subscription.timer_view.next_clear')
+        time_remaining_label = translator.get('subscription.timer_view.time_remaining')
+        auto_update_text = translator.get('subscription.timer_view.auto_update')
+        
         content = (
-            f"⏰ **{translator.get('subscription.timer_view.title', channel=channel.mention)}**\n\n"
-            f"**{translator.get('subscription.timer_view.timer_setting')}:** {timer}\n"
-            f"**{translator.get('subscription.timer_view.next_clear')}:** <t:{timestamp}:f>\n"
-            f"**{translator.get('subscription.timer_view.time_remaining')}:** <t:{timestamp}:R>\n\n"
-            f"_{translator.get('subscription.timer_view.auto_update')}_"
+            f"⏰ **{view_title}**\n\n"
+            f"**{timer_setting_label}:** {timer}\n"
+            f"**{next_clear_label}:** <t:{timestamp}:f>\n"
+            f"**{time_remaining_label}:** <t:{timestamp}:R>\n\n"
+            f"_{auto_update_text}_"
         )
 
         content = add_footer(content, translator)
