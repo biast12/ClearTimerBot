@@ -15,6 +15,7 @@ class ClearTimerBot(commands.Bot):
         intents = discord.Intents.default()
         intents.message_content = True
         intents.guilds = True
+        intents.members = True
 
         shard_id = None
         shard_count = None
