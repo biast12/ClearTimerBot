@@ -394,12 +394,51 @@ class AdminCommands(
         view = ErrorListView(errors, translator)
         await interaction.followup.send(view=view)
 
+    async def _area_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ) -> list[app_commands.Choice[str]]:
+        areas = ["SCHEDULER", "DISCORD", "DATABASE", "COMMANDS", "PERMISSIONS",
+                 "CACHE", "CLEANUP", "ERROR", "PERFORMANCE", "SECURITY", "GENERAL"]
+        return [
+            app_commands.Choice(name=area, value=area)
+            for area in areas
+            if current.upper() in area
+        ][:25]
+
+    async def _level_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ) -> list[app_commands.Choice[str]]:
+        levels = ["ERROR", "WARNING", "CRITICAL", "INFO", "DEBUG"]
+        return [
+            app_commands.Choice(name=level, value=level)
+            for level in levels
+            if current.upper() in level
+        ][:25]
+
     @error_group.command(
         name="clear",
         description=get_command_description("admin.error.clear"),
         auto_locale_strings=False,
     )
-    async def error_clear(self, interaction: discord.Interaction):
+    @app_commands.describe(
+        area="Filter by error area (e.g., SCHEDULER, DISCORD, DATABASE)",
+        level="Filter by error level (e.g., ERROR, WARNING, CRITICAL)",
+        server_id="Filter by server ID",
+        older_than_days="Clear only errors older than this many days",
+        message="Filter by message content using regex pattern",
+        stack_trace="Filter by stack trace content using regex pattern"
+    )
+    @app_commands.autocomplete(area=_area_autocomplete, level=_level_autocomplete)
+    async def error_clear(
+        self,
+        interaction: discord.Interaction,
+        area: str = None,
+        level: str = None,
+        server_id: str = None,
+        older_than_days: int = None,
+        message: str = None,
+        stack_trace: str = None
+    ):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
         if not await self._check_admin_permission(interaction):
@@ -408,13 +447,46 @@ class AdminCommands(
         translator = await get_translator(str(interaction.guild.id), self.data_service)
 
         from src.services.database_connection_manager import db_manager
+        from datetime import datetime, timedelta, timezone
 
         try:
             errors_collection = db_manager.db.errors
-            result = await errors_collection.delete_many({})
+
+            # Build filter query
+            query = {}
+            if area:
+                query["area"] = area.upper()
+            if level:
+                query["level"] = level.upper()
+            if server_id:
+                query["guild_id"] = server_id
+            if older_than_days:
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=older_than_days)
+                query["timestamp"] = {"$lt": cutoff_date.isoformat()}
+            if message:
+                query["message"] = {"$regex": message, "$options": "i"}
+            if stack_trace:
+                query["stack_trace"] = {"$regex": stack_trace, "$options": "i"}
+
+            result = await errors_collection.delete_many(query)
             from src.components.admin import ErrorsClearedView
 
-            view = ErrorsClearedView(result.deleted_count, translator)
+            # Prepare filters dict for display
+            filters = {}
+            if area:
+                filters["area"] = area.upper()
+            if level:
+                filters["level"] = level.upper()
+            if server_id:
+                filters["server_id"] = server_id
+            if older_than_days:
+                filters["older_than_days"] = older_than_days
+            if message:
+                filters["message"] = message
+            if stack_trace:
+                filters["stack_trace"] = stack_trace
+
+            view = ErrorsClearedView(result.deleted_count, translator, filters if filters else None)
             await interaction.followup.send(view=view)
         except Exception as e:
             error_id = await logger.log_error(

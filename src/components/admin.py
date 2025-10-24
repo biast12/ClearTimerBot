@@ -499,7 +499,7 @@ class ErrorListView(discord.ui.LayoutView):
 class ErrorsClearedView(discord.ui.LayoutView):
     """View for errors cleared"""
 
-    def __init__(self, count: int, translator):
+    def __init__(self, count: int, translator, filters: dict = None):
         super().__init__()
 
         title = translator.get("commands.admin.error.clear_success_title")
@@ -509,7 +509,25 @@ class ErrorsClearedView(discord.ui.LayoutView):
             s="" if count == 1 else "s"
         )
         note = translator.get("commands.admin.error.clear_success_note")
-        content = f"✅ **{title}**\n\n{description}\n\n_{note}_"
+        content = f"✅ **{title}**\n\n{description}"
+
+        # Show applied filters if any
+        if filters:
+            content += "\n\n**Filters applied:**"
+            if filters.get("area"):
+                content += f"\n• Area: `{filters['area']}`"
+            if filters.get("level"):
+                content += f"\n• Level: `{filters['level']}`"
+            if filters.get("server_id"):
+                content += f"\n• Server ID: `{filters['server_id']}`"
+            if filters.get("older_than_days"):
+                content += f"\n• Older than: {filters['older_than_days']} days"
+            if filters.get("message"):
+                content += f"\n• Message: `{filters['message']}`"
+            if filters.get("stack_trace"):
+                content += f"\n• Stack trace: `{filters['stack_trace']}`"
+
+        content += f"\n\n_{note}_"
 
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),
