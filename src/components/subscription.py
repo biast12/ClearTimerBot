@@ -364,52 +364,6 @@ class NoSubscriptionDataView(discord.ui.LayoutView):
         self.add_item(container)
 
 
-class UserNotFoundView(discord.ui.LayoutView):
-    """View for user not found error"""
-
-    def __init__(self, user_id: str, translator):
-        super().__init__()
-
-        error_title = translator.get('subscription.errors.user_not_found.title')
-        error_desc = translator.get('subscription.errors.user_not_found.description', user_id=user_id)
-        error_help = translator.get('subscription.errors.user_not_found.help')
-        content = add_footer(
-            f"❌ **{error_title}**\n\n"
-            f"{error_desc}\n\n"
-            f"{error_help}",
-            translator
-        )
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value,
-        )
-        self.add_item(container)
-
-
-class MessageNotFoundView(discord.ui.LayoutView):
-    """View for message not found error"""
-
-    def __init__(self, message_id: str, channel: discord.TextChannel, translator):
-        super().__init__()
-
-        error_title = translator.get('subscription.errors.message_not_found.title')
-        error_desc = translator.get('subscription.errors.message_not_found.description', message_id=message_id, channel=channel.mention)
-        error_help = translator.get('subscription.errors.message_not_found.help')
-        content = add_footer(
-            f"❌ **{error_title}**\n\n"
-            f"{error_desc}\n\n"
-            f"{error_help}",
-            translator
-        )
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value,
-        )
-        self.add_item(container)
-
-
 class IgnoreEntityView(discord.ui.LayoutView):
     """View for ignore entity (message or user) add/remove"""
 

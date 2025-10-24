@@ -89,10 +89,12 @@
           "description": "List recent errors"
         },
         "list_hint": "Use `/admin error check <id>` to see full details",
-        "list_item_area": "Area: {area}",
-        "list_item_id": "ID: `{error_id}` | {level}",
-        "list_item_message": "Message: {message}",
-        "list_item_time": "Time: {timestamp}",
+        "list_item_area": "Area",
+        "list_item_id": "ID",
+        "list_item_level": "Level",
+        "list_item_message": "Message",
+        "list_item_time": "Time",
+        "list_last": "Last {count}",
         "list_more": "... and {count} more errors",
         "list_title": "Recent Errors",
         "no_errors_description": "No errors found in the database.",
@@ -438,11 +440,6 @@
         "description": "Message with ID `{message_id}` not found in {channel}.",
         "help": "Please make sure the message exists in the specified channel.",
         "title": "Message Not Found"
-      },
-      "user_not_found": {
-        "description": "User with ID `{user_id}` not found in this server.",
-        "help": "Please make sure the user is a member of this server.",
-        "title": "User Not Found"
       }
     },
     "ignore": {
@@ -470,13 +467,9 @@
   "validation": {
     "already_subscribed": "❌ {channel} is already subscribed with a {timer} timer.\nUse `/subscription update` to change the timer.",
     "blacklisted": "❌ This server has been blacklisted and cannot use this bot.",
-    "blacklisted_detailed": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, please contact support.",
-    "blacklisted_server": "❌ **Server Blacklisted**\n\nThis server has been blacklisted and cannot use this bot.\n\nIf you believe this is a mistake, you can appeal the blacklist on our [Support Server](https://biast12.com/botsupport).",
     "bot_missing_permissions": "❌ I'm missing the following permissions in {channel}: {permissions}",
-    "bot_missing_permissions_detailed": "❌ **Bot Missing Permissions**\n\nI'm missing the following permissions in {channel}:\n{permissions}\n\nPlease grant these permissions and try again.",
     "bot_no_permissions": "❌ I need the following permissions in {channel}: {permissions}",
     "channel_already_subscribed": "❌ {channel} already has a timer set. Use `/subscription update` to update the subscription instead.",
-    "channel_already_subscribed_detailed": "❌ **Channel Already Subscribed**\n\n{channel} already has a timer set.\n\nUse `/subscription update` to update the subscription instead.",
     "error_titles": {
       "blacklisted": "Server Blacklisted",
       "bot_missing_permissions": "Bot Missing Permissions",
@@ -485,7 +478,6 @@
       "insufficient_permissions": "Insufficient Permissions"
     },
     "insufficient_permissions": "❌ You need the `Manage Messages` permission to use this command.",
-    "insufficient_permissions_detailed": "❌ **Insufficient Permissions**\n\nYou need the following permission to use this command:\n{permissions}\n\nPlease contact a server administrator if you need access.",
     "invalid_channel": "❌ Please provide a valid text channel.",
     "no_permissions": "❌ You need the **{permission}** permission to use this command.",
     "not_subscribed": "❌ **Channel Not Subscribed**\n\n{channel} is not subscribed to automatic message clearing.\n\nUse `/subscription add` to set up automatic clearing first.",

@@ -89,10 +89,12 @@
           "description": "عرض الأخطاء الحديثة"
         },
         "list_hint": "استخدم `/admin error check <id>` لرؤية التفاصيل الكاملة",
-        "list_item_area": "المنطقة: {area}",
-        "list_item_id": "المعرف: `{error_id}` | {level}",
-        "list_item_message": "الرسالة: {message}",
-        "list_item_time": "الوقت: {timestamp}",
+        "list_item_area": "المنطقة",
+        "list_item_id": "المعرف",
+        "list_item_level": "المستوى",
+        "list_item_message": "الرسالة",
+        "list_item_time": "الوقت",
+        "list_last": "آخر {count}",
         "list_more": "... و {count} أخطاء أخرى",
         "list_title": "الأخطاء الأخيرة",
         "no_errors_description": "لم يتم العثور على أخطاء في قاعدة البيانات.",
@@ -438,11 +440,6 @@
         "description": "الرسالة بالمعرف `{message_id}` غير موجودة في {channel}.",
         "help": "يرجى التأكد من وجود الرسالة في القناة المحددة.",
         "title": "الرسالة غير موجودة"
-      },
-      "user_not_found": {
-        "description": "المستخدم بالمعرف `{user_id}` غير موجود في هذا الخادم.",
-        "help": "يرجى التأكد من أن المستخدم عضو في هذا الخادم.",
-        "title": "المستخدم غير موجود"
       }
     },
     "ignore": {
@@ -470,13 +467,9 @@
   "validation": {
     "already_subscribed": "❌ {channel} مشترك بالفعل بمؤقت {timer}.\nاستخدم `/subscription update` لتغيير المؤقت.",
     "blacklisted": "❌ تم حظر هذا الخادم ولا يمكنه استخدام هذا البوت.",
-    "blacklisted_detailed": "❌ **الخادم محظور**\n\nتم حظر هذا الخادم ولا يمكنه استخدام هذا البوت.\n\nإذا كنت تعتقد أن هذا خطأ، يرجى الاتصال بالدعم.",
-    "blacklisted_server": "❌ **الخادم محظور**\n\nتم حظر هذا الخادم ولا يمكنه استخدام هذا البوت.\n\nإذا كنت تعتقد أن هذا خطأ، يمكنك الطعن في الحظر على [خادم الدعم](https://biast12.com/botsupport).",
     "bot_missing_permissions": "❌ أفتقد الأذونات التالية في {channel}: {permissions}",
-    "bot_missing_permissions_detailed": "❌ **البوت يفتقد الأذونات**\n\nأفتقد الأذونات التالية في {channel}:\n{permissions}\n\nيرجى منح هذه الأذونات والمحاولة مرة أخرى.",
     "bot_no_permissions": "❌ أحتاج إلى الأذونات التالية في {channel}: {permissions}",
     "channel_already_subscribed": "❌ {channel} لديه بالفعل مؤقت معيّن. استخدم `/subscription update` لتحديث الاشتراك بدلاً من ذلك.",
-    "channel_already_subscribed_detailed": "❌ **القناة مشتركة بالفعل**\n\n{channel} لديه بالفعل مؤقت معيّن.\n\nاستخدم `/subscription update` لتحديث الاشتراك بدلاً من ذلك.",
     "error_titles": {
       "blacklisted": "الخادم محظور",
       "bot_missing_permissions": "البوت يفتقد الأذونات",
@@ -485,7 +478,6 @@
       "insufficient_permissions": "أذونات غير كافية"
     },
     "insufficient_permissions": "❌ تحتاج إلى إذن `إدارة الرسائل` لاستخدام هذا الأمر.",
-    "insufficient_permissions_detailed": "❌ **أذونات غير كافية**\n\nتحتاج إلى الإذن التالي لاستخدام هذا الأمر:\n{permissions}\n\nيرجى الاتصال بمشرف الخادم إذا كنت بحاجة إلى الوصول.",
     "invalid_channel": "❌ يرجى توفير قناة نصية صالحة.",
     "no_permissions": "❌ تحتاج إلى إذن **{permission}** لاستخدام هذا الأمر.",
     "not_subscribed": "❌ **القناة غير مشتركة**\n\n{channel} غير مشترك في مسح الرسائل التلقائي.\n\nاستخدم `/subscription add` لإعداد المسح التلقائي أولاً.",

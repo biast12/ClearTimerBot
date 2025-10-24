@@ -89,10 +89,12 @@
           "description": "列出最近的错误"
         },
         "list_hint": "使用 `/admin error check <id>` 查看完整详情",
-        "list_item_area": "区域：{area}",
-        "list_item_id": "ID：`{error_id}` | {level}",
-        "list_item_message": "消息：{message}",
-        "list_item_time": "时间：{timestamp}",
+        "list_item_area": "区域",
+        "list_item_id": "ID",
+        "list_item_level": "级别",
+        "list_item_message": "消息",
+        "list_item_time": "时间",
+        "list_last": "最近 {count} 个",
         "list_more": "... 还有 {count} 个错误",
         "list_title": "最近的错误",
         "no_errors_description": "数据库中未找到错误。",
@@ -438,11 +440,6 @@
         "description": "在 {channel} 中未找到ID为 `{message_id}` 的消息。",
         "help": "请确保消息存在于指定的频道中。",
         "title": "未找到消息"
-      },
-      "user_not_found": {
-        "description": "在此服务器中未找到ID为 `{user_id}` 的用户。",
-        "help": "请确保该用户是此服务器的成员。",
-        "title": "未找到用户"
       }
     },
     "ignore": {
@@ -470,13 +467,9 @@
   "validation": {
     "already_subscribed": "❌ {channel} 已订阅 {timer} 计时器。\n使用 `/subscription update` 更改计时器。",
     "blacklisted": "❌ 此服务器已被列入黑名单，不能使用此机器人。",
-    "blacklisted_detailed": "❌ **服务器已列入黑名单**\n\n此服务器已被列入黑名单，不能使用此机器人。\n\n如果您认为这是错误，请联系支持。",
-    "blacklisted_server": "❌ **服务器已列入黑名单**\n\n此服务器已被列入黑名单，不能使用此机器人。\n\n如果您认为这是错误，可以在我们的[支持服务器](https://biast12.com/botsupport)上申诉黑名单。",
     "bot_missing_permissions": "❌ 我在 {channel} 中缺少以下权限：{permissions}",
-    "bot_missing_permissions_detailed": "❌ **机器人缺少权限**\n\n我在 {channel} 中缺少以下权限：\n{permissions}\n\n请授予这些权限并重试。",
     "bot_no_permissions": "❌ 我需要在 {channel} 中拥有以下权限：{permissions}",
     "channel_already_subscribed": "❌ {channel} 已设置计时器。使用 `/subscription update` 更新订阅。",
-    "channel_already_subscribed_detailed": "❌ **频道已订阅**\n\n{channel} 已设置计时器。\n\n使用 `/subscription update` 更新订阅。",
     "error_titles": {
       "blacklisted": "服务器已列入黑名单",
       "bot_missing_permissions": "机器人缺少权限",
@@ -485,7 +478,6 @@
       "insufficient_permissions": "权限不足"
     },
     "insufficient_permissions": "❌ 您需要 `管理消息` 权限才能使用此命令。",
-    "insufficient_permissions_detailed": "❌ **权限不足**\n\n您需要以下权限才能使用此命令：\n{permissions}\n\n如需访问，请联系服务器管理员。",
     "invalid_channel": "❌ 请提供有效的文本频道。",
     "no_permissions": "❌ 您需要 **{permission}** 权限才能使用此命令。",
     "not_subscribed": "❌ **频道未订阅**\n\n{channel} 未订阅自动消息清除。\n\n先使用 `/subscription add` 设置自动清除。",

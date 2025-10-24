@@ -89,10 +89,12 @@
           "description": "Aktuelle Fehler auflisten"
         },
         "list_hint": "Verwenden Sie `/admin error check <id>` für vollständige Details",
-        "list_item_area": "Bereich: {area}",
-        "list_item_id": "ID: `{error_id}` | {level}",
-        "list_item_message": "Nachricht: {message}",
-        "list_item_time": "Zeit: {timestamp}",
+        "list_item_area": "Bereich",
+        "list_item_id": "ID",
+        "list_item_level": "Stufe",
+        "list_item_message": "Nachricht",
+        "list_item_time": "Zeit",
+        "list_last": "Letzte {count}",
         "list_more": "... und {count} weitere Fehler",
         "list_title": "Aktuelle Fehler",
         "no_errors_description": "Keine Fehler in der Datenbank gefunden.",
@@ -438,11 +440,6 @@
         "description": "Nachricht mit ID `{message_id}` nicht in {channel} gefunden.",
         "help": "Bitte stellen Sie sicher, dass die Nachricht im angegebenen Kanal existiert.",
         "title": "Nachricht nicht gefunden"
-      },
-      "user_not_found": {
-        "description": "Benutzer mit ID `{user_id}` nicht auf diesem Server gefunden.",
-        "help": "Bitte stellen Sie sicher, dass der Benutzer Mitglied dieses Servers ist.",
-        "title": "Benutzer nicht gefunden"
       }
     },
     "ignore": {
@@ -470,13 +467,9 @@
   "validation": {
     "already_subscribed": "❌ {channel} ist bereits mit einem {timer} Timer abonniert.\nVerwenden Sie `/subscription update`, um den Timer zu ändern.",
     "blacklisted": "❌ Dieser Server wurde gesperrt und kann diesen Bot nicht verwenden.",
-    "blacklisted_detailed": "❌ **Server gesperrt**\n\nDieser Server wurde gesperrt und kann diesen Bot nicht verwenden.\n\nWenn Sie glauben, dass dies ein Fehler ist, kontaktieren Sie bitte den Support.",
-    "blacklisted_server": "❌ **Server gesperrt**\n\nDieser Server wurde gesperrt und kann diesen Bot nicht verwenden.\n\nWenn Sie glauben, dass dies ein Fehler ist, können Sie die Sperrung auf unserem [Support-Server](https://biast12.com/botsupport) anfechten.",
     "bot_missing_permissions": "❌ Mir fehlen die folgenden Berechtigungen in {channel}: {permissions}",
-    "bot_missing_permissions_detailed": "❌ **Bot fehlen Berechtigungen**\n\nMir fehlen die folgenden Berechtigungen in {channel}:\n{permissions}\n\nBitte gewähren Sie diese Berechtigungen und versuchen Sie es erneut.",
     "bot_no_permissions": "❌ Ich benötige die folgenden Berechtigungen in {channel}: {permissions}",
     "channel_already_subscribed": "❌ {channel} hat bereits einen Timer eingestellt. Verwenden Sie `/subscription update`, um das Abonnement zu aktualisieren.",
-    "channel_already_subscribed_detailed": "❌ **Kanal bereits abonniert**\n\n{channel} hat bereits einen Timer eingestellt.\n\nVerwenden Sie `/subscription update`, um das Abonnement zu aktualisieren.",
     "error_titles": {
       "blacklisted": "Server gesperrt",
       "bot_missing_permissions": "Bot fehlen Berechtigungen",
@@ -485,7 +478,6 @@
       "insufficient_permissions": "Unzureichende Berechtigungen"
     },
     "insufficient_permissions": "❌ Sie benötigen die Berechtigung `Nachrichten verwalten`, um diesen Befehl zu verwenden.",
-    "insufficient_permissions_detailed": "❌ **Unzureichende Berechtigungen**\n\nSie benötigen die folgende Berechtigung, um diesen Befehl zu verwenden:\n{permissions}\n\nBitte kontaktieren Sie einen Server-Administrator, wenn Sie Zugriff benötigen.",
     "invalid_channel": "❌ Bitte geben Sie einen gültigen Textkanal an.",
     "no_permissions": "❌ Sie benötigen die Berechtigung **{permission}**, um diesen Befehl zu verwenden.",
     "not_subscribed": "❌ **Kanal nicht abonniert**\n\n{channel} ist nicht für automatisches Nachrichtenlöschen abonniert.\n\nVerwenden Sie zuerst `/subscription add`, um automatisches Löschen einzurichten.",

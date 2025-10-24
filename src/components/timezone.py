@@ -3,8 +3,6 @@ View Display for Timezone Commands
 """
 
 import discord
-from datetime import datetime
-import pytz
 from typing import Optional, Dict
 from src.utils.footer import add_footer
 

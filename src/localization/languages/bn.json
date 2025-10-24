@@ -89,10 +89,12 @@
           "description": "সাম্প্রতিক ত্রুটি তালিকা করুন"
         },
         "list_hint": "সম্পূর্ণ বিস্তারিত দেখতে `/admin error check <id>` ব্যবহার করুন",
-        "list_item_area": "এলাকা: {area}",
-        "list_item_id": "ID: `{error_id}` | {level}",
-        "list_item_message": "বার্তা: {message}",
-        "list_item_time": "সময়: {timestamp}",
+        "list_item_area": "এলাকা",
+        "list_item_id": "ID",
+        "list_item_level": "স্তর",
+        "list_item_message": "বার্তা",
+        "list_item_time": "সময়",
+        "list_last": "শেষ {count}",
         "list_more": "... এবং {count} আরও ত্রুটি",
         "list_title": "সাম্প্রতিক ত্রুটি",
         "no_errors_description": "ডাটাবেসে কোন ত্রুটি পাওয়া যায়নি।",
@@ -438,11 +440,6 @@
         "description": "{channel} এ ID `{message_id}` সহ বার্তা পাওয়া যায়নি।",
         "help": "দয়া করে নিশ্চিত করুন বার্তা নির্দিষ্ট চ্যানেলে বিদ্যমান।",
         "title": "বার্তা পাওয়া যায়নি"
-      },
-      "user_not_found": {
-        "description": "এই সার্ভারে ID `{user_id}` সহ ব্যবহারকারী পাওয়া যায়নি।",
-        "help": "দয়া করে নিশ্চিত করুন ব্যবহারকারী এই সার্ভারের সদস্য।",
-        "title": "ব্যবহারকারী পাওয়া যায়নি"
       }
     },
     "ignore": {
@@ -470,13 +467,9 @@
   "validation": {
     "already_subscribed": "❌ {channel} ইতিমধ্যে {timer} টাইমার সহ সাবস্ক্রাইব করা আছে।\nটাইমার পরিবর্তন করতে `/subscription update` ব্যবহার করুন।",
     "blacklisted": "❌ এই সার্ভার ব্ল্যাকলিস্ট করা হয়েছে এবং এই বট ব্যবহার করতে পারবে না।",
-    "blacklisted_detailed": "❌ **সার্ভার ব্ল্যাকলিস্টেড**\n\nএই সার্ভার ব্ল্যাকলিস্ট করা হয়েছে এবং এই বট ব্যবহার করতে পারবে না।\n\nযদি আপনি মনে করেন এটি একটি ভুল, দয়া করে সাপোর্টের সাথে যোগাযোগ করুন।",
-    "blacklisted_server": "❌ **সার্ভার ব্ল্যাকলিস্টেড**\n\nএই সার্ভার ব্ল্যাকলিস্ট করা হয়েছে এবং এই বট ব্যবহার করতে পারবে না।\n\nযদি আপনি মনে করেন এটি একটি ভুল, আপনি আমাদের [সাপোর্ট সার্ভার](https://biast12.com/botsupport)-এ ব্ল্যাকলিস্ট আপিল করতে পারেন।",
     "bot_missing_permissions": "❌ আমার {channel} এ নিম্নলিখিত অনুমতি অনুপস্থিত: {permissions}",
-    "bot_missing_permissions_detailed": "❌ **বটের অনুমতি অনুপস্থিত**\n\nআমার {channel} এ নিম্নলিখিত অনুমতি অনুপস্থিত:\n{permissions}\n\nদয়া করে এই অনুমতিগুলি দিন এবং আবার চেষ্টা করুন।",
     "bot_no_permissions": "❌ আমার {channel} এ নিম্নলিখিত অনুমতি প্রয়োজন: {permissions}",
     "channel_already_subscribed": "❌ {channel} ইতিমধ্যে একটি টাইমার সেট আছে। পরিবর্তে সাবস্ক্রিপশন আপডেট করতে `/subscription update` ব্যবহার করুন।",
-    "channel_already_subscribed_detailed": "❌ **চ্যানেল ইতিমধ্যে সাবস্ক্রাইব করা**\n\n{channel} ইতিমধ্যে একটি টাইমার সেট আছে।\n\nপরিবর্তে সাবস্ক্রিপশন আপডেট করতে `/subscription update` ব্যবহার করুন।",
     "error_titles": {
       "blacklisted": "সার্ভার ব্ল্যাকলিস্টেড",
       "bot_missing_permissions": "বটের অনুমতি অনুপস্থিত",
@@ -485,7 +478,6 @@
       "insufficient_permissions": "অপর্যাপ্ত অনুমতি"
     },
     "insufficient_permissions": "❌ এই কমান্ড ব্যবহার করতে আপনার `বার্তা পরিচালনা করুন` অনুমতি প্রয়োজন।",
-    "insufficient_permissions_detailed": "❌ **অপর্যাপ্ত অনুমতি**\n\nএই কমান্ড ব্যবহার করতে আপনার নিম্নলিখিত অনুমতি প্রয়োজন:\n{permissions}\n\nঅ্যাক্সেস প্রয়োজন হলে দয়া করে সার্ভার প্রশাসকের সাথে যোগাযোগ করুন।",
     "invalid_channel": "❌ দয়া করে একটি বৈধ টেক্সট চ্যানেল প্রদান করুন।",
     "no_permissions": "❌ এই কমান্ড ব্যবহার করতে আপনার **{permission}** অনুমতি প্রয়োজন।",
     "not_subscribed": "❌ **চ্যানেল সাবস্ক্রাইব করা নেই**\n\n{channel} স্বয়ংক্রিয় বার্তা মুছে ফেলায় সাবস্ক্রাইব করা নেই।\n\nপ্রথমে স্বয়ংক্রিয় মুছে ফেলা সেট করতে `/subscription add` ব্যবহার করুন।",

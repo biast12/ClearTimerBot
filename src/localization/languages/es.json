@@ -89,10 +89,12 @@
           "description": "Listar errores recientes"
         },
         "list_hint": "Usa `/admin error check <id>` para ver detalles completos",
-        "list_item_area": "Área: {area}",
-        "list_item_id": "ID: `{error_id}` | {level}",
-        "list_item_message": "Mensaje: {message}",
-        "list_item_time": "Hora: {timestamp}",
+        "list_item_area": "Área",
+        "list_item_id": "ID",
+        "list_item_level": "Nivel",
+        "list_item_message": "Mensaje",
+        "list_item_time": "Hora",
+        "list_last": "Últimos {count}",
         "list_more": "... y {count} errores más",
         "list_title": "Errores Recientes",
         "no_errors_description": "No se encontraron errores en la base de datos.",
@@ -438,11 +440,6 @@
         "description": "Mensaje con ID `{message_id}` no encontrado en {channel}.",
         "help": "Por favor asegúrate de que el mensaje existe en el canal especificado.",
         "title": "Mensaje No Encontrado"
-      },
-      "user_not_found": {
-        "description": "Usuario con ID `{user_id}` no encontrado en este servidor.",
-        "help": "Por favor asegúrate de que el usuario es miembro de este servidor.",
-        "title": "Usuario No Encontrado"
       }
     },
     "ignore": {
@@ -470,13 +467,9 @@
   "validation": {
     "already_subscribed": "❌ {channel} ya está suscrito con un temporizador de {timer}.\nUsa `/subscription update` para cambiar el temporizador.",
     "blacklisted": "❌ Este servidor ha sido puesto en lista negra y no puede usar este bot.",
-    "blacklisted_detailed": "❌ **Servidor en Lista Negra**\n\nEste servidor ha sido puesto en lista negra y no puede usar este bot.\n\nSi crees que esto es un error, por favor contacta al soporte.",
-    "blacklisted_server": "❌ **Servidor en Lista Negra**\n\nEste servidor ha sido puesto en lista negra y no puede usar este bot.\n\nSi crees que esto es un error, puedes apelar la lista negra en nuestro [Servidor de Soporte](https://biast12.com/botsupport).",
     "bot_missing_permissions": "❌ Me faltan los siguientes permisos en {channel}: {permissions}",
-    "bot_missing_permissions_detailed": "❌ **Al Bot le Faltan Permisos**\n\nMe faltan los siguientes permisos en {channel}:\n{permissions}\n\nPor favor otorga estos permisos e intenta de nuevo.",
     "bot_no_permissions": "❌ Necesito los siguientes permisos en {channel}: {permissions}",
     "channel_already_subscribed": "❌ {channel} ya tiene un temporizador establecido. Usa `/subscription update` para actualizar la suscripción.",
-    "channel_already_subscribed_detailed": "❌ **Canal Ya Suscrito**\n\n{channel} ya tiene un temporizador establecido.\n\nUsa `/subscription update` para actualizar la suscripción.",
     "error_titles": {
       "blacklisted": "Servidor en Lista Negra",
       "bot_missing_permissions": "Al Bot le Faltan Permisos",
@@ -485,7 +478,6 @@
       "insufficient_permissions": "Permisos Insuficientes"
     },
     "insufficient_permissions": "❌ Necesitas el permiso `Gestionar Mensajes` para usar este comando.",
-    "insufficient_permissions_detailed": "❌ **Permisos Insuficientes**\n\nNecesitas el siguiente permiso para usar este comando:\n{permissions}\n\nPor favor contacta a un administrador del servidor si necesitas acceso.",
     "invalid_channel": "❌ Por favor proporciona un canal de texto válido.",
     "no_permissions": "❌ Necesitas el permiso **{permission}** para usar este comando.",
     "not_subscribed": "❌ **Canal No Suscrito**\n\n{channel} no está suscrito a la limpieza automática de mensajes.\n\nUsa `/subscription add` para configurar la limpieza automática primero.",

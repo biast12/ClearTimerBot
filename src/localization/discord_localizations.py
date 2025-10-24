@@ -3,7 +3,7 @@ Discord command localization utilities
 Provides localized names and descriptions for Discord command registration
 """
 
-from typing import Dict, Optional
+from typing import Dict
 import discord
 from src.utils.logger import logger, LogArea
 
@@ -103,9 +103,7 @@ def get_localized_descriptions(command_key: str) -> Dict[discord.Locale, str]:
     return localizations
 
 
-def get_localized_names(
-    name: str, translations: Optional[Dict[str, str]] = None
-) -> Dict[discord.Locale, str]:
+def get_localized_names() -> Dict[discord.Locale, str]:
     """
     Get localized names for a command
     Currently returns empty dict as we keep command names in English
@@ -152,7 +150,7 @@ def get_command_localizations(command_key: str) -> Dict[str, Dict[discord.Locale
     """
     if command_key not in _COMMAND_LOCALIZATIONS_CACHE:
         _COMMAND_LOCALIZATIONS_CACHE[command_key] = {
-            "names": get_localized_names(command_key),
+            "names": get_localized_names(),
             "descriptions": get_localized_descriptions(command_key),
         }
 

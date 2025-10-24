@@ -4,7 +4,6 @@ View Display for Owner Commands with Localization
 
 import discord
 import os
-from src.localization import get_translator
 
 
 class OwnerOnlyView(discord.ui.LayoutView):

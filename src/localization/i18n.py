@@ -1,7 +1,6 @@
-import os
 import json
 import re
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from pathlib import Path
 import discord
 from src.utils.logger import logger, LogArea

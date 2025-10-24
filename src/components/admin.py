@@ -4,7 +4,6 @@ View Display for Admin Commands with Localization
 
 import discord
 from discord.ext import commands
-from src.localization import get_translator
 
 
 class AdminOnlyView(discord.ui.LayoutView):
@@ -462,6 +461,7 @@ class ErrorListView(discord.ui.LayoutView):
         content = f"**{title}** ({last_text})\n\n"
 
         id_label = translator.get("commands.admin.error.list_item_id")
+        level_label = translator.get("commands.admin.error.list_item_level")
         area_label = translator.get("commands.admin.error.list_item_area")
         time_label = translator.get("commands.admin.error.list_item_time")
         message_label = translator.get("commands.admin.error.list_item_message")
@@ -473,7 +473,7 @@ class ErrorListView(discord.ui.LayoutView):
                 message = message[:47] + "..."
 
             content += (
-                f"**{id_label}:** `{error.error_id}` | {error.level}\n"
+                f"**{id_label}:** `{error.error_id}` | **{level_label}:** {error.level}\n"
                 f"**{area_label}:** {error.area}\n"
                 f"**{time_label}:** {timestamp}\n"
                 f"**{message_label}:** {message}\n"
@@ -504,7 +504,9 @@ class ErrorsClearedView(discord.ui.LayoutView):
 
         title = translator.get("commands.admin.error.clear_success_title")
         description = translator.get(
-            "commands.admin.error.clear_success_description", count=count
+            "commands.admin.error.clear_success_description",
+            count=count,
+            s="" if count == 1 else "s"
         )
         note = translator.get("commands.admin.error.clear_success_note")
         content = f"✅ **{title}**\n\n{description}\n\n_{note}_"
@@ -571,22 +573,23 @@ class ForceUnsubSuccessView(discord.ui.LayoutView):
         super().__init__()
 
         if target_type == "server":
-            title = translator.get("commands.admin.force.server_unsubscribed_title")
+            title = translator.get("commands.admin.force.server_success_title")
             description = translator.get(
-                "commands.admin.force.server_unsubscribed_description",
+                "commands.admin.force.server_success_description",
                 count=count,
-                target_id=target_id,
+                s="" if count == 1 else "s",
+                server_id=target_id,
             )
-            note = translator.get("commands.admin.force.server_unsubscribed_note")
+            note = translator.get("commands.admin.force.server_success_note")
             content = f"✅ **{title}**\n\n{description}\n\n_{note}_"
         else:  # channel
-            title = translator.get("commands.admin.force.channel_unsubscribed_title")
+            title = translator.get("commands.admin.force.channel_success_title")
             description = translator.get(
-                "commands.admin.force.channel_unsubscribed_description",
-                target_id=target_id,
+                "commands.admin.force.channel_success_description",
+                channel_id=target_id,
                 server_id=server_id,
             )
-            note = translator.get("commands.admin.force.channel_unsubscribed_note")
+            note = translator.get("commands.admin.force.channel_success_note")
             content = f"✅ **{title}**\n\n{description}\n\n_{note}_"
 
         container = discord.ui.Container(
@@ -667,240 +670,6 @@ class RecacheErrorView(discord.ui.LayoutView):
         )
         error_msg = translator.get("commands.admin.recache.error_message", error=error)
         content = f"❌ **{title}**\n\n{description}\n\n{error_msg}"
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value,
-        )
-        self.add_item(container)
-
-
-class ServerListView(discord.ui.LayoutView):
-    """View for listing servers"""
-
-    def __init__(self, servers: dict, bot, translator):
-        super().__init__()
-
-        title = translator.get("commands.admin.servers.list_title")
-        content = f"📋 **{title}**\n\n"
-
-        field_count = 0
-        total_servers = len(servers)
-        total_channels = sum(len(s.channels) for s in servers.values())
-
-        for server_id, server in list(servers.items())[:10]:  # Show first 10
-            if not server.channels:
-                continue
-
-            guild = bot.get_guild(int(server_id))
-            guild_name = guild.name if guild else f"Unknown ({server.server_name})"
-
-            content += f"**{guild_name}** ({server_id})\n"
-
-            for channel_id, timer_data in list(server.channels.items())[:5]:
-                channel = bot.get_channel(int(channel_id))
-                channel_name = channel.name if channel else "Unknown"
-                content += f"• #{channel_name} ({timer_data.timer})\n"
-
-            if len(server.channels) > 5:
-                content += f"... and {len(server.channels) - 5} more channels\n"
-
-            content += "\n"
-            field_count += 1
-
-            if field_count >= 10:
-                break
-
-        if total_servers > 10:
-            content += f"... and {total_servers - 10} more servers\n\n"
-
-        content += f"_Total: {total_servers} servers, {total_channels} channels_"
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.blue().value,
-        )
-        self.add_item(container)
-
-
-class CacheReloadView(discord.ui.LayoutView):
-    """View for cache reload confirmation"""
-
-    def __init__(
-        self, servers_count: int, blacklist_count: int, timezones_count: int, translator
-    ):
-        super().__init__()
-
-        title = translator.get("commands.admin.cache.reload_title")
-        description = translator.get("commands.admin.cache.reload_description")
-        loaded_data = translator.get("commands.admin.cache.reload_loaded_data")
-        servers_text = translator.get(
-            "commands.admin.cache.reload_servers", count=servers_count
-        )
-        blacklist_text = translator.get(
-            "commands.admin.cache.reload_blacklist", count=blacklist_count
-        )
-        timezones_text = translator.get(
-            "commands.admin.cache.reload_timezones", count=timezones_count
-        )
-        success_note = translator.get("commands.admin.cache.reload_success_note")
-
-        content = (
-            f"🔄 **{title}**\n\n"
-            f"{description}\n\n"
-            f"**📊 {loaded_data}**\n"
-            f"{servers_text}\n"
-            f"{blacklist_text}\n"
-            f"{timezones_text}\n\n"
-            f"_{success_note}_"
-        )
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.green().value,
-        )
-        self.add_item(container)
-
-
-class StatsView(discord.ui.LayoutView):
-    """View for bot statistics"""
-
-    def __init__(
-        self, bot: commands.Bot, servers: dict, blacklist: set, jobs: list, translator
-    ):
-        super().__init__()
-
-        content = (
-            f"📊 **Bot Statistics**\n\n"
-            f"**Servers**\n"
-            f"Connected: {len(bot.guilds)}\n"
-            f"Subscribed: {len(servers)}\n\n"
-            f"**Channels**\n"
-            f"Total Subscribed: {sum(len(s.channels) for s in servers.values())}\n\n"
-            f"**Jobs**\n"
-            f"Active: {len(jobs)}\n\n"
-            f"**Blacklist**\n"
-            f"Servers: {len(blacklist)}\n\n"
-            f"**Latency**\n"
-            f"{round(bot.latency * 1000)}ms"
-        )
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.blue().value,
-        )
-        self.add_item(container)
-
-
-class CacheStatsView(discord.ui.LayoutView):
-    """View for cache statistics"""
-
-    def __init__(self, cache_stats: dict, translator):
-        super().__init__()
-
-        memory_stats = cache_stats.get("memory", {})
-        warm_stats = cache_stats.get("warm", {})
-        cold_stats = cache_stats.get("cold", {})
-
-        total_hits = (
-            memory_stats.get("hits", 0)
-            + warm_stats.get("hits", 0)
-            + cold_stats.get("hits", 0)
-        )
-        total_misses = (
-            memory_stats.get("misses", 0)
-            + warm_stats.get("misses", 0)
-            + cold_stats.get("misses", 0)
-        )
-        total_requests = total_hits + total_misses
-        overall_hit_rate = (
-            (total_hits / total_requests * 100) if total_requests > 0 else 0
-        )
-
-        content = (
-            f"📊 **Cache Statistics**\n\n"
-            f"**🔥 Memory Cache (Hot Data)**\n"
-            f"Hit Rate: {memory_stats.get('hit_rate', 0)}%\n"
-            f"Hits: {memory_stats.get('hits', 0)}\n"
-            f"Misses: {memory_stats.get('misses', 0)}\n"
-            f"Cached Items: {memory_stats.get('cached_items', 0)}\n"
-            f"Evictions: {memory_stats.get('evictions', 0)}\n\n"
-            f"**🌡️ Warm Cache**\n"
-            f"Hit Rate: {warm_stats.get('hit_rate', 0)}%\n"
-            f"Hits: {warm_stats.get('hits', 0)}\n"
-            f"Misses: {warm_stats.get('misses', 0)}\n"
-            f"Cached Items: {warm_stats.get('cached_items', 0)}\n"
-            f"Evictions: {warm_stats.get('evictions', 0)}\n\n"
-            f"**❄️ Cold Cache**\n"
-            f"Hit Rate: {cold_stats.get('hit_rate', 0)}%\n"
-            f"Hits: {cold_stats.get('hits', 0)}\n"
-            f"Misses: {cold_stats.get('misses', 0)}\n"
-            f"Cached Items: {cold_stats.get('cached_items', 0)}\n"
-            f"Evictions: {cold_stats.get('evictions', 0)}\n\n"
-            f"**📈 Overall Performance**\n"
-            f"Total Requests: {total_requests}\n"
-            f"Overall Hit Rate: {overall_hit_rate:.2f}%\n"
-            f"Database Calls Saved: {total_hits}\n\n"
-            f"_Cache helps reduce database load and improve response times_"
-        )
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.blue().value,
-        )
-        self.add_item(container)
-
-
-class NoServersView(discord.ui.LayoutView):
-    """View for no servers message"""
-
-    def __init__(self, translator):
-        super().__init__()
-
-        title = translator.get("commands.admin.servers.no_servers_title")
-        description = translator.get("commands.admin.servers.no_servers_description")
-        hint = translator.get("commands.admin.servers.no_servers_hint")
-        content = f"ℹ️ **{title}**\n\n{description}\n\n_{hint}_"
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.greyple().value,
-        )
-        self.add_item(container)
-
-
-class NoBlacklistView(discord.ui.LayoutView):
-    """View for empty blacklist"""
-
-    def __init__(self, translator):
-        super().__init__()
-
-        title = translator.get("commands.admin.blacklist.no_blacklist_title")
-        description = translator.get(
-            "commands.admin.blacklist.no_blacklist_description"
-        )
-        content = f"ℹ️ **{title}**\n\n{description}"
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.greyple().value,
-        )
-        self.add_item(container)
-
-
-class CacheReloadErrorView(discord.ui.LayoutView):
-    """View for cache reload error"""
-
-    def __init__(self, error: str, translator):
-        super().__init__()
-
-        title = translator.get("commands.admin.cache.reload_error_title")
-        description = translator.get("commands.admin.cache.reload_error_description")
-        error_text = translator.get(
-            "commands.admin.cache.reload_error_message", error=error
-        )
-        note = translator.get("commands.admin.cache.reload_error_note")
-        content = f"❌ **{title}**\n\n{description}\n`{error_text}`\n\n_{note}_"
 
         container = discord.ui.Container(
             discord.ui.TextDisplay(content=content),

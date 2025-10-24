@@ -89,10 +89,12 @@
           "description": "Vis seneste fejl"
         },
         "list_hint": "Brug `/admin error check <id>` for at se fulde detaljer",
-        "list_item_area": "Område: {area}",
-        "list_item_id": "ID: `{error_id}` | {level}",
-        "list_item_message": "Besked: {message}",
-        "list_item_time": "Tid: {timestamp}",
+        "list_item_area": "Område",
+        "list_item_id": "ID",
+        "list_item_level": "Niveau",
+        "list_item_message": "Besked",
+        "list_item_time": "Tid",
+        "list_last": "Seneste {count}",
         "list_more": "... og {count} flere fejl",
         "list_title": "Seneste Fejl",
         "no_errors_description": "Ingen fejl fundet i databasen.",
@@ -438,11 +440,6 @@
         "description": "Besked med ID `{message_id}` ikke fundet i {channel}.",
         "help": "Sørg venligst for at beskeden eksisterer i den angivne kanal.",
         "title": "Besked Ikke Fundet"
-      },
-      "user_not_found": {
-        "description": "Bruger med ID `{user_id}` ikke fundet på denne server.",
-        "help": "Sørg venligst for at brugeren er medlem af denne server.",
-        "title": "Bruger Ikke Fundet"
       }
     },
     "ignore": {
@@ -470,13 +467,9 @@
   "validation": {
     "already_subscribed": "❌ {channel} er allerede tilmeldt med en {timer} timer.\nBrug `/subscription update` for at ændre timeren.",
     "blacklisted": "❌ Denne server er blokeret og kan ikke bruge denne bot.",
-    "blacklisted_detailed": "❌ **Server Blokeret**\n\nDenne server er blokeret og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kontakt venligst support.",
-    "blacklisted_server": "❌ **Server Sortlistet**\n\nDenne server er blevet sortlistet og kan ikke bruge denne bot.\n\nHvis du mener dette er en fejl, kan du appellere sortlistningen på vores [Support Server](https://biast12.com/botsupport).",
     "bot_missing_permissions": "❌ Jeg mangler følgende tilladelser i {channel}: {permissions}",
-    "bot_missing_permissions_detailed": "❌ **Bot Mangler Tilladelser**\n\nJeg mangler følgende tilladelser i {channel}:\n{permissions}\n\nGiv venligst disse tilladelser og prøv igen.",
     "bot_no_permissions": "❌ Jeg skal bruge følgende tilladelser i {channel}: {permissions}",
     "channel_already_subscribed": "❌ {channel} har allerede en timer indstillet. Brug `/subscription update` for at opdatere abonnementet i stedet.",
-    "channel_already_subscribed_detailed": "❌ **Kanal Allerede Tilmeldt**\n\n{channel} har allerede en timer indstillet.\n\nBrug `/subscription update` for at opdatere abonnementet i stedet.",
     "error_titles": {
       "blacklisted": "Server Blokeret",
       "bot_missing_permissions": "Bot Mangler Tilladelser",
@@ -485,7 +478,6 @@
       "insufficient_permissions": "Utilstrækkelige Tilladelser"
     },
     "insufficient_permissions": "❌ Du skal have `Administrer beskeder` tilladelsen for at bruge denne kommando.",
-    "insufficient_permissions_detailed": "❌ **Utilstrækkelige Tilladelser**\n\nDu skal have følgende tilladelse for at bruge denne kommando:\n{permissions}\n\nKontakt venligst en serveradministrator hvis du har brug for adgang.",
     "invalid_channel": "❌ Angiv venligst en gyldig tekstkanal.",
     "no_permissions": "❌ Du skal have **{permission}** tilladelsen for at bruge denne kommando.",
     "not_subscribed": "❌ **Kanal Ikke Tilmeldt**\n\n{channel} er ikke tilmeldt automatisk beskedrydning.\n\nBrug `/subscription add` for at opsætte automatisk rydning først.",

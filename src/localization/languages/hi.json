@@ -89,10 +89,12 @@
           "description": "हालिया त्रुटियों की सूची दें"
         },
         "list_hint": "पूर्ण विवरण देखने के लिए `/admin error check <id>` का उपयोग करें",
-        "list_item_area": "क्षेत्र: {area}",
-        "list_item_id": "ID: `{error_id}` | {level}",
-        "list_item_message": "संदेश: {message}",
-        "list_item_time": "समय: {timestamp}",
+        "list_item_area": "क्षेत्र",
+        "list_item_id": "ID",
+        "list_item_level": "स्तर",
+        "list_item_message": "संदेश",
+        "list_item_time": "समय",
+        "list_last": "अंतिम {count}",
         "list_more": "... और {count} अधिक त्रुटियां",
         "list_title": "हाल की त्रुटियां",
         "no_errors_description": "डेटाबेस में कोई त्रुटि नहीं मिली।",
@@ -438,11 +440,6 @@
         "description": "{channel} में ID `{message_id}` वाला संदेश नहीं मिला।",
         "help": "कृपया सुनिश्चित करें कि संदेश निर्दिष्ट चैनल में मौजूद है।",
         "title": "संदेश नहीं मिला"
-      },
-      "user_not_found": {
-        "description": "इस सर्वर में ID `{user_id}` वाला उपयोगकर्ता नहीं मिला।",
-        "help": "कृपया सुनिश्चित करें कि उपयोगकर्ता इस सर्वर का सदस्य है।",
-        "title": "उपयोगकर्ता नहीं मिला"
       }
     },
     "ignore": {
@@ -470,13 +467,9 @@
   "validation": {
     "already_subscribed": "❌ {channel} पहले से ही {timer} टाइमर के साथ सदस्यता ले चुका है।\nटाइमर बदलने के लिए `/subscription update` का उपयोग करें।",
     "blacklisted": "❌ यह सर्वर ब्लैकलिस्ट किया गया है और इस बॉट का उपयोग नहीं कर सकता।",
-    "blacklisted_detailed": "❌ **सर्वर ब्लैकलिस्टेड**\n\nयह सर्वर ब्लैकलिस्ट किया गया है और इस बॉट का उपयोग नहीं कर सकता।\n\nयदि आपको लगता है कि यह गलती है, तो कृपया समर्थन से संपर्क करें।",
-    "blacklisted_server": "❌ **सर्वर ब्लैकलिस्टेड**\n\nयह सर्वर ब्लैकलिस्ट किया गया है और इस बॉट का उपयोग नहीं कर सकता।\n\nयदि आपको लगता है कि यह गलती है, तो आप हमारे [समर्थन सर्वर](https://biast12.com/botsupport) पर ब्लैकलिस्ट की अपील कर सकते हैं।",
     "bot_missing_permissions": "❌ मुझे {channel} में निम्नलिखित अनुमतियां गायब हैं: {permissions}",
-    "bot_missing_permissions_detailed": "❌ **बॉट में अनुमतियां गायब**\n\nमुझे {channel} में निम्नलिखित अनुमतियां गायब हैं:\n{permissions}\n\nकृपया ये अनुमतियां दें और फिर से प्रयास करें।",
     "bot_no_permissions": "❌ मुझे {channel} में निम्नलिखित अनुमतियों की आवश्यकता है: {permissions}",
     "channel_already_subscribed": "❌ {channel} में पहले से टाइमर सेट है। सदस्यता अपडेट करने के लिए `/subscription update` का उपयोग करें।",
-    "channel_already_subscribed_detailed": "❌ **चैनल पहले से सदस्यता लिया है**\n\n{channel} में पहले से टाइमर सेट है।\n\nसदस्यता अपडेट करने के लिए `/subscription update` का उपयोग करें।",
     "error_titles": {
       "blacklisted": "सर्वर ब्लैकलिस्टेड",
       "bot_missing_permissions": "बॉट में अनुमतियां गायब",
@@ -485,7 +478,6 @@
       "insufficient_permissions": "अपर्याप्त अनुमतियां"
     },
     "insufficient_permissions": "❌ आपको इस कमांड का उपयोग करने के लिए `संदेश प्रबंधित करें` अनुमति की आवश्यकता है।",
-    "insufficient_permissions_detailed": "❌ **अपर्याप्त अनुमतियां**\n\nआपको इस कमांड का उपयोग करने के लिए निम्नलिखित अनुमति की आवश्यकता है:\n{permissions}\n\nयदि आपको पहुंच की आवश्यकता है तो कृपया सर्वर प्रशासक से संपर्क करें।",
     "invalid_channel": "❌ कृपया एक मान्य टेक्स्ट चैनल प्रदान करें।",
     "no_permissions": "❌ आपको इस कमांड का उपयोग करने के लिए **{permission}** अनुमति की आवश्यकता है।",
     "not_subscribed": "❌ **चैनल सदस्यता नहीं लिया है**\n\n{channel} स्वचालित संदेश सफाई की सदस्यता नहीं लिया है।\n\nपहले स्वचालित सफाई सेट करने के लिए `/subscription add` का उपयोग करें।",

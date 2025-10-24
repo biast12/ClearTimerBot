@@ -3,7 +3,6 @@ View Display for General Commands
 """
 
 import discord
-from discord import app_commands
 from typing import Dict
 from src.utils.footer import add_footer
 from src.config import get_global_config
@@ -113,24 +112,6 @@ class PingView(discord.ui.LayoutView):
             accent_color=discord.Color.green().value,
         )
         self.add_item(container)
-
-
-class BlacklistedServerView(discord.ui.LayoutView):
-    """View for blacklisted server error"""
-
-    def __init__(self, translator):
-        super().__init__()
-
-        content = add_footer(
-            translator.get("validation.blacklisted_server"), translator
-        )
-
-        container = discord.ui.Container(
-            discord.ui.TextDisplay(content=content),
-            accent_color=discord.Color.red().value,
-        )
-        self.add_item(container)
-
 
 class LanguageListView(discord.ui.LayoutView):
     """View for displaying available languages"""
