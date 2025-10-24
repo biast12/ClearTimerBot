@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, Optional, Any, List
 from enum import Enum
-import traceback
 
 
 class CollectionName(Enum):
@@ -101,15 +100,11 @@ class ErrorDocument:
     level: str
     area: str
     message: str
-    exception_type: Optional[str] = None
     stack_trace: Optional[str] = None
     guild_id: Optional[str] = None
     channel_id: Optional[str] = None
     user_id: Optional[str] = None
     command: Optional[str] = None
-    resolved: bool = False
-    resolved_at: Optional[datetime] = None
-    resolution_notes: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -122,15 +117,11 @@ class ErrorDocument:
             "level": self.level,
             "area": self.area,
             "message": self.message,
-            "exception_type": self.exception_type,
             "stack_trace": self.stack_trace,
             "guild_id": self.guild_id,
             "channel_id": self.channel_id,
             "user_id": self.user_id,
             "command": self.command,
-            "resolved": self.resolved,
-            "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
-            "resolution_notes": self.resolution_notes,
         }
 
     @classmethod
@@ -144,51 +135,17 @@ class ErrorDocument:
         if timestamp.tzinfo is None:
             timestamp = timestamp.replace(tzinfo=timezone.utc)
 
-        resolved_at = data.get("resolved_at")
-        if resolved_at and isinstance(resolved_at, str):
-            resolved_at = datetime.fromisoformat(resolved_at)
-
         return cls(
             error_id=str(data.get("_id", data.get("error_id"))),
             timestamp=timestamp,
             level=data.get("level", "ERROR"),
             area=data.get("area", "UNKNOWN"),
             message=data.get("message", ""),
-            exception_type=data.get("exception_type"),
             stack_trace=data.get("stack_trace"),
             guild_id=data.get("guild_id"),
             channel_id=data.get("channel_id"),
             user_id=data.get("user_id"),
             command=data.get("command"),
-            resolved=data.get("resolved", False),
-            resolved_at=resolved_at,
-            resolution_notes=data.get("resolution_notes"),
-        )
-
-    @classmethod
-    def from_exception(
-        cls,
-        error_id: str,
-        exception: Exception,
-        level: str = "ERROR",
-        area: str = "UNKNOWN",
-        guild_id: Optional[str] = None,
-        channel_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        command: Optional[str] = None,
-    ) -> "ErrorDocument":
-        return cls(
-            error_id=error_id,
-            timestamp=datetime.now(timezone.utc),
-            level=level,
-            area=area,
-            message=str(exception),
-            exception_type=type(exception).__name__,
-            stack_trace=traceback.format_exc(),
-            guild_id=guild_id,
-            channel_id=channel_id,
-            user_id=user_id,
-            command=command,
         )
 
 
