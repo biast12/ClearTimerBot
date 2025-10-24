@@ -3,6 +3,7 @@ import pytz
 from datetime import timedelta, datetime
 from typing import Tuple, Set, Optional
 import discord
+from aiohttp.client_exceptions import ClientConnectorError
 
 from src.services.server_data_service import DataService
 from src.services.clear_job_scheduler_service import SchedulerService
@@ -113,10 +114,20 @@ class MessageService:
 
                 while True:
                     messages_batch = []
-                    async for message in channel.history(
-                        limit=batch_size, before=last_message
-                    ):
-                        messages_batch.append(message)
+
+                    # Retry fetching message history on network errors
+                    for attempt in range(3):
+                        try:
+                            async for message in channel.history(
+                                limit=batch_size, before=last_message
+                            ):
+                                messages_batch.append(message)
+                            break  # Success, exit retry loop
+                        except ClientConnectorError:
+                            if attempt == 2:  # Last attempt
+                                raise
+                            delay = 2.0 * (2 ** attempt)
+                            await asyncio.sleep(delay)
 
                     if not messages_batch:
                         break
@@ -225,17 +236,36 @@ class MessageService:
             message = await self.data_service._cache.get(cache_key)
 
             if not message:
-                message = await channel.fetch_message(int(message_id))
-                await self.data_service._cache.set(
-                    cache_key, message, cache_level="warm", ttl=3600
-                )
+                # Retry fetching message on network errors
+                for attempt in range(3):
+                    try:
+                        message = await channel.fetch_message(int(message_id))
+                        await self.data_service._cache.set(
+                            cache_key, message, cache_level="warm", ttl=3600
+                        )
+                        break
+                    except ClientConnectorError:
+                        if attempt == 2:
+                            raise
+                        delay = 2.0 * (2 ** attempt)
+                        await asyncio.sleep(delay)
             from src.components.subscription import TimerViewMessage
             from src.localization import get_translator
 
             server_id = str(channel.guild.id)
             translator = await get_translator(server_id, self.data_service)
             view = TimerViewMessage(channel, timer, next_run_time, translator)
-            await message.edit(view=view)
+
+            # Retry editing message on network errors
+            for attempt in range(3):
+                try:
+                    await message.edit(view=view)
+                    break
+                except ClientConnectorError:
+                    if attempt == 2:
+                        raise
+                    delay = 2.0 * (2 ** attempt)
+                    await asyncio.sleep(delay)
         except discord.NotFound:
             server_id = str(channel.guild.id)
             channel_id = str(channel.id)
