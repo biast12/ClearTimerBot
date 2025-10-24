@@ -289,12 +289,12 @@ class GeneralCommands(commands.Cog):
 
     @timezone_change.autocomplete("timezone")
     async def timezone_change_autocomplete(
-        self, current: str
+        self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
-        return await self.timezone_autocomplete(current)
+        return await self.timezone_autocomplete(interaction, current)
 
     async def language_autocomplete(
-        self, current: str
+        self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
         try:
             available_languages = self.i18n.get_available_languages()
@@ -448,9 +448,9 @@ class GeneralCommands(commands.Cog):
 
     @language_change.autocomplete("language")
     async def language_change_autocomplete(
-        self, current: str
+        self, interaction: discord.Interaction, current: str
     ) -> list[app_commands.Choice[str]]:
-        return await self.language_autocomplete(current)
+        return await self.language_autocomplete(interaction, current)
 
 
 async def setup(bot):
