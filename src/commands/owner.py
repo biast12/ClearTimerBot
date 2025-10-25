@@ -39,6 +39,7 @@ class OwnerCommands(
         description=get_command_description("owner.admin"),
         parent=None,
         auto_locale_strings=False,
+        guild_only=True,
     )
 
     shard_group = app_commands.Group(
@@ -46,6 +47,7 @@ class OwnerCommands(
         description=get_command_description("owner.shard"),
         parent=None,
         auto_locale_strings=False,
+        guild_only=True,
     )
 
     @admin_group.command(

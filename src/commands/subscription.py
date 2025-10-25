@@ -167,6 +167,7 @@ class SubscriptionCommands(commands.Cog):
         name="subscription",
         description=get_command_description("subscription"),
         auto_locale_strings=False,
+        guild_only=True,
     )
 
     @subscription_group.command(

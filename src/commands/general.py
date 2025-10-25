@@ -19,6 +19,7 @@ class GeneralCommands(commands.Cog):
         description=get_command_description("help"),
         auto_locale_strings=False,
     )
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def help_command(self, interaction: discord.Interaction):
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -108,6 +109,7 @@ class GeneralCommands(commands.Cog):
         description=get_command_description("ping"),
         auto_locale_strings=False,
     )
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def ping(self, interaction: discord.Interaction):
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -188,6 +190,7 @@ class GeneralCommands(commands.Cog):
         name="timezone",
         description=get_command_description("timezone"),
         auto_locale_strings=False,
+        guild_only=True,
     )
 
     @timezone_group.command(
@@ -341,6 +344,7 @@ class GeneralCommands(commands.Cog):
         name="language",
         description=get_command_description("language"),
         auto_locale_strings=False,
+        guild_only=True,
     )
 
     @language_group.command(

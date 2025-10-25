@@ -40,6 +40,7 @@ class AdminCommands(
         description=get_command_description("admin.blacklist"),
         parent=None,
         auto_locale_strings=False,
+        guild_only=True,
     )
 
     error_group = app_commands.Group(
@@ -47,6 +48,7 @@ class AdminCommands(
         description=get_command_description("admin.error"),
         parent=None,
         auto_locale_strings=False,
+        guild_only=True,
     )
 
     force_group = app_commands.Group(
@@ -54,6 +56,7 @@ class AdminCommands(
         description=get_command_description("admin.force"),
         parent=None,
         auto_locale_strings=False,
+        guild_only=True,
     )
 
     @app_commands.command(
