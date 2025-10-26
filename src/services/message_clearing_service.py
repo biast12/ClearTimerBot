@@ -279,6 +279,10 @@ class MessageService:
     async def send_missed_clear_notification(
         self, channel: discord.TextChannel, job_id: str
     ) -> None:
+        # Validate permissions before attempting to send notification
+        if not await self._validate_bot_channel_permissions(channel):
+            return
+
         from src.components.errors import MissedClearView
         from src.localization import get_translator
 
