@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from datetime import datetime, timezone
 
-from src.models import BotConfig, GuildInfo
+from src.models import BotConfig
 from src.services.server_data_service import DataService
 from src.services.database_connection_manager import db_manager
 from src.services.clear_job_scheduler_service import SchedulerService
@@ -201,15 +201,6 @@ class ClearTimerBot(commands.Bot):
         """Handle when bot joins a server"""
         server_id = str(guild.id)
 
-        guild_info = GuildInfo(
-            guild_id=server_id,
-            guild_name=guild.name,
-            member_count=guild.member_count,
-            owner_id=str(guild.owner_id),
-            joined_at=datetime.now(timezone.utc),
-            premium_tier=guild.premium_tier,
-        )
-
         removed_doc = await self.data_service.get_removed_server(server_id)
 
         if removed_doc:
@@ -247,7 +238,6 @@ class ClearTimerBot(commands.Bot):
             "_id": server_id,
             "server_name": guild.name,
             "removed_at": datetime.now(timezone.utc),
-            "member_count": guild.member_count if guild else 0,
         }
         await removed_servers_collection.replace_one(
             {"_id": server_id},
@@ -297,7 +287,6 @@ class ClearTimerBot(commands.Bot):
                         "_id": server_id,
                         "server_name": server.server_name,
                         "removed_at": datetime.now(timezone.utc),
-                        "member_count": 0,
                     }
                 )
 

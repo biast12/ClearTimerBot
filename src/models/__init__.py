@@ -11,8 +11,6 @@ from .database_models import (
 
 from .cache import CacheLevel, CacheEntry, CacheStats, GlobalCacheStats
 
-from .discord_tracking_models import GuildInfo
-
 from .scheduler import TaskStatus, ScheduledTask, SchedulerStats
 
 from .config import LogLevel, Environment, BotConfig
@@ -36,8 +34,6 @@ __all__ = [
     "CacheEntry",
     "CacheStats",
     "GlobalCacheStats",
-    # Discord models
-    "GuildInfo",
     # Scheduler models
     "TaskStatus",
     "ScheduledTask",

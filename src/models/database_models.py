@@ -57,7 +57,6 @@ class RemovedServer:
     server_id: str
     server_name: str
     removed_at: datetime
-    channel_count: int = 0
     removal_reason: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -69,7 +68,6 @@ class RemovedServer:
                 if isinstance(self.removed_at, datetime)
                 else self.removed_at
             ),
-            "channel_count": self.channel_count,
             "removal_reason": self.removal_reason,
         }
 
@@ -88,7 +86,6 @@ class RemovedServer:
             server_id=str(data["_id"]),
             server_name=data.get("server_name", "Unknown"),
             removed_at=removed_at,
-            channel_count=data.get("channel_count", 0),
             removal_reason=data.get("removal_reason"),
         )
 
