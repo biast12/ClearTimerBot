@@ -503,6 +503,7 @@ class MultipleIgnoreEntityView(discord.ui.LayoutView):
         removed_users: List[str],
         added_messages: List[str],
         removed_messages: List[str],
+        message_authors: dict,
         translator,
     ):
         super().__init__()
@@ -531,10 +532,11 @@ class MultipleIgnoreEntityView(discord.ui.LayoutView):
 
         if added_messages:
             for msg_id in added_messages:
+                author = message_authors.get(msg_id, translator.get("common.unknown"))
                 lines.append(
                     translator.get(
                         "commands.subscription.ignore.message_added",
-                        author=translator.get("common.unknown"),
+                        author=author,
                         channel=channel.mention,
                         message_id=msg_id,
                     )
@@ -542,10 +544,11 @@ class MultipleIgnoreEntityView(discord.ui.LayoutView):
 
         if removed_messages:
             for msg_id in removed_messages:
+                author = message_authors.get(msg_id, translator.get("common.unknown"))
                 lines.append(
                     translator.get(
                         "commands.subscription.ignore.message_removed",
-                        author=translator.get("common.unknown"),
+                        author=author,
                         channel=channel.mention,
                     )
                 )

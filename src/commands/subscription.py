@@ -703,6 +703,9 @@ class SubscriptionCommands(commands.Cog):
         channel_id = str(channel.id)
         translator = await get_translator(server_id, self.data_service)
 
+        # Defer the response as validation might take time
+        await interaction.response.defer(ephemeral=False)
+
         # Parse and validate multiple targets
         validated_targets = await identify_and_validate_multiple_ignore_targets(
             target, channel, interaction.guild
@@ -712,7 +715,7 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import InvalidTargetView
 
             view = InvalidTargetView(translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
 
         server = await self.data_service.get_server(server_id)
@@ -720,7 +723,7 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import NoSubscriptionDataView
 
             view = NoSubscriptionDataView(channel, translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
 
         channel_timer = server.channels[channel_id]
@@ -730,8 +733,9 @@ class SubscriptionCommands(commands.Cog):
         removed_users = []
         added_messages = []
         removed_messages = []
+        message_authors = {}  # Maps message_id to author mention
 
-        for entity_id, entity_type in validated_targets:
+        for entity_id, entity_type, display_info in validated_targets:
             if entity_type == "user":
                 # Handle user toggle
                 if entity_id in channel_timer.ignored.users:
@@ -743,6 +747,10 @@ class SubscriptionCommands(commands.Cog):
                     channel_timer.add_ignored_user(entity_id)
                     added_users.append(entity_id)
             else:  # message
+                # Store author info if available
+                if display_info:
+                    message_authors[entity_id] = display_info
+
                 # Handle message toggle
                 if entity_id in channel_timer.ignored.messages:
                     # Remove the message
@@ -764,9 +772,10 @@ class SubscriptionCommands(commands.Cog):
             removed_users,
             added_messages,
             removed_messages,
+            message_authors,
             translator,
         )
-        await interaction.response.send_message(view=view)
+        await interaction.edit_original_response(view=view)
 
     @subscription_group.command(
         name="clear",

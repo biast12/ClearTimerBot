@@ -9,7 +9,7 @@ from typing import Optional, Tuple, List
 
 async def identify_and_validate_ignore_target(
     target: str, channel: discord.TextChannel, guild: discord.Guild
-) -> Tuple[Optional[str], Optional[str]]:
+) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
     Parse and validate a target string to determine if it's a user or message.
 
@@ -19,8 +19,9 @@ async def identify_and_validate_ignore_target(
         guild: The guild to check for users
 
     Returns:
-        Tuple of (entity_id, entity_type) where entity_type is 'user' or 'message'
-        Returns (None, None) if target is invalid
+        Tuple of (entity_id, entity_type, display_info) where entity_type is 'user' or 'message'
+        display_info is the username or author mention for display purposes
+        Returns (None, None, None) if target is invalid
     """
     # First try to parse as user
     user_id = extract_discord_user_id(target)
@@ -29,7 +30,7 @@ async def identify_and_validate_ignore_target(
         try:
             member = await guild.fetch_member(int(user_id))
             if member:
-                return user_id, "user"
+                return user_id, "user", None
         except (discord.NotFound, discord.HTTPException, ValueError):
             pass  # Not a valid user, try message next
 
@@ -40,18 +41,19 @@ async def identify_and_validate_ignore_target(
         try:
             message = await channel.fetch_message(int(message_id))
             if message:
-                return message_id, "message"
+                # Return message ID, type, and author mention for display
+                return message_id, "message", message.author.mention
         except (discord.NotFound, discord.HTTPException, ValueError):
             # Message might be in a different channel or deleted
             # Still return it as valid since user explicitly provided it
-            return message_id, "message"
+            return message_id, "message", None
 
-    return None, None
+    return None, None, None
 
 
 async def identify_and_validate_multiple_ignore_targets(
     targets: str, channel: discord.TextChannel, guild: discord.Guild
-) -> List[Tuple[str, str]]:
+) -> List[Tuple[str, str, Optional[str]]]:
     """
     Parse and validate multiple comma-separated target strings.
 
@@ -61,19 +63,20 @@ async def identify_and_validate_multiple_ignore_targets(
         guild: The guild to check for users
 
     Returns:
-        List of tuples (entity_id, entity_type) where entity_type is 'user' or 'message'
+        List of tuples (entity_id, entity_type, display_info) where entity_type is 'user' or 'message'
+        display_info is the author mention for messages or None for users
     """
     validated_targets = []
     target_list = [t.strip() for t in targets.split(",") if t.strip()]
 
     for target in target_list:
-        entity_id, entity_type = await identify_and_validate_ignore_target(
+        entity_id, entity_type, display_info = await identify_and_validate_ignore_target(
             target, channel, guild
         )
         if entity_id and entity_type:
-            # Avoid duplicates
-            if (entity_id, entity_type) not in validated_targets:
-                validated_targets.append((entity_id, entity_type))
+            # Avoid duplicates (check by entity_id and entity_type only)
+            if not any(et[0] == entity_id and et[1] == entity_type for et in validated_targets):
+                validated_targets.append((entity_id, entity_type, display_info))
 
     return validated_targets
 
@@ -147,7 +150,7 @@ async def validate_and_add_ignore_target(
     if not target:
         return None, None
 
-    entity_id, entity_type = await identify_and_validate_ignore_target(
+    entity_id, entity_type, _ = await identify_and_validate_ignore_target(
         target, channel, guild
     )
 
@@ -192,7 +195,7 @@ async def validate_and_add_multiple_ignore_targets(
         targets, channel, guild
     )
 
-    for entity_id, entity_type in validated_targets:
+    for entity_id, entity_type, _ in validated_targets:
         if entity_type == "user":
             # Check if not already ignored
             if entity_id not in channel_timer.ignored.users:
