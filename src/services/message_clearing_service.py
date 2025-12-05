@@ -148,10 +148,40 @@ class MessageService:
                         break
 
                     last_message = messages_batch[-1]
+            except discord.NotFound:
+                logger.warning(
+                    LogArea.DISCORD,
+                    f"Channel {channel.id} not found (deleted or bot removed from server). Removing schedule.",
+                )
+                # Remove the schedule for this channel
+                server_id = str(channel.guild.id)
+                channel_id = str(channel.id)
+                self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
+                # Remove from data service
+                server = await self.data_service.get_server(server_id)
+                if server and channel_id in server.channels:
+                    del server.channels[channel_id]
+                    await self.data_service.save_servers()
+                return 0
             except discord.Forbidden:
                 logger.warning(
                     LogArea.PERMISSIONS,
-                    f"No permission to access channel history for channel {channel.id}",
+                    f"No permission to access channel history for channel {channel.id}. Removing schedule.",
+                )
+                # Remove the schedule for this channel since we don't have permissions
+                server_id = str(channel.guild.id)
+                channel_id = str(channel.id)
+                self.scheduler_service.remove_channel_clear_job(server_id, channel_id)
+                # Remove from data service
+                server = await self.data_service.get_server(server_id)
+                if server and channel_id in server.channels:
+                    del server.channels[channel_id]
+                    await self.data_service.save_servers()
+                return 0
+            except discord.DiscordServerError as e:
+                logger.warning(
+                    LogArea.DISCORD,
+                    f"Discord API error (likely 503) for channel {channel.id}: {e}. Will retry on next scheduled run.",
                 )
                 return 0
 
