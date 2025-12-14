@@ -13,9 +13,7 @@ from src.utils.logger import logger, LogArea
 class ClearTimerBot(commands.Bot):
     def __init__(self, config: BotConfig, shard=None):
         intents = discord.Intents.default()
-        intents.message_content = True
         intents.guilds = True
-        intents.members = True
 
         shard_id = None
         shard_count = None
