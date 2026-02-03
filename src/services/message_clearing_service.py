@@ -123,7 +123,7 @@ class MessageService:
                             ):
                                 messages_batch.append(message)
                             break  # Success, exit retry loop
-                        except ClientConnectorError:
+                        except (ClientConnectorError, TimeoutError):
                             if attempt == 2:  # Last attempt
                                 raise
                             delay = 2.0 * (2 ** attempt)
@@ -274,7 +274,7 @@ class MessageService:
                             cache_key, message, cache_level="warm", ttl=3600
                         )
                         break
-                    except ClientConnectorError:
+                    except (ClientConnectorError, TimeoutError):
                         if attempt == 2:
                             raise
                         delay = 2.0 * (2 ** attempt)
@@ -291,7 +291,7 @@ class MessageService:
                 try:
                     await message.edit(view=view)
                     break
-                except ClientConnectorError:
+                except (ClientConnectorError, TimeoutError):
                     if attempt == 2:
                         raise
                     delay = 2.0 * (2 ** attempt)
