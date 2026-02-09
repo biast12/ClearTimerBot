@@ -3,7 +3,7 @@ import pytz
 from datetime import timedelta, datetime
 from typing import Tuple, Set, Optional
 import discord
-from aiohttp.client_exceptions import ClientConnectorError
+from aiohttp.client_exceptions import ClientConnectorError, ClientPayloadError
 
 from src.services.server_data_service import DataService
 from src.services.clear_job_scheduler_service import SchedulerService
@@ -123,7 +123,7 @@ class MessageService:
                             ):
                                 messages_batch.append(message)
                             break  # Success, exit retry loop
-                        except (ClientConnectorError, TimeoutError):
+                        except (ClientConnectorError, ClientPayloadError, TimeoutError):
                             if attempt == 2:  # Last attempt
                                 raise
                             delay = 2.0 * (2 ** attempt)
@@ -274,7 +274,7 @@ class MessageService:
                             cache_key, message, cache_level="warm", ttl=3600
                         )
                         break
-                    except (ClientConnectorError, TimeoutError):
+                    except (ClientConnectorError, ClientPayloadError, TimeoutError):
                         if attempt == 2:
                             raise
                         delay = 2.0 * (2 ** attempt)
@@ -291,7 +291,7 @@ class MessageService:
                 try:
                     await message.edit(view=view)
                     break
-                except (ClientConnectorError, TimeoutError):
+                except (ClientConnectorError, ClientPayloadError, TimeoutError):
                     if attempt == 2:
                         raise
                     delay = 2.0 * (2 ** attempt)
