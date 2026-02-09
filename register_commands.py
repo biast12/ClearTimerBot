@@ -45,7 +45,6 @@ class MockMessageService:
 class CommandRegisterBot(commands.Bot):
     def __init__(self, config):
         intents = discord.Intents.default()
-        intents.message_content = True
         intents.guilds = True
 
         super().__init__(
