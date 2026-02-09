@@ -56,6 +56,7 @@ class HelpView(discord.ui.LayoutView):
         sections.append(f"**{timer_formats_title}**")
         sections.append(self.translator.get("commands.help.timer_intervals"))
         sections.append(self.translator.get("commands.help.timer_daily"))
+        sections.append(self.translator.get("commands.help.timer_weekly"))
         sections.append(self.translator.get("commands.help.timer_examples") + "\n")
 
         permissions_title = self.translator.get('commands.help.required_permissions')

@@ -177,7 +177,7 @@ class SubscriptionCommands(commands.Cog):
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
-        timer="Timer format: '24' for hours, '1d12h30m', '15:30 EST' for daily, or '1/4 15:30 EST' for fraction of time until",
+        timer="Timer format: '24' for hours, '1d12h30m', '15:30 EST' for daily, 'Mon 15:30 EST' for weekly, or '1/4 15:30 EST' for fraction of time until",
         target_channel="Channel to clear (defaults to current channel)",
         ignored_target="Message IDs/links or user mentions/IDs (comma-separated for multiple)",
         view="Show persistent timer message that updates after each clear",
@@ -483,7 +483,7 @@ class SubscriptionCommands(commands.Cog):
     )
     @app_commands.default_permissions(manage_messages=True)
     @app_commands.describe(
-        timer="New timer format: '24' for hours, '1d12h30m', or '15:30 EST' for daily at specific time",
+        timer="New timer format: '24' for hours, '1d12h30m', '15:30 EST' for daily, or 'Mon 15:30 EST' for weekly",
         target_channel="Channel to update (defaults to current channel)",
         ignored_target="Message IDs/links or user mentions/IDs to add (comma-separated for multiple)",
         view="Show/update persistent timer message that updates after each clear",

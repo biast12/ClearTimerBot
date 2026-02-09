@@ -16,6 +16,12 @@ class ScheduleExpressionParser:
     FRACTION_TIME_PATTERN = re.compile(
         r"^(\d+)/(\d+)\s+(\d{1,2}:\d{2})(?:\s+([A-Z][\w+-]*))?$"
     )
+    WEEKLY_PATTERN = re.compile(
+        r"^((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?:[,-](?:Mon|Tue|Wed|Thu|Fri|Sat|Sun))*)\s+(\d{1,2}:\d{2})(?:\s+([A-Z][\w+-]*))?\s*$",
+        re.IGNORECASE,
+    )
+    VALID_DAYS = {"mon", "tue", "wed", "thu", "fri", "sat", "sun"}
+    DAY_ORDER = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
 
     def __init__(
         self,
@@ -51,6 +57,10 @@ class ScheduleExpressionParser:
         if match := self.FRACTION_TIME_PATTERN.match(timer_string):
             return self._parse_fractional_time_schedule(match, server_id)
 
+        # Try to parse as weekly schedule (e.g., "Mon 15:30 EST", "Mon-Fri 09:00")
+        if match := self.WEEKLY_PATTERN.match(timer_string):
+            return self._parse_weekly_cron_schedule(match, server_id)
+
         # Try to parse as daily scheduled time
         if match := self.TIMEZONE_PATTERN.match(timer_string):
             return self._parse_daily_cron_schedule(match, server_id)
@@ -61,7 +71,7 @@ class ScheduleExpressionParser:
 
         raise ScheduleParseError(
             f"Invalid timer format: '{timer_string}'. "
-            "Use '1d2h3m' for intervals, '24' for hours, '1/2 HH:MM TIMEZONE' for fractional time, or 'HH:MM TIMEZONE' for daily schedules."
+            "Use '1d2h3m' for intervals, '24' for hours, '1/2 HH:MM TIMEZONE' for fractional time, 'HH:MM TIMEZONE' for daily schedules, or 'Mon 15:30 EST' for weekly."
         )
 
     def _parse_fractional_time_schedule(
@@ -211,3 +221,113 @@ class ScheduleExpressionParser:
 
         trigger = IntervalTrigger(minutes=total_minutes)
         return trigger, next_run
+
+    def _parse_weekly_cron_schedule(
+        self, match: re.Match, server_id: str = None
+    ) -> Tuple[CronTrigger, datetime]:
+        days_str = match.group(1)
+        time_str = match.group(2)
+        timezone_abbr = match.group(3)
+
+        # Parse time
+        try:
+            hour, minute = map(int, time_str.split(":"))
+            if not (0 <= hour <= 23 and 0 <= minute <= 59):
+                raise ValueError()
+        except ValueError:
+            raise ScheduleParseError(
+                f"Invalid time format: '{time_str}'. Use HH:MM format."
+            )
+
+        # Expand day spec into individual day names
+        day_parts = self._expand_day_spec(days_str)
+
+        # Get timezone
+        if not timezone_abbr and server_id and self.get_server_timezone:
+            timezone_str = self.get_server_timezone(server_id, None)
+        else:
+            timezone_abbr = timezone_abbr or "GMT"
+            timezone_str = self.timezone_resolver(timezone_abbr)
+            if not timezone_str:
+                raise ScheduleParseError(f"Unknown timezone: '{timezone_abbr}'")
+
+        try:
+            timezone = pytz.timezone(timezone_str)
+        except pytz.exceptions.UnknownTimeZoneError:
+            raise ScheduleParseError(f"Invalid timezone mapping for '{timezone_abbr}'")
+
+        # Build APScheduler day_of_week string
+        day_of_week = ",".join(day_parts)
+
+        trigger = CronTrigger(
+            day_of_week=day_of_week, hour=hour, minute=minute, timezone=timezone
+        )
+
+        # Calculate next run time
+        next_run = self._find_next_weekly_run(
+            datetime.now(timezone), day_parts, hour, minute, timezone
+        )
+
+        return trigger, next_run
+
+    def _expand_day_spec(self, days_str: str) -> list:
+        """Expand a day spec like 'Mon-Fri,Sun' into ['mon', 'tue', 'wed', 'thu', 'fri', 'sun']."""
+        ordered_days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+        result = set()
+
+        for part in days_str.split(","):
+            part = part.strip()
+            if "-" in part:
+                start, end = part.split("-", 1)
+                start = start.strip().lower()
+                end = end.strip().lower()
+                if start not in self.VALID_DAYS or end not in self.VALID_DAYS:
+                    raise ScheduleParseError(
+                        f"Invalid day name in range: '{part}'. Use Mon, Tue, Wed, Thu, Fri, Sat, Sun."
+                    )
+                start_idx = self.DAY_ORDER[start]
+                end_idx = self.DAY_ORDER[end]
+                if start_idx <= end_idx:
+                    for i in range(start_idx, end_idx + 1):
+                        result.add(ordered_days[i])
+                else:
+                    # Wrap-around range (e.g., Fri-Mon)
+                    for i in range(start_idx, 7):
+                        result.add(ordered_days[i])
+                    for i in range(0, end_idx + 1):
+                        result.add(ordered_days[i])
+            else:
+                day = part.lower()
+                if day not in self.VALID_DAYS:
+                    raise ScheduleParseError(
+                        f"Invalid day name: '{part}'. Use Mon, Tue, Wed, Thu, Fri, Sat, Sun."
+                    )
+                result.add(day)
+
+        # Return sorted by day order
+        return sorted(result, key=lambda d: self.DAY_ORDER[d])
+
+    def _find_next_weekly_run(
+        self,
+        now: datetime,
+        day_parts: list,
+        hour: int,
+        minute: int,
+        timezone,
+    ) -> datetime:
+        """Find the next datetime that matches one of the specified days at the given time."""
+        # Map day names to Python weekday numbers (Monday=0)
+        target_weekdays = {self.DAY_ORDER[d] for d in day_parts}
+
+        for offset in range(8):  # Check up to 7 days ahead + today
+            candidate = now + timedelta(days=offset)
+            if candidate.weekday() in target_weekdays:
+                run_time = candidate.replace(
+                    hour=hour, minute=minute, second=0, microsecond=0
+                )
+                if run_time > now:
+                    return run_time
+
+        # Fallback: shouldn't reach here with valid days, but use first matching day next week
+        candidate = now + timedelta(days=7)
+        return candidate.replace(hour=hour, minute=minute, second=0, microsecond=0)

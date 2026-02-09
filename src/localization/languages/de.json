@@ -171,7 +171,8 @@
       "select_command": "Wählen Sie einen Befehl, um mehr zu erfahren...",
       "subscription_commands": "📝 Abonnement-Befehle",
       "timer_daily": "**Täglicher Zeitplan:** `15:30 EST` (Zeit + Zeitzone)",
-      "timer_examples": "**Beispiele:** `24h`, `1d`, `30m`, `09:00 PST`",
+      "timer_weekly": "**Wöchentlicher Zeitplan:** `Mon 15:30 EST` oder `Mon-Fri 09:00` (Tage + Zeit + Zeitzone)",
+      "timer_examples": "**Beispiele:** `24h`, `1d`, `30m`, `09:00 PST`, `Mon 15:30 EST`",
       "timer_formats": "⏱️ Timer-Formate",
       "timer_intervals": "**Intervalle:** `1d2h3m` (Tage, Stunden, Minuten)",
       "title": "Hilfe"
@@ -424,7 +425,7 @@
     "generic": "❌ Ein Fehler ist aufgetreten: {error}",
     "invalid_channel": "❌ Ungültiger Kanal: {channel}",
     "invalid_target": "❌ Ungültiges Ziel. Bitte geben Sie eine gültige Nachrichten-ID/Link oder Benutzer-Erwähnung/ID an.",
-    "invalid_timer": "❌ Ungültiges Timer-Format: `{timer}`\n\nBitte verwenden Sie Formate wie:\n• `24h` für 24 Stunden\n• `1d12h30m` für 1 Tag, 12 Stunden, 30 Minuten\n• `15:30 EST` für täglich um 15:30 Uhr EST",
+    "invalid_timer": "❌ Ungültiges Timer-Format: `{timer}`\n\nBitte verwenden Sie Formate wie:\n• `24h` für 24 Stunden\n• `1d12h30m` für 1 Tag, 12 Stunden, 30 Minuten\n• `15:30 EST` für täglich um 15:30 Uhr EST\n• `Mon 15:30 EST` für wöchentlich an bestimmten Tagen",
     "invalid_user": "❌ Ungültiger Benutzer: {user}",
     "job_not_found": "❌ Kein geplanter Job für {channel} gefunden",
     "missed_clear_notification": "⚠️ **Verpasste Löschungsbenachrichtigung**\n\nEine geplante Nachrichtenlöschung wurde für diesen Kanal verpasst.\nDer Timer wurde neu geplant.",

@@ -27,6 +27,7 @@ Just click the link above and select your server - setup takes less than a minut
 
   - Set intervals: "Clear every 6 hours" (`/subscription add 6h`)
   - Set daily times: "Clear at 3 AM EST" (`/subscription add 03:00 EST`)
+  - Set weekly schedules: "Clear weekdays at 9 AM" (`/subscription add Mon-Fri 09:00 EST`)
   - Combine multiple timers for different channels
 
 - 🛡️ **Intelligent Protection**
@@ -59,6 +60,8 @@ Just click the link above and select your server - setup takes less than a minut
 ```
 /subscription add 12h              # Clear this channel every 12 hours
 /subscription add 09:00 PST        # Clear daily at 9 AM Pacific Time
+/subscription add Mon 15:30 EST    # Clear every Monday at 3:30 PM EST
+/subscription add Mon-Fri 09:00    # Clear weekdays at 9 AM
 /subscription add 24h #general     # Clear #general channel daily
 /subscription list                 # See all active timers
 /subscription info                 # Check current channel's timer
@@ -97,16 +100,19 @@ All subscription-related commands are grouped under `/subscription`:
 Subscribe a channel to automatic message deletion. Requires `Manage Messages` permission.
 
 - **Parameters:**
-  - `timer`: Timer format (e.g., `24h`, `1d12h30m`, or `15:30 EST`)
+  - `timer`: Timer format (e.g., `24h`, `1d12h30m`, `15:30 EST`, or `Mon 15:30 EST`)
   - `target_channel` (optional): Channel to clear - defaults to current channel if not specified
   - `ignored_target` (optional): Message ID/link or user mention/ID to ignore during clearing
 - **Timer Formats:**
   - **Intervals:** `24h`, `1d`, `30m`, `1d12h30m` (combine days, hours, minutes)
   - **Daily schedule:** `15:30 EST`, `09:00 PST` (specific time with timezone)
+  - **Weekly schedule:** `Mon 15:30 EST`, `Mon,Wed,Fri 09:00`, `Mon-Fri 18:00` (days + time + timezone)
 - **Examples:**
   - `/subscription add 12h` - Clear current channel every 12 hours
   - `/subscription add 1d #announcements` - Clear #announcements daily
   - `/subscription add 09:00 EST #general` - Clear #general every day at 9 AM EST
+  - `/subscription add Mon 15:30 EST` - Clear every Monday at 3:30 PM EST
+  - `/subscription add Mon-Fri 09:00 PST #general` - Clear #general weekdays at 9 AM PST
   - `/subscription add 24h #general 123456789` - Clear #general daily, ignoring message 123456789
   - `/subscription add 6h #general @JohnDoe` - Clear #general every 6 hours, ignoring JohnDoe's messages
 
@@ -155,13 +161,14 @@ View detailed subscription information for a channel.
 Update the timer for an existing subscription. Requires `Manage Messages` permission.
 
 - **Parameters:**
-  - `timer`: New timer format (e.g., `24h`, `1d12h30m`, or `15:30 EST`)
+  - `timer`: New timer format (e.g., `24h`, `1d12h30m`, `15:30 EST`, or `Mon 15:30 EST`)
   - `target_channel` (optional): Channel to update - defaults to current channel if not specified
   - `ignored_target` (optional): Message ID/link or user mention/ID to add to ignore list during update
 - **Examples:**
   - `/subscription update 12h` - Change current channel's timer to 12 hours
   - `/subscription update 2d #general` - Change #general's timer to 2 days
   - `/subscription update 09:00 PST #announcements` - Update to daily at 9 AM PST
+  - `/subscription update Mon-Fri 09:00 EST` - Update to weekdays at 9 AM EST
 
 #### `/subscription ignore [target] [target_channel]`
 

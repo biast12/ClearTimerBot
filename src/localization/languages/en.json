@@ -171,7 +171,8 @@
       "select_command": "Select a command to learn more...",
       "subscription_commands": "📝 Subscription Commands",
       "timer_daily": "**Daily Schedule:** `15:30 EST` (time + timezone)",
-      "timer_examples": "**Examples:** `24h`, `1d`, `30m`, `09:00 PST`",
+      "timer_weekly": "**Weekly Schedule:** `Mon 15:30 EST` or `Mon-Fri 09:00` (days + time + timezone)",
+      "timer_examples": "**Examples:** `24h`, `1d`, `30m`, `09:00 PST`, `Mon 15:30 EST`",
       "timer_formats": "⏱️ Timer Formats",
       "timer_intervals": "**Intervals:** `1d2h3m` (days, hours, minutes)",
       "title": "Help"
@@ -424,7 +425,7 @@
     "generic": "❌ An error occurred: {error}",
     "invalid_channel": "❌ Invalid channel: {channel}",
     "invalid_target": "❌ Invalid target. Please provide a valid message ID/link or user mention/ID.",
-    "invalid_timer": "❌ Invalid timer format: `{timer}`\n\nPlease use formats like:\n• `24h` for 24 hours\n• `1d12h30m` for 1 day, 12 hours, 30 minutes\n• `15:30 EST` for daily at 3:30 PM EST",
+    "invalid_timer": "❌ Invalid timer format: `{timer}`\n\nPlease use formats like:\n• `24h` for 24 hours\n• `1d12h30m` for 1 day, 12 hours, 30 minutes\n• `15:30 EST` for daily at 3:30 PM EST\n• `Mon 15:30 EST` for weekly on specific days",
     "invalid_user": "❌ Invalid user: {user}",
     "job_not_found": "❌ No scheduled job found for {channel}",
     "missed_clear_notification": "⚠️ **Missed Clear Notification**\n\nA scheduled message clear was missed for this channel.\nThe timer has been rescheduled.",

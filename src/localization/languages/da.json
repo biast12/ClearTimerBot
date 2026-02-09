@@ -171,7 +171,8 @@
       "select_command": "Vælg en kommando for at lære mere...",
       "subscription_commands": "📝 Abonnementskommandoer",
       "timer_daily": "**Daglig Plan:** `15:30 EST` (tid + tidszone)",
-      "timer_examples": "**Eksempler:** `24h`, `1d`, `30m`, `09:00 PST`",
+      "timer_weekly": "**Ugentlig Plan:** `Mon 15:30 EST` eller `Mon-Fri 09:00` (dage + tid + tidszone)",
+      "timer_examples": "**Eksempler:** `24h`, `1d`, `30m`, `09:00 PST`, `Mon 15:30 EST`",
       "timer_formats": "⏱️ Timerformater",
       "timer_intervals": "**Intervaller:** `1d2h3m` (dage, timer, minutter)",
       "title": "Hjælp"
@@ -424,7 +425,7 @@
     "generic": "❌ Der opstod en fejl: {error}",
     "invalid_channel": "❌ Ugyldig kanal: {channel}",
     "invalid_target": "❌ Ugyldigt mål. Angiv venligst et gyldigt besked-ID/link eller brugeromtale/ID.",
-    "invalid_timer": "❌ Ugyldigt timerformat: `{timer}`\n\nBrug venligst formater som:\n• `24h` for 24 timer\n• `1d12h30m` for 1 dag, 12 timer, 30 minutter\n• `15:30 EST` for dagligt kl. 15:30 EST",
+    "invalid_timer": "❌ Ugyldigt timerformat: `{timer}`\n\nBrug venligst formater som:\n• `24h` for 24 timer\n• `1d12h30m` for 1 dag, 12 timer, 30 minutter\n• `15:30 EST` for dagligt kl. 15:30 EST\n• `Mon 15:30 EST` for ugentligt på bestemte dage",
     "invalid_user": "❌ Ugyldig bruger: {user}",
     "job_not_found": "❌ Ingen planlagt job fundet for {channel}",
     "missed_clear_notification": "⚠️ **Meddelelse om Oversprunget Rydning**\n\nEn planlagt beskedrydning blev oversprunget for denne kanal.\nTimeren er blevet genplanlagt.",

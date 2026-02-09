@@ -171,7 +171,8 @@
       "select_command": "选择一个命令以了解更多...",
       "subscription_commands": "📝 订阅命令",
       "timer_daily": "**每日计划：** `15:30 EST`（时间 + 时区）",
-      "timer_examples": "**示例：** `24h`、`1d`、`30m`、`09:00 PST`",
+      "timer_weekly": "**每周计划：** `Mon 15:30 EST` 或 `Mon-Fri 09:00`（天 + 时间 + 时区）",
+      "timer_examples": "**示例：** `24h`、`1d`、`30m`、`09:00 PST`、`Mon 15:30 EST`",
       "timer_formats": "⏱️ 计时器格式",
       "timer_intervals": "**间隔：** `1d2h3m`（天、小时、分钟）",
       "title": "帮助"
@@ -424,7 +425,7 @@
     "generic": "❌ 发生错误：{error}",
     "invalid_channel": "❌ 无效的频道：{channel}",
     "invalid_target": "❌ 无效的目标。请提供有效的消息ID/链接或用户提及/ID。",
-    "invalid_timer": "❌ 无效的计时器格式：`{timer}`\n\n请使用如下格式：\n• `24h` 表示24小时\n• `1d12h30m` 表示1天12小时30分钟\n• `15:30 EST` 表示每天EST下午3:30",
+    "invalid_timer": "❌ 无效的计时器格式：`{timer}`\n\n请使用如下格式：\n• `24h` 表示24小时\n• `1d12h30m` 表示1天12小时30分钟\n• `15:30 EST` 表示每天EST下午3:30\n• `Mon 15:30 EST` 表示每周特定日期",
     "invalid_user": "❌ 无效的用户：{user}",
     "job_not_found": "❌ 未找到 {channel} 的计划作业",
     "missed_clear_notification": "⚠️ **错过清除通知**\n\n此频道错过了一次计划的消息清除。\n计时器已重新安排。",

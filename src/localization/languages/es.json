@@ -171,7 +171,8 @@
       "select_command": "Selecciona un comando para saber más...",
       "subscription_commands": "📝 Comandos de Suscripción",
       "timer_daily": "**Horario Diario:** `15:30 EST` (hora + zona horaria)",
-      "timer_examples": "**Ejemplos:** `24h`, `1d`, `30m`, `09:00 PST`",
+      "timer_weekly": "**Horario Semanal:** `Mon 15:30 EST` o `Mon-Fri 09:00` (días + hora + zona horaria)",
+      "timer_examples": "**Ejemplos:** `24h`, `1d`, `30m`, `09:00 PST`, `Mon 15:30 EST`",
       "timer_formats": "⏱️ Formatos de Temporizador",
       "timer_intervals": "**Intervalos:** `1d2h3m` (días, horas, minutos)",
       "title": "Ayuda"
@@ -424,7 +425,7 @@
     "generic": "❌ Ocurrió un error: {error}",
     "invalid_channel": "❌ Canal inválido: {channel}",
     "invalid_target": "❌ Objetivo inválido. Por favor proporciona un ID/enlace de mensaje válido o mención/ID de usuario.",
-    "invalid_timer": "❌ Formato de temporizador inválido: `{timer}`\n\nPor favor usa formatos como:\n• `24h` para 24 horas\n• `1d12h30m` para 1 día, 12 horas, 30 minutos\n• `15:30 EST` para diario a las 3:30 PM EST",
+    "invalid_timer": "❌ Formato de temporizador inválido: `{timer}`\n\nPor favor usa formatos como:\n• `24h` para 24 horas\n• `1d12h30m` para 1 día, 12 horas, 30 minutos\n• `15:30 EST` para diario a las 3:30 PM EST\n• `Mon 15:30 EST` para semanal en días específicos",
     "invalid_user": "❌ Usuario inválido: {user}",
     "job_not_found": "❌ No se encontró trabajo programado para {channel}",
     "missed_clear_notification": "⚠️ **Notificación de Limpieza Perdida**\n\nSe perdió una limpieza de mensajes programada para este canal.\nEl temporizador ha sido reprogramado.",
