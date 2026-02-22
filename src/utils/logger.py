@@ -221,12 +221,13 @@ class BotLogger:
         except Exception:
             return False
 
-    async def get_recent_errors(self, limit: int = 10) -> List[ErrorDocument]:
+    async def get_recent_errors(self, limit: int = 10, guild_id: Optional[str] = None) -> List[ErrorDocument]:
         try:
             from src.services.database_connection_manager import db_manager
 
             errors_collection = db_manager.errors
-            cursor = errors_collection.find().sort("timestamp", -1).limit(limit)
+            query = {"guild_id": guild_id} if guild_id else {}
+            cursor = errors_collection.find(query).sort("timestamp", -1).limit(limit)
             error_docs = await cursor.to_list(length=limit)
             return [ErrorDocument.from_dict(doc) for doc in error_docs]
         except Exception:

@@ -372,8 +372,11 @@ class AdminCommands(
         description=get_command_description("admin.error.list"),
         auto_locale_strings=False,
     )
-    @app_commands.describe(limit="Number of errors to show (default: 10, max: 25)")
-    async def error_list(self, interaction: discord.Interaction, limit: int = 10):
+    @app_commands.describe(
+        limit="Number of errors to show (default: 10, max: 25)",
+        guild_id="Filter errors by guild ID"
+    )
+    async def error_list(self, interaction: discord.Interaction, limit: int = 10, guild_id: str = None):
         await interaction.response.defer(thinking=True, ephemeral=True)
 
         if not await self._check_admin_permission(interaction):
@@ -382,7 +385,7 @@ class AdminCommands(
         translator = await get_translator(str(interaction.guild.id), self.data_service)
 
         limit = min(max(1, limit), 25)
-        errors = await logger.get_recent_errors(limit)
+        errors = await logger.get_recent_errors(limit, guild_id)
 
         if not errors:
             from src.components.admin import NoErrorsView
