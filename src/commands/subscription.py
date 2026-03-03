@@ -42,6 +42,7 @@ class SubscriptionCommands(commands.Cog):
     async def handle_ignore_message_context(
         self, interaction: discord.Interaction, message: discord.Message
     ) -> None:
+        await interaction.response.defer(ephemeral=True)
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: True,
@@ -62,7 +63,7 @@ class SubscriptionCommands(commands.Cog):
 
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 translator.get(
                     "validation.not_subscribed", channel=message.channel.mention
                 ),
@@ -77,7 +78,7 @@ class SubscriptionCommands(commands.Cog):
             channel_timer.remove_ignored_message(message_id)
             await self.data_service.save_servers()
 
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 translator.get(
                     "commands.subscription.ignore.message_removed",
                     author=message.author.mention,
@@ -89,7 +90,7 @@ class SubscriptionCommands(commands.Cog):
             channel_timer.add_ignored_message(message_id)
             await self.data_service.save_servers()
 
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 translator.get(
                     "commands.subscription.ignore.message_added",
                     author=message.author.mention,
@@ -102,6 +103,7 @@ class SubscriptionCommands(commands.Cog):
     async def handle_ignore_user_context(
         self, interaction: discord.Interaction, user: discord.User
     ) -> None:
+        await interaction.response.defer(ephemeral=True)
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: True,
@@ -120,7 +122,7 @@ class SubscriptionCommands(commands.Cog):
 
         channel = interaction.channel
         if not isinstance(channel, discord.TextChannel):
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 translator.get("validation.invalid_channel"), ephemeral=True
             )
             return
@@ -129,7 +131,7 @@ class SubscriptionCommands(commands.Cog):
 
         server = await self.data_service.get_server(server_id)
         if not server or channel_id not in server.channels:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 translator.get("validation.not_subscribed", channel=channel.mention),
                 ephemeral=True,
             )
@@ -142,7 +144,7 @@ class SubscriptionCommands(commands.Cog):
             channel_timer.remove_ignored_user(user_id)
             await self.data_service.save_servers()
 
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 translator.get(
                     "commands.subscription.ignore.user_removed",
                     user=user.mention,
@@ -154,7 +156,7 @@ class SubscriptionCommands(commands.Cog):
             channel_timer.add_ignored_user(user_id)
             await self.data_service.save_servers()
 
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 translator.get(
                     "commands.subscription.ignore.user_added",
                     user=user.mention,
@@ -190,6 +192,7 @@ class SubscriptionCommands(commands.Cog):
         ignored_target: Optional[str] = None,
         view: Optional[bool] = False,
     ):
+        await interaction.response.defer(ephemeral=False)
         # Validate command with required checks
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -219,7 +222,7 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import InvalidTimerView
 
             view = InvalidTimerView(str(e), translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
 
         # Store the timer as provided - the parser will handle timezone defaults
@@ -231,9 +234,6 @@ class SubscriptionCommands(commands.Cog):
             server = await self.data_service.add_server(interaction.guild)
 
         server.add_channel(channel_id, timer_to_store, next_run_time)
-
-        # Defer the response immediately (non-ephemeral so we can send a proper response)
-        await interaction.response.defer(ephemeral=False)
 
         # Add ignored targets if provided (messages or users)
         added_targets = await validate_and_add_multiple_ignore_targets(
@@ -319,6 +319,7 @@ class SubscriptionCommands(commands.Cog):
         interaction: discord.Interaction,
         target_channel: Optional[discord.TextChannel] = None,
     ):
+        await interaction.response.defer(ephemeral=False)
         # Validate command with required checks
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -379,7 +380,7 @@ class SubscriptionCommands(commands.Cog):
         from src.components.subscription import UnsubscribeSuccessView
 
         view = UnsubscribeSuccessView(channel, translator)
-        await interaction.response.send_message(view=view)
+        await interaction.followup.send(view=view)
 
     @subscription_group.command(
         name="list",
@@ -391,6 +392,7 @@ class SubscriptionCommands(commands.Cog):
         self,
         interaction: discord.Interaction,
     ):
+        await interaction.response.defer(ephemeral=False)
         # Validate command with permission check
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -413,7 +415,7 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import NoActiveSubscriptionsView
 
             view = NoActiveSubscriptionsView(translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
 
         # Build list of subscriptions
@@ -422,7 +424,7 @@ class SubscriptionCommands(commands.Cog):
         view = SubscriptionListView(
             interaction.guild, server.channels, self.scheduler_service, translator
         )
-        await interaction.response.send_message(view=view)
+        await interaction.followup.send(view=view)
 
     @subscription_group.command(
         name="info",
@@ -438,6 +440,7 @@ class SubscriptionCommands(commands.Cog):
         interaction: discord.Interaction,
         target_channel: Optional[discord.TextChannel] = None,
     ):
+        await interaction.response.defer(ephemeral=False)
         # Validate command with permission check
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -464,7 +467,7 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import ChannelNotSubscribedView
 
             view = ChannelNotSubscribedView(channel, translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
 
         server = await self.data_service.get_server(server_id)
@@ -474,7 +477,7 @@ class SubscriptionCommands(commands.Cog):
         from src.components.subscription import SubscriptionInfoView
 
         view = SubscriptionInfoView(channel, next_run_time, timer_info, translator)
-        await interaction.response.send_message(view=view)
+        await interaction.followup.send(view=view)
 
     @subscription_group.command(
         name="update",
@@ -496,6 +499,7 @@ class SubscriptionCommands(commands.Cog):
         ignored_target: Optional[str] = None,
         view: Optional[bool] = False,
     ):
+        await interaction.response.defer(ephemeral=False)
         # Validate command with required checks
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -525,11 +529,8 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import InvalidTimerView
 
             view = InvalidTimerView(str(e), translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
-
-        # Defer the response immediately (non-ephemeral so we can send a proper response)
-        await interaction.response.defer(ephemeral=False)
 
         server = await self.data_service.get_server(server_id)
         current_ignored_messages = []
@@ -683,6 +684,7 @@ class SubscriptionCommands(commands.Cog):
         target: str,
         target_channel: Optional[discord.TextChannel] = None,
     ):
+        await interaction.response.defer(ephemeral=False)
         # Validate command with required checks
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -702,9 +704,6 @@ class SubscriptionCommands(commands.Cog):
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
         translator = await get_translator(server_id, self.data_service)
-
-        # Defer the response as validation might take time
-        await interaction.response.defer(ephemeral=False)
 
         # Parse and validate multiple targets
         validated_targets = await identify_and_validate_multiple_ignore_targets(
@@ -791,6 +790,7 @@ class SubscriptionCommands(commands.Cog):
         interaction: discord.Interaction,
         target_channel: Optional[discord.TextChannel] = None,
     ):
+        await interaction.response.defer(ephemeral=True)
         # Validate command with required checks
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -810,9 +810,6 @@ class SubscriptionCommands(commands.Cog):
         server_id = str(interaction.guild.id)
         channel_id = str(channel.id)
         translator = await get_translator(server_id, self.data_service)
-
-        # Defer the response as clearing might take time
-        await interaction.response.defer(ephemeral=True)
 
         server = await self.data_service.get_server(server_id)
         ignored_messages = []
@@ -885,6 +882,7 @@ class SubscriptionCommands(commands.Cog):
         interaction: discord.Interaction,
         target_channel: Optional[discord.TextChannel] = None,
     ):
+        await interaction.response.defer(ephemeral=False)
         # Validate command with required checks
         checks = {
             ValidationCheck.BLACKLIST: True,
@@ -911,7 +909,7 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import JobNotFoundView
 
             view = JobNotFoundView(channel, translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
 
         # Calculate the next run time after the current one
@@ -955,12 +953,12 @@ class SubscriptionCommands(commands.Cog):
             from src.components.subscription import SkipSuccessView
 
             view = SkipSuccessView(channel, new_next_run_time, translator)
-            await interaction.response.send_message(view=view)
+            await interaction.followup.send(view=view)
         else:
             from src.components.subscription import NextTimeNotFoundView
 
             view = NextTimeNotFoundView(channel, translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
 
 
 async def setup(bot) -> None:

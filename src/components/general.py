@@ -86,7 +86,7 @@ class HelpView(discord.ui.LayoutView):
 class PingView(discord.ui.LayoutView):
     """View for ping command"""
 
-    def __init__(self, ws_latency: int, response_time: int, translator):
+    def __init__(self, ws_latency: int, translator):
         super().__init__()
 
         if ws_latency < 100:
@@ -102,7 +102,6 @@ class PingView(discord.ui.LayoutView):
             translator.get("commands.ping.title"),
             "",
             translator.get("commands.ping.websocket_latency", latency=ws_latency),
-            translator.get("commands.ping.response_time", time=response_time),
             translator.get("commands.ping.status", status=translator.get(status_key)),
         ]
 

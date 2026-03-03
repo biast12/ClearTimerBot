@@ -1,7 +1,6 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-import time
 import pytz
 from src.utils.command_validation import CommandValidator, ValidationCheck
 from src.localization import get_translator, get_i18n, get_command_description
@@ -21,6 +20,7 @@ class GeneralCommands(commands.Cog):
     )
     @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def help_command(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=False)
         checks = {
             ValidationCheck.BLACKLIST: True,
         }
@@ -102,7 +102,7 @@ class GeneralCommands(commands.Cog):
         from src.components.general import HelpView
 
         view = HelpView(translator, commands_dict)
-        await interaction.response.send_message(view=view)
+        await interaction.followup.send(view=view)
 
     @app_commands.command(
         name="ping",
@@ -111,6 +111,7 @@ class GeneralCommands(commands.Cog):
     )
     @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
     async def ping(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True)
         checks = {
             ValidationCheck.BLACKLIST: True,
         }
@@ -125,17 +126,12 @@ class GeneralCommands(commands.Cog):
 
         ws_latency = round(self.bot.latency * 1000)
 
-        start_time = time.perf_counter()
-        await interaction.response.defer(thinking=True)
-        end_time = time.perf_counter()
-        response_time = round((end_time - start_time) * 1000)
-
         server_id = str(interaction.guild.id)
         translator = await get_translator(server_id, self.data_service)
 
         from src.components.general import PingView
 
-        view = PingView(ws_latency, response_time, translator)
+        view = PingView(ws_latency, translator)
         await interaction.followup.send(view=view)
 
     async def timezone_autocomplete(
@@ -200,6 +196,7 @@ class GeneralCommands(commands.Cog):
     )
     @app_commands.default_permissions(manage_guild=True)
     async def timezone_list(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=False)
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: "manage_guild",
@@ -221,11 +218,12 @@ class GeneralCommands(commands.Cog):
         from src.components.timezone import TimezoneListView
 
         view = TimezoneListView(timezones, translator)
-        await interaction.response.send_message(view=view)
+        await interaction.followup.send(view=view)
 
     async def timezone_change_impl(
         self, interaction: discord.Interaction, timezone: str
     ):
+        await interaction.response.defer(ephemeral=False)
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: "manage_guild",
@@ -261,7 +259,7 @@ class GeneralCommands(commands.Cog):
             from src.components.timezone import TimezoneInvalidView
 
             view = TimezoneInvalidView(timezone, suggestion, translator)
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
 
         server_id = str(interaction.guild.id)
@@ -276,7 +274,7 @@ class GeneralCommands(commands.Cog):
         from src.components.timezone import TimezoneChangeSuccessView
 
         view = TimezoneChangeSuccessView(timezone, translator)
-        await interaction.response.send_message(view=view)
+        await interaction.followup.send(view=view)
 
     @timezone_group.command(
         name="change",
@@ -354,6 +352,7 @@ class GeneralCommands(commands.Cog):
     )
     @app_commands.default_permissions(manage_guild=True)
     async def language_list(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=False)
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: "manage_guild",
@@ -379,7 +378,7 @@ class GeneralCommands(commands.Cog):
         from src.components.general import LanguageListView
 
         view = LanguageListView(languages, current_language, translator)
-        await interaction.response.send_message(view=view)
+        await interaction.followup.send(view=view)
 
     @language_group.command(
         name="change",
@@ -391,6 +390,7 @@ class GeneralCommands(commands.Cog):
         language="Select or type a language code (e.g., en, es, de, zh)"
     )
     async def language_change(self, interaction: discord.Interaction, language: str):
+        await interaction.response.defer(ephemeral=False)
         checks = {
             ValidationCheck.BLACKLIST: True,
             ValidationCheck.USER_PERMISSIONS: "manage_guild",
@@ -421,7 +421,7 @@ class GeneralCommands(commands.Cog):
             view = LanguageInvalidView(
                 language, list(available_languages.keys()), translator
             )
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
 
         # Check if already set to this language
@@ -431,7 +431,7 @@ class GeneralCommands(commands.Cog):
             view = LanguageAlreadySetView(
                 available_languages[selected_language], translator
             )
-            await interaction.response.send_message(view=view, ephemeral=True)
+            await interaction.followup.send(view=view, ephemeral=True)
             return
 
         server = await self.data_service.get_server(server_id)
@@ -448,7 +448,7 @@ class GeneralCommands(commands.Cog):
         view = LanguageChangeSuccessView(
             available_languages[selected_language], new_translator
         )
-        await interaction.response.send_message(view=view)
+        await interaction.followup.send(view=view)
 
     @language_change.autocomplete("language")
     async def language_change_autocomplete(
