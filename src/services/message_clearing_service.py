@@ -15,7 +15,7 @@ class MessageService:
     def __init__(self, data_service: DataService, scheduler_service: SchedulerService):
         self.data_service = data_service
         self.scheduler_service = scheduler_service
-        self.rate_limit_delay = 1.0  # Delay between message deletions
+        self.rate_limit_delay = 3.0  # Delay between message deletions
         self.bot = None  # Will be set by the bot during initialization
 
     def set_bot(self, bot):
