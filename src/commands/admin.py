@@ -94,14 +94,12 @@ class AdminCommands(
 
             from src.services.database_connection_manager import db_manager
 
-            errors_collection = db_manager.db.errors
-
             cache_key = f"stats:errors:server:{server_id}"
             server_errors = await self.data_service._cache.get(cache_key)
 
             if server_errors is None:
-                server_errors = await errors_collection.count_documents(
-                    {"server_id": server_id}
+                server_errors = await db_manager.fetchval(
+                    "SELECT COUNT(*) FROM errors WHERE guild_id = $1", server_id
                 )
                 await self.data_service._cache.set(
                     cache_key, server_errors, cache_level="memory", ttl=300
@@ -133,13 +131,11 @@ class AdminCommands(
 
             from src.services.database_connection_manager import db_manager
 
-            errors_collection = db_manager.db.errors
-
             cache_key = "stats:errors:total"
             error_count = await self.data_service._cache.get(cache_key)
 
             if error_count is None:
-                error_count = await errors_collection.count_documents({})
+                error_count = await db_manager.fetchval("SELECT COUNT(*) FROM errors")
                 await self.data_service._cache.set(
                     cache_key, error_count, cache_level="memory", ttl=300
                 )
@@ -456,25 +452,43 @@ class AdminCommands(
         from datetime import datetime, timedelta, timezone
 
         try:
-            errors_collection = db_manager.db.errors
+            # Build a parameterised WHERE clause
+            conditions = []
+            params = []
+            idx = 1
 
-            # Build filter query
-            query = {}
             if area:
-                query["area"] = area.upper()
+                conditions.append(f"area = ${idx}")
+                params.append(area.upper())
+                idx += 1
             if level:
-                query["level"] = level.upper()
+                conditions.append(f"level = ${idx}")
+                params.append(level.upper())
+                idx += 1
             if server_id:
-                query["guild_id"] = server_id
+                conditions.append(f"guild_id = ${idx}")
+                params.append(server_id)
+                idx += 1
             if older_than_days:
                 cutoff_date = datetime.now(timezone.utc) - timedelta(days=older_than_days)
-                query["timestamp"] = {"$lt": cutoff_date.isoformat()}
+                conditions.append(f"timestamp < ${idx}")
+                params.append(cutoff_date)
+                idx += 1
             if message:
-                query["message"] = {"$regex": message, "$options": "i"}
+                conditions.append(f"message ~* ${idx}")
+                params.append(message)
+                idx += 1
             if stack_trace:
-                query["stack_trace"] = {"$regex": stack_trace, "$options": "i"}
+                conditions.append(f"stack_trace ~* ${idx}")
+                params.append(stack_trace)
+                idx += 1
 
-            result = await errors_collection.delete_many(query)
+            where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+            result = await db_manager.execute(
+                f"DELETE FROM errors {where}", *params
+            )
+            deleted_count = int(result.split()[-1])
+
             from src.components.admin import ErrorsClearedView
 
             # Prepare filters dict for display
@@ -492,7 +506,7 @@ class AdminCommands(
             if stack_trace:
                 filters["stack_trace"] = stack_trace
 
-            view = ErrorsClearedView(result.deleted_count, translator, filters if filters else None)
+            view = ErrorsClearedView(deleted_count, translator, filters if filters else None)
             await interaction.followup.send(view=view)
         except Exception as e:
             error_id = await logger.log_error(

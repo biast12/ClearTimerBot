@@ -1,15 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, Optional, Any, List
-from enum import Enum
-
-
-class CollectionName(Enum):
-    SERVERS = "servers"
-    BLACKLIST = "blacklist"
-    REMOVED_SERVERS = "removed_servers"
-    ERRORS = "errors"
-    CONFIG = "config"
 
 
 @dataclass
@@ -148,50 +139,23 @@ class ErrorDocument:
 
 @dataclass
 class BotConfigDocument:
-    admins: List[str] = field(default_factory=list)  # Just store user IDs
+    admins: List[str] = field(default_factory=list)
     timezones: Dict[str, str] = field(default_factory=dict)
-    updated_at: Optional[datetime] = None
-
-    def __post_init__(self):
-        if self.updated_at is None:
-            self.updated_at = datetime.now(timezone.utc)
 
     def add_admin(self, user_id: str) -> bool:
         if user_id not in self.admins:
             self.admins.append(user_id)
-            self.updated_at = datetime.now(timezone.utc)
             return True
         return False
 
     def remove_admin(self, user_id: str) -> bool:
         if user_id in self.admins:
             self.admins.remove(user_id)
-            self.updated_at = datetime.now(timezone.utc)
             return True
         return False
 
     def is_admin(self, user_id: str) -> bool:
         return user_id in self.admins
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "_id": "bot_config",
-            "admins": self.admins,
-            "timezones": self.timezones,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-        }
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "BotConfigDocument":
-        updated_at = data.get("updated_at")
-        if updated_at and isinstance(updated_at, str):
-            updated_at = datetime.fromisoformat(updated_at)
-
-        admins = data.get("admins", [])
-
-        return cls(
-            admins=admins, timezones=data.get("timezones", {}), updated_at=updated_at
-        )
 
 
 @dataclass

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from datetime import datetime, timezone
 
-from src.models import BotConfig
+from src.models import BotConfig, RemovedServer
 from src.services.server_data_service import DataService
 from src.services.database_connection_manager import db_manager
 from src.services.clear_job_scheduler_service import SchedulerService
@@ -37,7 +37,7 @@ class ClearTimerBot(commands.Bot):
         self.data_service = DataService()
         self.scheduler_service = SchedulerService(self.data_service)
         self.message_service = MessageService(self.data_service, self.scheduler_service)
-        self.message_service.set_bot(self)  # Set the bot instance
+        self.message_service.set_bot(self)
 
         self.activity_dots = 0
 
@@ -65,7 +65,7 @@ class ClearTimerBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         await db_manager.connect()
-        logger.info(LogArea.DATABASE, "Connected to MongoDB")
+        logger.info(LogArea.DATABASE, "Connected to PostgreSQL")
 
         await self.data_service.initialize()
         logger.info(LogArea.STARTUP, "Data service initialized")
@@ -180,30 +180,27 @@ class ClearTimerBot(commands.Bot):
         logger.info(LogArea.STARTUP, "Scheduler service shut down")
 
         await db_manager.disconnect()
-        logger.info(LogArea.DATABASE, "Disconnected from MongoDB")
+        logger.info(LogArea.DATABASE, "Disconnected from PostgreSQL")
 
         await super().close()
 
     async def is_admin(self, user: discord.User) -> bool:
-        """Check if user is an admin using database cache"""
-        user_id = str(user.id)
-        return await self.data_service.is_admin(user_id)
+        return await self.data_service.is_admin(str(user.id))
 
     def is_owner(self, user: discord.User) -> bool:
-        """Check if user is the bot owner"""
         if self.config.owner_id:
             return user.id == self.config.owner_id
         return False
 
     async def on_guild_join(self, guild: discord.Guild) -> None:
-        """Handle when bot joins a server"""
         server_id = str(guild.id)
 
         removed_doc = await self.data_service.get_removed_server(server_id)
 
         if removed_doc:
-            removed_servers_collection = db_manager.removed_servers
-            await removed_servers_collection.delete_one({"_id": server_id})
+            await db_manager.execute(
+                "DELETE FROM removed_servers WHERE server_id = $1", server_id
+            )
             await self.data_service.invalidate_removed_server_cache(server_id)
             logger.info(
                 LogArea.DISCORD, f"Bot rejoined server: {guild.name} (ID: {server_id})"
@@ -228,29 +225,32 @@ class ClearTimerBot(commands.Bot):
         )
 
     async def on_guild_remove(self, guild: discord.Guild) -> None:
-        """Handle when bot leaves or is removed from a server"""
         server_id = str(guild.id)
+        removed_at = datetime.now(timezone.utc)
 
-        removed_servers_collection = db_manager.removed_servers
-        removal_doc = {
-            "_id": server_id,
-            "server_name": guild.name,
-            "removed_at": datetime.now(timezone.utc),
-        }
-        await removed_servers_collection.replace_one(
-            {"_id": server_id},
-            removal_doc,
-            upsert=True,
+        await db_manager.execute(
+            """
+            INSERT INTO removed_servers (server_id, server_name, removed_at)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (server_id) DO UPDATE SET
+                server_name = EXCLUDED.server_name,
+                removed_at  = EXCLUDED.removed_at
+            """,
+            server_id,
+            guild.name,
+            removed_at,
         )
 
-        await self.data_service.cache_removed_server(server_id, removal_doc)
+        removed = RemovedServer(
+            server_id=server_id, server_name=guild.name, removed_at=removed_at
+        )
+        await self.data_service.cache_removed_server(server_id, removed)
 
         logger.info(
             LogArea.DISCORD, f"Bot removed from server: {guild.name} (ID: {server_id})"
         )
 
     async def _update_server_names(self) -> None:
-        """Update server names for all connected guilds on startup"""
         updated_count = 0
 
         for guild in self.guilds:
@@ -259,7 +259,6 @@ class ClearTimerBot(commands.Bot):
 
             if server:
                 if not server.server_name or server.server_name != guild.name:
-                    old_name = server.server_name or "(empty)"
                     await self.data_service.update_server_name(server_id, guild.name)
                     updated_count += 1
             else:
@@ -270,40 +269,46 @@ class ClearTimerBot(commands.Bot):
             logger.info(LogArea.DATABASE, f"Updated {updated_count} server name(s)")
 
     async def _sync_server_cleanup_status(self) -> None:
-        """Sync server cleanup status based on current guild membership on startup"""
-        removed_servers_collection = db_manager.removed_servers
-
         all_servers = await self.data_service.get_all_servers()
         current_guild_ids = {str(guild.id) for guild in self.guilds}
 
-        servers_to_mark_removed = []
-        for server_id in all_servers.keys():
+        # Mark servers the bot is no longer in
+        for server_id, server in all_servers.items():
             if server_id not in current_guild_ids:
-                server = all_servers[server_id]
-                servers_to_mark_removed.append(
-                    {
-                        "_id": server_id,
-                        "server_name": server.server_name,
-                        "removed_at": datetime.now(timezone.utc),
-                    }
+                existing = await db_manager.fetchrow(
+                    "SELECT server_id FROM removed_servers WHERE server_id = $1",
+                    server_id,
                 )
+                if not existing:
+                    removed_at = datetime.now(timezone.utc)
+                    await db_manager.execute(
+                        """
+                        INSERT INTO removed_servers (server_id, server_name, removed_at)
+                        VALUES ($1, $2, $3)
+                        """,
+                        server_id,
+                        server.server_name,
+                        removed_at,
+                    )
+                    removed = RemovedServer(
+                        server_id=server_id,
+                        server_name=server.server_name,
+                        removed_at=removed_at,
+                    )
+                    await self.data_service.cache_removed_server(server_id, removed)
+                    logger.info(
+                        LogArea.CLEANUP,
+                        f"Marked server {server.server_name} (ID: {server_id}) as removed (bot not in server)",
+                    )
 
-        for removal_doc in servers_to_mark_removed:
-            server_id = removal_doc["_id"]
-            existing = await removed_servers_collection.find_one({"_id": server_id})
-            if not existing:
-                await removed_servers_collection.insert_one(removal_doc)
-                await self.data_service.cache_removed_server(server_id, removal_doc)
-                logger.info(
-                    LogArea.CLEANUP,
-                    f"Marked server {removal_doc['server_name']} (ID: {server_id}) as removed (bot not in server)",
-                )
-
-        removed_servers = await removed_servers_collection.find().to_list(None)
-        for removed_doc in removed_servers:
-            server_id = removed_doc["_id"]
+        # Clear removal tracking for servers the bot has rejoined
+        removed_rows = await db_manager.fetch("SELECT server_id FROM removed_servers")
+        for row in removed_rows:
+            server_id = row["server_id"]
             if server_id in current_guild_ids:
-                await removed_servers_collection.delete_one({"_id": server_id})
+                await db_manager.execute(
+                    "DELETE FROM removed_servers WHERE server_id = $1", server_id
+                )
                 await self.data_service.invalidate_removed_server_cache(server_id)
                 guild = self.get_guild(int(server_id))
                 guild_name = guild.name if guild else "Unknown"
@@ -313,8 +318,6 @@ class ClearTimerBot(commands.Bot):
                 )
 
     async def _cleanup_deleted_channels(self) -> None:
-        """Remove subscriptions for channels that no longer exist (only for servers bot is in)"""
-
         all_servers = await self.data_service.get_all_servers()
 
         for server_id, server in all_servers.items():
@@ -326,9 +329,7 @@ class ClearTimerBot(commands.Bot):
             if not guild:
                 continue
 
-            subscribed_channels = list(server.channels.keys())
-
-            for channel_id in subscribed_channels:
+            for channel_id in list(server.channels.keys()):
                 channel = guild.get_channel(int(channel_id))
                 if not channel:
                     await self.data_service.remove_channel_subscription(
@@ -336,7 +337,6 @@ class ClearTimerBot(commands.Bot):
                     )
 
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel) -> None:
-        """Handle when a channel is deleted"""
         if not isinstance(channel, discord.TextChannel):
             return
 
@@ -352,7 +352,6 @@ class ClearTimerBot(commands.Bot):
                 await self.scheduler_service.cancel_job_by_id(job_id)
 
     async def _cleanup_server_channels(self, guild: discord.Guild) -> None:
-        """Clean up deleted channels when bot rejoins a server"""
         server_id = str(guild.id)
         server = await self.data_service.get_server(server_id)
 
@@ -360,9 +359,8 @@ class ClearTimerBot(commands.Bot):
             return
 
         cleaned_count = 0
-        subscribed_channels = list(server.channels.keys())
 
-        for channel_id in subscribed_channels:
+        for channel_id in list(server.channels.keys()):
             channel = guild.get_channel(int(channel_id))
             if not channel:
                 if await self.data_service.remove_channel_subscription(
@@ -384,7 +382,6 @@ class ClearTimerBot(commands.Bot):
             )
 
     async def _update_all_view_messages(self) -> None:
-        """Update all view messages to show current next run times on startup"""
         servers = await self.data_service.get_all_servers()
         updated_count = 0
         failed_count = 0
@@ -414,7 +411,7 @@ class ClearTimerBot(commands.Bot):
                             next_run_time,
                         )
                         updated_count += 1
-                except Exception as e:
+                except Exception:
                     failed_count += 1
 
         if updated_count > 0 or failed_count > 0:

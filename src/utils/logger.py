@@ -70,9 +70,25 @@ class BotLogger:
         try:
             from src.services.database_connection_manager import db_manager
 
-            errors_collection = db_manager.errors
-            error_doc = error_record.to_dict()
-            await errors_collection.insert_one(error_doc)
+            await db_manager.execute(
+                """
+                INSERT INTO errors
+                    (error_id, timestamp, level, area, message, stack_trace,
+                     guild_id, channel_id, user_id, command)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                ON CONFLICT (error_id) DO NOTHING
+                """,
+                error_record.error_id,
+                error_record.timestamp,
+                error_record.level,
+                error_record.area,
+                error_record.message,
+                error_record.stack_trace,
+                error_record.guild_id,
+                error_record.channel_id,
+                error_record.user_id,
+                error_record.command,
+            )
         except Exception as e:
             print(f"Failed to save error to database: {e}")
 
@@ -87,9 +103,10 @@ class BotLogger:
             try:
                 print(formatted)
             except UnicodeEncodeError:
-                # Fallback: encode with 'replace' to substitute unencodable characters
-                safe_formatted = formatted.encode(sys.stdout.encoding or 'utf-8', errors='replace').decode(sys.stdout.encoding or 'utf-8')
-                print(safe_formatted)
+                safe = formatted.encode(
+                    sys.stdout.encoding or "utf-8", errors="replace"
+                ).decode(sys.stdout.encoding or "utf-8")
+                print(safe)
 
         if level in [LogLevel.ERROR, LogLevel.CRITICAL]:
             return self._generate_error_id()
@@ -139,13 +156,17 @@ class BotLogger:
             try:
                 print(formatted)
             except UnicodeEncodeError:
-                safe_formatted = formatted.encode(sys.stdout.encoding or 'utf-8', errors='replace').decode(sys.stdout.encoding or 'utf-8')
-                print(safe_formatted)
+                safe = formatted.encode(
+                    sys.stdout.encoding or "utf-8", errors="replace"
+                ).decode(sys.stdout.encoding or "utf-8")
+                print(safe)
             if tb_str and self.min_level == LogLevel.DEBUG:
                 try:
                     print(tb_str)
                 except UnicodeEncodeError:
-                    safe_tb = tb_str.encode(sys.stdout.encoding or 'utf-8', errors='replace').decode(sys.stdout.encoding or 'utf-8')
+                    safe_tb = tb_str.encode(
+                        sys.stdout.encoding or "utf-8", errors="replace"
+                    ).decode(sys.stdout.encoding or "utf-8")
                     print(safe_tb)
 
         await self._save_error_to_db(error_record)
@@ -187,26 +208,37 @@ class BotLogger:
         else:
             terminal_width = length
 
-        if color:
-            color_code = self._get_color(color)
-        else:
-            color_code = "\033[36m"
+        color_code = self._get_color(color) if color else "\033[36m"
         reset = self._reset_color()
         output = f"{color_code}{char * terminal_width}{reset}"
         try:
             print(output)
         except UnicodeEncodeError:
-            safe_output = output.encode(sys.stdout.encoding or 'utf-8', errors='replace').decode(sys.stdout.encoding or 'utf-8')
-            print(safe_output)
+            safe = output.encode(
+                sys.stdout.encoding or "utf-8", errors="replace"
+            ).decode(sys.stdout.encoding or "utf-8")
+            print(safe)
 
     async def get_error(self, error_id: str) -> Optional[ErrorDocument]:
         try:
             from src.services.database_connection_manager import db_manager
 
-            errors_collection = db_manager.errors
-            error_doc = await errors_collection.find_one({"_id": error_id})
-            if error_doc:
-                return ErrorDocument.from_dict(error_doc)
+            row = await db_manager.fetchrow(
+                "SELECT * FROM errors WHERE error_id = $1", error_id
+            )
+            if row:
+                return ErrorDocument(
+                    error_id=row["error_id"],
+                    timestamp=row["timestamp"],
+                    level=row["level"],
+                    area=row["area"],
+                    message=row["message"],
+                    stack_trace=row["stack_trace"],
+                    guild_id=row["guild_id"],
+                    channel_id=row["channel_id"],
+                    user_id=row["user_id"],
+                    command=row["command"],
+                )
             return None
         except Exception:
             return None
@@ -215,21 +247,46 @@ class BotLogger:
         try:
             from src.services.database_connection_manager import db_manager
 
-            errors_collection = db_manager.errors
-            result = await errors_collection.delete_one({"_id": error_id})
-            return result.deleted_count > 0
+            result = await db_manager.execute(
+                "DELETE FROM errors WHERE error_id = $1", error_id
+            )
+            return result == "DELETE 1"
         except Exception:
             return False
 
-    async def get_recent_errors(self, limit: int = 10, guild_id: Optional[str] = None) -> List[ErrorDocument]:
+    async def get_recent_errors(
+        self, limit: int = 10, guild_id: Optional[str] = None
+    ) -> List[ErrorDocument]:
         try:
             from src.services.database_connection_manager import db_manager
 
-            errors_collection = db_manager.errors
-            query = {"guild_id": guild_id} if guild_id else {}
-            cursor = errors_collection.find(query).sort("timestamp", -1).limit(limit)
-            error_docs = await cursor.to_list(length=limit)
-            return [ErrorDocument.from_dict(doc) for doc in error_docs]
+            if guild_id:
+                rows = await db_manager.fetch(
+                    "SELECT * FROM errors WHERE guild_id = $1 ORDER BY timestamp DESC LIMIT $2",
+                    guild_id,
+                    limit,
+                )
+            else:
+                rows = await db_manager.fetch(
+                    "SELECT * FROM errors ORDER BY timestamp DESC LIMIT $1",
+                    limit,
+                )
+
+            return [
+                ErrorDocument(
+                    error_id=row["error_id"],
+                    timestamp=row["timestamp"],
+                    level=row["level"],
+                    area=row["area"],
+                    message=row["message"],
+                    stack_trace=row["stack_trace"],
+                    guild_id=row["guild_id"],
+                    channel_id=row["channel_id"],
+                    user_id=row["user_id"],
+                    command=row["command"],
+                )
+                for row in rows
+            ]
         except Exception:
             return []
 

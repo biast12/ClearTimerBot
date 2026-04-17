@@ -1,13 +1,11 @@
 import os
-from motor.motor_asyncio import AsyncIOMotorClient
-from typing import Optional
-from src.models import CollectionName
+from typing import Optional, Any, List
+import asyncpg
 
 
 class DatabaseManager:
     _instance: Optional["DatabaseManager"] = None
-    _client: Optional[AsyncIOMotorClient] = None
-    _database = None
+    _pool: Optional[asyncpg.Pool] = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -26,50 +24,48 @@ class DatabaseManager:
         if not database_url:
             raise ValueError("DATABASE_URL not found in environment variables")
 
-        self._client = AsyncIOMotorClient(database_url)
-        self._database = self._client.get_default_database()
+        self._pool = await asyncpg.create_pool(database_url)
 
-        await self._client.admin.command("ping")
+        # Verify the connection works
+        async with self._pool.acquire() as conn:
+            await conn.fetchval("SELECT 1")
 
-        # Import logger here to avoid circular import
         from src.utils.logger import logger, LogArea
 
-        logger.info(LogArea.DATABASE, "Successfully connected to MongoDB")
+        logger.info(LogArea.DATABASE, "Successfully connected to PostgreSQL")
 
         self.initialized = True
 
     async def disconnect(self) -> None:
-        if self._client:
-            self._client.close()
-            self._client = None
-            self._database = None
+        if self._pool:
+            await self._pool.close()
+            self._pool = None
             self.initialized = False
 
     @property
-    def db(self):
-        if self._database is None:
+    def pool(self) -> asyncpg.Pool:
+        if self._pool is None:
             raise RuntimeError("Database not connected. Call connect() first.")
-        return self._database
+        return self._pool
 
-    @property
-    def servers(self):
-        return self.db[CollectionName.SERVERS.value]
+    async def execute(self, query: str, *args) -> str:
+        async with self._pool.acquire() as conn:
+            return await conn.execute(query, *args)
 
-    @property
-    def blacklist(self):
-        return self.db[CollectionName.BLACKLIST.value]
+    async def fetch(self, query: str, *args) -> List[asyncpg.Record]:
+        async with self._pool.acquire() as conn:
+            return await conn.fetch(query, *args)
 
-    @property
-    def removed_servers(self):
-        return self.db[CollectionName.REMOVED_SERVERS.value]
+    async def fetchrow(self, query: str, *args) -> Optional[asyncpg.Record]:
+        async with self._pool.acquire() as conn:
+            return await conn.fetchrow(query, *args)
 
-    @property
-    def errors(self):
-        return self.db[CollectionName.ERRORS.value]
+    async def fetchval(self, query: str, *args) -> Any:
+        async with self._pool.acquire() as conn:
+            return await conn.fetchval(query, *args)
 
-    @property
-    def config(self):
-        return self.db[CollectionName.CONFIG.value]
+    def acquire(self):
+        return self._pool.acquire()
 
 
 db_manager = DatabaseManager()

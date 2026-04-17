@@ -1,7 +1,6 @@
 from .channel_subscription import ChannelTimer, Server, IgnoredEntities
 
 from .database_models import (
-    CollectionName,
     BlacklistEntry,
     RemovedServer,
     ErrorDocument,
@@ -23,7 +22,6 @@ __all__ = [
     "Server",
     "IgnoredEntities",
     # Database models
-    "CollectionName",
     "BlacklistEntry",
     "RemovedServer",
     "ErrorDocument",
